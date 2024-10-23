@@ -1,7 +1,23 @@
+/*
+Copyright [2020-2024] [David Tanzer - @dtanzer@social.devteams.at]
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 import { MBuffer } from "./MBuffer";
 
 export class TextLocation {
-	constructor(private _buffer: MBuffer | undefined, private _index: number | undefined) {
+	constructor(protected _buffer: MBuffer | undefined, protected _index: number | undefined) {
 		//TODO bounds checks necessary?
 		_buffer?.registerLocation(this)
 	}
@@ -13,6 +29,32 @@ export class TextLocation {
 	get index(): number {
 		if(this._index !== undefined) { return this._index }
 		throw new Error(`Cannot get index of invalid location (buffer: {${this._buffer?.info()}}, index: ${this._index})`)
+	}
+
+	isEqualTo(other: TextLocation): boolean {
+		return this.buffer===other.buffer && this.index===other.index
+	}
+
+	isBefore(other: TextLocation): boolean {
+		const isSameBuffer = this.buffer === other.buffer
+		if(isSameBuffer) {
+			return this.index < other.index
+		} else {
+			let sameBufferAfterThis = false
+			let b: MBuffer = this.buffer
+
+			while(!sameBufferAfterThis && b.nextBuffer) {
+				b = b.nextBuffer
+				sameBufferAfterThis = b===other.buffer
+			}
+
+			if(sameBufferAfterThis) { return true }
+		}
+		return false
+	}
+
+	isAfter(other: TextLocation): boolean {
+		return !this.isEqualTo(other) && !this.isBefore(other)
 	}
 
 	accessor(): TextAccessor {
@@ -43,45 +85,31 @@ export class TextLocation {
 	}
 }
 
-export class TextAccessor {
-	constructor(private _buffer: MBuffer, private _index: number) {
-		while(this._index >= this._buffer.length && this._buffer.nextBuffer) {
-			this._buffer = this._buffer.nextBuffer
-			this._index = 0
+export class TextAccessor extends TextLocation {
+	constructor(_buffer: MBuffer, _index: number) {
+		while(_index >= _buffer.length && _buffer.nextBuffer) {
+			_buffer = _buffer.nextBuffer
+			_index = 0
 		}
+		super(_buffer, _index)
 	}
 
 	isInRange(end: TextLocation): boolean {
-		const sameBuffer = this._buffer == end.buffer
-
-		if(sameBuffer) {
-			const indexInRange = this._index < end.index
-			const indexInsideBuffer = this._index < this._buffer.length
-	
-			return indexInsideBuffer && indexInRange	
-		} else {
-			let sameBufferBefore = false
-			let b: MBuffer = this._buffer
-			while(!sameBufferBefore && b.previousBuffer) {
-				sameBufferBefore = b.previousBuffer === end.buffer
-				b = b.previousBuffer
-			}
-
-			if(sameBufferBefore) { return false }
-		}
-
-		return true
+		return this.isBefore(end)
 	}
 	
 	get(): string {
-		return this._buffer.at(this._index)
+		return this.buffer.at(this.index)
 	}
 
 	advance(): void {
+		if(this._index === undefined) {
+			throw new Error(`Cannot advance index of invalid location (buffer: {${this._buffer?.info()}}, index: ${this._index})`)
+		}
 		this._index++
 
-		while(this._index >= this._buffer.length && this._buffer.nextBuffer) {
-			this._buffer = this._buffer.nextBuffer
+		while(this.index >= this.buffer.length && this.buffer.nextBuffer) {
+			this._buffer = this.buffer.nextBuffer
 			this._index = 0
 		}
 	}
