@@ -106,7 +106,6 @@ export class MBuffer {
 
 	range(start: number, end: number): TextRange {
 		const startLocation = this.location(start)
-
 		const endLocation = this.location(end)
 
 		return new TextRange(startLocation, endLocation)
@@ -142,7 +141,7 @@ export class MBuffer {
 		this.locations.push(location)
 	}
 
-	private location(index: number): TextLocation {
+	location(index: number): TextLocation {
 		if(index <= this._length) {
 			return new TextLocation(this, index)
 		} else {
