@@ -14,17 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AnyBlock, Container } from "../element/MfMElements"
-import { TextRange } from "../mbuffer/TextRange"
-import { MfMParser } from "./MfMParser"
+import { AnyBlock, Section } from "../element/MfMElements";
+import { TextRange } from "../mbuffer/TextRange";
+import { MfMParser } from "./MfMParser";
 
-export class MfMContainer implements Container {
-	public readonly type = 'Container'
+export class MfMSection implements Section {
+	public readonly type = 'Section'
 
 	constructor(
 		public readonly id: string,
 		public readonly parsedRange: TextRange,
-		public readonly parsedWith: ContainerParser,
+		public readonly parsedWith: SectionParser,
 		public readonly content: AnyBlock[],
 	) {}
 
@@ -34,13 +34,13 @@ export class MfMContainer implements Container {
 			.join('')
 	}
 }
-export class ContainerParser extends MfMParser<'Container', Container> {
-	parse(text: TextRange): Container | null {
+export class SectionParser extends MfMParser<'Section', Section> {
+	parse(text: TextRange): Section | null {
 		const content: AnyBlock[] = []
 
-		const section = this.parsers.Section.parse(text)
-		if(section) { content.push(section) }
+		const paragraph = this.parsers.Paragraph.parse(text)
+		if(paragraph) { content.push(paragraph) }
 		
-		return new MfMContainer(this.idGenerator.nextId(), text, this, content)
+		return new MfMSection(this.idGenerator.nextId(), text, this, content)
 	}
 }

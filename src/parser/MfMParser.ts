@@ -16,38 +16,14 @@ limitations under the License.
 
 import { Element, Parser } from "../element/Element"
 import { TextRange } from "../mbuffer/TextRange"
-
-export type LineId    = `line-${string}`
-export type ElementId = `elem-${string}`
-
-export class IdGenerator {
-	private current = 0
-
-	nextId(): ElementId {
-		return `elem-${this.nextPureId()}`
-	}
-
-	nextLineId(): LineId {
-		return `line-${this.nextPureId()}`
-	}
-
-	private nextPureId(): string {
-		const id = String(this.current)
-			.padStart(16, '0')
-			.split(/(....)/)
-			.filter(s => s !== '')
-			.join('-')
-
-		this.current++
-		return id
-	}
-}
+import { IdGenerator, Parsers } from './Parsers'
 
 export abstract class MfMParser<
 	TYPE extends string,
 	ELEMENT extends Element<TYPE, ELEMENT>,
 > implements Parser<TYPE, ELEMENT> {
-	constructor(protected readonly idGenerator: IdGenerator) {}
+	constructor(protected readonly idGenerator: IdGenerator, protected readonly parsers: Parsers) {}
 
 	abstract parse(text: TextRange): Element<TYPE, ELEMENT> | null;
 }
+

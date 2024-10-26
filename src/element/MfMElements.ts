@@ -30,7 +30,7 @@ export interface ContainerInline<
 	TYPE extends string,
 	THIS extends ContainerInline<TYPE, THIS>,
 > extends InlineElement<TYPE, THIS> {
-	readonly content: InlineElement<keyof InlineTypes, InlineTypes[keyof InlineTypes]>[],
+	readonly content: AnyInline[],
 }
 
 export interface ContainerElement<
@@ -41,24 +41,30 @@ export interface LeafContainer<
 	TYPE extends string,
 	THIS extends LeafContainer<TYPE, THIS>,
 > extends ContainerElement<TYPE, THIS> {
-	readonly content: InlineElement<keyof InlineTypes, InlineTypes[keyof InlineTypes]>[],
+	readonly content: AnyInline[],
 }
 export interface BlockContainer<
 	TYPE extends string,
 	THIS extends BlockContainer<TYPE, THIS>,
 > extends ContainerElement<TYPE, THIS> {
-	readonly content: ContainerElement<keyof ContainerTypes, ContainerTypes[keyof ContainerTypes]>[],
+	readonly content: AnyBlock[],
 }
+
+export type AnyInline = InlineElement<keyof InlineTypes, InlineTypes[keyof InlineTypes]>
+export type AnyBlock = ContainerElement<keyof ContainerTypes, ContainerTypes[keyof ContainerTypes]>
 
 export type InlineTypes = {
 	'Text': Text,
 }
 export type ContainerTypes = {
 	'Container': Container,
+	'Section': Section,
+
 	'Paragraph': Paragraph,
 }
 
 export interface Container extends BlockContainer<'Container', Container> {}
+export interface Section extends BlockContainer<'Section', Section> {}
 
 export interface Paragraph extends LeafContainer<'Paragraph', Paragraph> {}
 

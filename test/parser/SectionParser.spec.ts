@@ -14,3 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { TextContent } from "../../src/mbuffer/TextContent"
+import { Parsers } from "../../src/parser/Parsers"
+
+describe('SectionParser', () => {
+	it('parses empty text into an empty section', () => {
+		const parser = new Parsers().Section
+		const textContent = new TextContent('some text')
+
+		const section = parser.parse(textContent.asRange())
+
+		expect(section?.content).toHaveLength(1)
+		const content = section!.content[0]
+		expect(content).toHaveProperty('type', 'Paragraph')
+	})
+})

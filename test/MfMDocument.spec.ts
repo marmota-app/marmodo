@@ -14,16 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { TextContent } from "../../src/mbuffer/TextContent"
-import { IdGenerator } from "../../src/parser/MfMParser"
-import { TextParser } from "../../src/parser/TextParser"
+import { MfMDocument } from "../src/MfMDocument"
 
-describe('TextContentParser', () => {
-	it('parses complete text', () => {
-		const textContent = new TextContent('some text')
+describe('MfMDocument', () => {
+	it('can parse a simple document with a single line', () => {
+		const document = new MfMDocument('the quick brown fox jumps over the lazy dog')
 
-		const text = new TextParser(new IdGenerator()).parse(textContent.asRange())
+		expect(document.content.content).toHaveLength(1)
+	})
+	it('can get back the text of a simple document', () => {
+		const document = new MfMDocument('the quick brown fox jumps over the lazy dog')
 
-		expect(text?.content).toEqual('some text')
+		expect(document.text).toEqual('the quick brown fox jumps over the lazy dog')
 	})
 })

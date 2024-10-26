@@ -14,18 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AnyBlock, Container } from "../element/MfMElements"
-import { TextRange } from "../mbuffer/TextRange"
-import { MfMParser } from "./MfMParser"
+import { AnyInline, Paragraph } from "../element/MfMElements";
+import { TextRange } from "../mbuffer/TextRange";
+import { MfMParser } from "./MfMParser";
 
-export class MfMContainer implements Container {
-	public readonly type = 'Container'
+export class MfMParagraph implements Paragraph {
+	public readonly type = 'Paragraph'
 
 	constructor(
 		public readonly id: string,
 		public readonly parsedRange: TextRange,
-		public readonly parsedWith: ContainerParser,
-		public readonly content: AnyBlock[],
+		public readonly parsedWith: ParagraphParser,
+		public readonly content: AnyInline[],
 	) {}
 
 	asText(): string {
@@ -34,13 +34,13 @@ export class MfMContainer implements Container {
 			.join('')
 	}
 }
-export class ContainerParser extends MfMParser<'Container', Container> {
-	parse(text: TextRange): Container | null {
-		const content: AnyBlock[] = []
+export class ParagraphParser extends MfMParser<'Paragraph', Paragraph> {
+	parse(text: TextRange): Paragraph | null {
+		const content: AnyInline[] = []
 
-		const section = this.parsers.Section.parse(text)
-		if(section) { content.push(section) }
-		
-		return new MfMContainer(this.idGenerator.nextId(), text, this, content)
+		const textElement = this.parsers.Text.parse(text)
+		if(textElement != null) { content.push(textElement) }
+
+		return new MfMParagraph(this.idGenerator.nextId(), text, this, content)
 	}
 }
