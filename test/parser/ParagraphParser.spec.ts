@@ -17,15 +17,16 @@ limitations under the License.
 import { TextContent } from "../../src/mbuffer/TextContent"
 import { Parsers } from "../../src/parser/Parsers"
 
-describe('ContainerParser', () => {
-	it('parses empty text into empty containter with one empty section', () => {
-		const parser = new Parsers().Container
+describe('ParagraphParser', () => {
+	it('Parses the complete text into a paragraph when it does not contain any newlines', () => {
+		const parser = new Parsers().Paragraph
 		const textContent = new TextContent('some text')
 
-		const container = parser.parse(textContent.asRange())
+		const paragraph = parser.parse(textContent.asRange())
 
-		expect(container?.content).toHaveLength(1)
-		const content = container!.content[0]
-		expect(content).toHaveProperty('type', 'Section')
+		expect(paragraph?.content).toHaveLength(1)
+		const content = paragraph!.content[0]
+		expect(content).toHaveProperty('type', 'Text')
+		expect(content).toHaveProperty('content', 'some text')
 	})
 })

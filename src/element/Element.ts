@@ -32,5 +32,7 @@ export interface Element<
 
 	readonly parsedWith: Parser<TYPE, THIS>,
 	readonly parsedRange: TextRange,
+
+	asText: () => string,
 }
 
