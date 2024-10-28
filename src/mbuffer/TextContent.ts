@@ -18,18 +18,35 @@ import { ContentUpdate } from "./ContentUpdate"
 import { MBuffer } from "./MBuffer"
 import { TextRange } from "./TextRange"
 
+export interface UpdateInfo {
+	replacedText: string,
+	newText: string,
+	range: TextRange,
+}
 export class TextContent {
 	private buffer: MBuffer
 	constructor(text: string) {
 		this.buffer = new MBuffer(text)
 	}
 
-	update(cu: ContentUpdate) {
+	update(cu: ContentUpdate): UpdateInfo {
+		const replacedRange = this.buffer.range(cu.rangeOffset, cu.rangeOffset+cu.rangeLength)
+		const replacedText = replacedRange.asString()
+		const newText = cu.text
+
 		if(cu.rangeLength > 0) {
 			this.buffer.delete(cu.rangeOffset, cu.rangeLength)
 		}
 		if(cu.text.length > 0) {
 			this.buffer.insert(cu.text, cu.rangeOffset)
+		}
+
+		const range = new TextRange(this.buffer.location(cu.rangeOffset), replacedRange.end)
+
+		return {
+			replacedText,
+			newText,
+			range,
 		}
 	}
 

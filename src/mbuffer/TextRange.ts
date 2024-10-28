@@ -57,6 +57,13 @@ export class TextLocation {
 		return !this.isEqualTo(other) && !this.isBefore(other)
 	}
 
+	isAtLeast(other: TextLocation) {
+		return this.isEqualTo(other) || this.isAfter(other)
+	}
+	isAtMost(other: TextLocation) {
+		return this.isEqualTo(other) || this.isBefore(other)
+	}
+	
 	accessor(): TextAccessor {
 		if(this._buffer!==undefined && this._index!==undefined) {
 			return new TextAccessor(this._buffer, this._index)

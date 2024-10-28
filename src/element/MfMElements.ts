@@ -18,40 +18,39 @@ import { Element } from "./Element"
 
 export interface InlineElement<
 	TYPE extends string,
-	THIS extends InlineElement<TYPE, THIS>,
-> extends Element<TYPE, THIS> {}
+	CONTENT extends Element<any, any, any>,
+	THIS extends InlineElement<TYPE, CONTENT, THIS>,
+> extends Element<TYPE, CONTENT, THIS> {}
 export interface LeafInline<
 	TYPE extends string,
 	THIS extends LeafInline<TYPE, THIS>,
-> extends InlineElement<TYPE, THIS> {
-	readonly content: string,
+> extends InlineElement<TYPE, never, THIS> {
+	readonly textContent: string,
 }
 export interface ContainerInline<
 	TYPE extends string,
 	THIS extends ContainerInline<TYPE, THIS>,
-> extends InlineElement<TYPE, THIS> {
-	readonly content: AnyInline[],
+> extends InlineElement<TYPE, AnyInline, THIS> {
 }
 
 export interface ContainerElement<
 	TYPE extends string,
-	THIS extends ContainerElement<TYPE, THIS>,
-> extends Element<TYPE, THIS> {}
+	CONTENT extends Element<any, any, any>,
+	THIS extends ContainerElement<TYPE, CONTENT, THIS>,
+> extends Element<TYPE, CONTENT, THIS> {}
 export interface LeafContainer<
 	TYPE extends string,
 	THIS extends LeafContainer<TYPE, THIS>,
-> extends ContainerElement<TYPE, THIS> {
-	readonly content: AnyInline[],
+> extends ContainerElement<TYPE, AnyInline, THIS> {
 }
 export interface BlockContainer<
 	TYPE extends string,
 	THIS extends BlockContainer<TYPE, THIS>,
-> extends ContainerElement<TYPE, THIS> {
-	readonly content: AnyBlock[],
+> extends ContainerElement<TYPE, AnyBlock, THIS> {
 }
 
-export type AnyInline = InlineElement<keyof InlineTypes, InlineTypes[keyof InlineTypes]>
-export type AnyBlock = ContainerElement<keyof ContainerTypes, ContainerTypes[keyof ContainerTypes]>
+export type AnyInline = InlineElement<keyof InlineTypes, AnyInline | never, InlineTypes[keyof InlineTypes]>
+export type AnyBlock = ContainerElement<keyof ContainerTypes, AnyBlock | AnyInline, ContainerTypes[keyof ContainerTypes]>
 
 export type InlineTypes = {
 	'Text': Text,

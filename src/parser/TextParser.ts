@@ -14,12 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Text } from "../element/MfMElements";
+import { AnyInline, Text } from "../element/MfMElements";
 import { TextRange } from "../mbuffer/TextRange";
 import { MfMParser } from "./MfMParser";
 
 export class MfMText implements Text {
 	readonly type = 'Text'
+	readonly content: never[] = []
 
 	constructor(
 		public readonly id: string,
@@ -27,7 +28,7 @@ export class MfMText implements Text {
 		public readonly parsedWith: TextParser,
 	) {}
 
-	get content() {
+	get textContent() {
 		//This function does not cache the string yet - an optimization
 		//that might be necessary in the future. But not now ;)
 		return this.parsedRange.asString()
@@ -37,7 +38,7 @@ export class MfMText implements Text {
 		return this.parsedRange.asString()
 	}
 }
-export class TextParser extends MfMParser<'Text', Text> {
+export class TextParser extends MfMParser<'Text', never, Text> {
 	parse(text: TextRange): Text | null {
 		return new MfMText(this.idGenerator.nextId(), text, this)
 	}

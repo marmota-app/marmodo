@@ -27,6 +27,6 @@ describe('ParagraphParser', () => {
 		expect(paragraph?.content).toHaveLength(1)
 		const content = paragraph!.content[0]
 		expect(content).toHaveProperty('type', 'Text')
-		expect(content).toHaveProperty('content', 'some text')
+		expect(content).toHaveProperty('textContent', 'some text')
 	})
 })

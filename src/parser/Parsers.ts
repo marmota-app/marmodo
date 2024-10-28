@@ -21,7 +21,7 @@ import { SectionParser } from './SectionParser'
 import { TextParser } from './TextParser'
 
 export class Parsers {
-	private knownParsers: { [key: string]: Parser<any, any> } = {}
+	private knownParsers: { [key: string]: Parser<any, any, any> } = {}
 	private idGenerator = new IdGenerator()
 
 	get Container(): ContainerParser { return this.getParser('Container', () => new ContainerParser(this.idGenerator, this)) }
@@ -33,8 +33,9 @@ export class Parsers {
 
 	private getParser<
 		TYPE extends string,
-		ELEMENT extends Element<TYPE, ELEMENT>,
-		PARSER extends Parser<TYPE, ELEMENT>
+		CONTENT extends Element<any, any, any>,
+		ELEMENT extends Element<TYPE, CONTENT, ELEMENT>,
+		PARSER extends Parser<TYPE, CONTENT, ELEMENT>
 	>(
 		elementType: TYPE,
 		createElementParser: () => PARSER

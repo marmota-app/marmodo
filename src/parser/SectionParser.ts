@@ -34,7 +34,7 @@ export class MfMSection implements Section {
 			.join('')
 	}
 }
-export class SectionParser extends MfMParser<'Section', Section> {
+export class SectionParser extends MfMParser<'Section', AnyBlock, Section> {
 	parse(text: TextRange): Section | null {
 		const content: AnyBlock[] = []
 

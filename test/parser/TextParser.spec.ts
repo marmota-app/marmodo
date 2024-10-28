@@ -23,6 +23,6 @@ describe('TextParser', () => {
 
 		const text = new Parsers().Text.parse(textContent.asRange())
 
-		expect(text?.content).toEqual('some text')
+		expect(text?.textContent).toEqual('some text')
 	})
 })
