@@ -18,21 +18,24 @@ import { TextRange } from "../mbuffer/TextRange";
 
 export interface Parser<
 	TYPE extends string,
-	ELEMENT extends Element<TYPE, ELEMENT>,
+	CONTENT extends Element<any, any, any>,
+	ELEMENT extends Element<TYPE, CONTENT, ELEMENT>,
 > {
-	parse: (text: TextRange) => Element<TYPE, ELEMENT> | null,
+	parse: (text: TextRange) => Element<TYPE, CONTENT, ELEMENT> | null,
 }
 
 export interface Element<
 	TYPE extends string,
-	THIS extends Element<TYPE, THIS>,
+	CONTENT extends Element<any, any, any>,
+	THIS extends Element<TYPE, CONTENT, THIS>,
 > {
 	readonly id: string,
 	readonly type: TYPE,
 
-	readonly parsedWith: Parser<TYPE, THIS>,
+	readonly parsedWith: Parser<TYPE, CONTENT, THIS>,
 	readonly parsedRange: TextRange,
 
 	asText: () => string,
+	readonly content: CONTENT[],
 }
 

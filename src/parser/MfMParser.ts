@@ -20,10 +20,11 @@ import { IdGenerator, Parsers } from './Parsers'
 
 export abstract class MfMParser<
 	TYPE extends string,
-	ELEMENT extends Element<TYPE, ELEMENT>,
-> implements Parser<TYPE, ELEMENT> {
+	CONTENT extends Element<any, any, any>,
+	ELEMENT extends Element<TYPE, CONTENT, ELEMENT>,
+> implements Parser<TYPE, CONTENT, ELEMENT> {
 	constructor(protected readonly idGenerator: IdGenerator, protected readonly parsers: Parsers) {}
 
-	abstract parse(text: TextRange): Element<TYPE, ELEMENT> | null;
+	abstract parse(text: TextRange): Element<TYPE, CONTENT, ELEMENT> | null;
 }
 

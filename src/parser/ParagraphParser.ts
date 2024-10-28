@@ -34,7 +34,7 @@ export class MfMParagraph implements Paragraph {
 			.join('')
 	}
 }
-export class ParagraphParser extends MfMParser<'Paragraph', Paragraph> {
+export class ParagraphParser extends MfMParser<'Paragraph', AnyInline, Paragraph> {
 	parse(text: TextRange): Paragraph | null {
 		const content: AnyInline[] = []
 

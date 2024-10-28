@@ -15,6 +15,11 @@ limitations under the License.
 */
 
 import { MfMDocument } from "../src/MfMDocument"
+import { UpdateParser } from "../src/update/UpdateParser"
+
+class TestUpdateParser extends UpdateParser {
+	override parseUpdate() { return null }
+}
 
 describe('MfMDocument', () => {
 	it('can parse a simple document with a single line', () => {
@@ -26,5 +31,30 @@ describe('MfMDocument', () => {
 		const document = new MfMDocument('the quick brown fox jumps over the lazy dog')
 
 		expect(document.text).toEqual('the quick brown fox jumps over the lazy dog')
+	})
+
+	describe('parsing updates', () => {
+		it('re-parses the document when the update parser returns null', () => {
+			const document = new MfMDocument('the quick fox jumps over the lazy dog', {
+				updateParser: new TestUpdateParser()
+			})
+
+			document.update(
+				{text: ' brown', rangeOffset: 'the quick'.length, rangeLength: 0},
+				() => 'the complete document'
+			)
+
+			expect(document.text).toEqual('the complete document')
+		})
+		it.skip('parses an update', () => {
+			const document = new MfMDocument('the quick fox jumps over the lazy dog')
+
+			document.update(
+				{text: ' brown', rangeOffset: 'the quick'.length, rangeLength: 0},
+				() => 'unused'
+			)
+
+			expect(document.text).toEqual('the quick brown fox jumps over the lazy dog')
+		})
 	})
 })

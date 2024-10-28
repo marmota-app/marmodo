@@ -15,7 +15,9 @@ limitations under the License.
 */
 
 import { TextContent } from "../../src/mbuffer/TextContent"
+import { TextRange } from "../../src/mbuffer/TextRange"
 
+const assume = expect
 
 describe('TextContent', () => {
 	it('can get back the original text after init', () => {
@@ -48,6 +50,24 @@ describe('TextContent', () => {
 		content.update({ text: 'red', rangeOffset: 'the '.length, rangeLength: 'quick brown'.length })
 
 		expect(content.text()).toEqual('the red fox jumps over the lazy dog')
+	})
+
+	it('returns the replaced range and replaced text after an update', () => {
+		const content = new TextContent('the quick brown fox jumps over the lazy dog')
+		const completeRange = content.asRange()
+
+		const updateInfo = content.update({ text: 'red', rangeOffset: 'the '.length, rangeLength: 'quick brown'.length })
+
+		assume(content.text()).toEqual('the red fox jumps over the lazy dog')
+		expect(updateInfo.replacedText).toEqual('quick brown')
+		expect(updateInfo.newText).toEqual('red')
+		expect(updateInfo.range.asString()).toEqual('red')
+
+		const rangeUntilReplacement = new TextRange(completeRange.start, updateInfo.range.start)
+		const rangeAfterReplacement = new TextRange(updateInfo.range.end, completeRange.end)
+
+		expect(rangeUntilReplacement.asString()).toEqual('the ')
+		expect(rangeAfterReplacement.asString()).toEqual(' fox jumps over the lazy dog')
 	})
 
 	it('can get a range for the whole text', () => {

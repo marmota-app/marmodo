@@ -34,7 +34,7 @@ export class MfMContainer implements Container {
 			.join('')
 	}
 }
-export class ContainerParser extends MfMParser<'Container', Container> {
+export class ContainerParser extends MfMParser<'Container', AnyBlock, Container> {
 	parse(text: TextRange): Container | null {
 		const content: AnyBlock[] = []
 

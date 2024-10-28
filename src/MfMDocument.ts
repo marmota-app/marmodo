@@ -15,22 +15,35 @@ limitations under the License.
 */
 
 import { Container } from "./element/MfMElements";
-import { MBuffer } from "./mbuffer/MBuffer";
+import { ContentUpdate } from "./mbuffer/ContentUpdate";
+import { TextContent } from "./mbuffer/TextContent";
 import { Parsers } from "./parser/Parsers";
+import { UpdateParser } from "./update/UpdateParser";
 
+export interface MfMDocumentOptions {
+	parsers: Parsers,
+	updateParser: UpdateParser,
+}
 export class MfMDocument {
-	#parsers = new Parsers()
-	#buffer: MBuffer
+	#parsers: Parsers
+	#updateParser: UpdateParser
+	#textContent: TextContent
 	#content: Container
 
-	constructor(initialText: string) {
-		this.#buffer = new MBuffer(initialText)
-		const parsedContent = this.#parsers.Container.parse(this.#buffer.range(0, this.#buffer.length))
-
-		if(parsedContent == null) {
-			throw new Error(`Could not parse document - This is an implementation error, since every document should be parsable!`)
+	constructor(initialText: string, options: Partial<MfMDocumentOptions> = {}) {
+		const defaultOptions: MfMDocumentOptions = {
+			parsers: new Parsers(),
+			updateParser: new UpdateParser(),
 		}
-		this.#content = parsedContent
+		const allOptions: MfMDocumentOptions = {
+			...defaultOptions,
+			...options,
+		}
+		this.#parsers = allOptions.parsers
+		this.#updateParser = allOptions.updateParser
+
+		this.#textContent = new TextContent('')
+		this.#content = this.#parseCompleteText(initialText)
 	}
 
 	get content(): Container {
@@ -38,5 +51,20 @@ export class MfMDocument {
 	}
 	get text(): string {
 		return this.#content.asText()
+	}
+
+	update(cu: ContentUpdate, getCompleteText: () => string): void {
+		//const updated = this.#updateParser.parseUpdate(cu, this.#content)
+
+		this.#content = this.#parseCompleteText(getCompleteText())
+	}
+
+	#parseCompleteText(text: string): Container {
+		this.#textContent = new TextContent(text)
+		const parsedContent = this.#parsers.Container.parse(this.#textContent.asRange())
+		if(parsedContent == null) {
+			throw new Error(`Could not parse document - This is an implementation error, since every document should be parsable!`)
+		}
+		return parsedContent
 	}
 }
