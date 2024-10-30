@@ -54,6 +54,7 @@ export type AnyBlock = ContainerElement<keyof ContainerTypes, AnyBlock | AnyInli
 
 export type InlineTypes = {
 	'Text': Text,
+	'BlankLine': BlankLine,
 }
 export type ContainerTypes = {
 	'Container': Container,
@@ -68,3 +69,4 @@ export interface Section extends BlockContainer<'Section', Section> {}
 export interface Paragraph extends LeafContainer<'Paragraph', Paragraph> {}
 
 export interface Text extends LeafInline<'Text', Text> {}
+export interface BlankLine extends LeafInline<'BlankLine', BlankLine> {}

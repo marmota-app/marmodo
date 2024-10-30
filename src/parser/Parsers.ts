@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 import { Element, Parser } from '../element/Element'
+import { BlankLineParser } from './BlankLineParser'
 import { ContainerParser } from './ContainerParser'
 import { ParagraphParser } from './ParagraphParser'
 import { SectionParser } from './SectionParser'
@@ -30,6 +31,7 @@ export class Parsers {
 	get Paragraph(): ParagraphParser { return this.getParser('Paragraph', () => new ParagraphParser(this.idGenerator, this)) }
 
 	get Text() { return this.getParser('Text', () => new TextParser(this.idGenerator, this)) }
+	get BlankLine() { return this.getParser('BlankLine', () => new BlankLineParser(this.idGenerator, this)) }
 
 	private getParser<
 		TYPE extends string,
