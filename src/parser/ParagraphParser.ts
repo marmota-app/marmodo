@@ -38,6 +38,11 @@ export class ParagraphParser extends MfMParser<'Paragraph', AnyInline, Paragraph
 	parse(text: TextRange): Paragraph | null {
 		const content: AnyInline[] = []
 
+		const nextNewline = text.findNext(['\r\n', '\r', '\n'])
+		if(nextNewline != null) {
+			//Try to parse a blank line here...
+		}
+
 		const textElement = this.parsers.Text.parse(text)
 		if(textElement != null) { content.push(textElement) }
 

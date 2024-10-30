@@ -16,7 +16,17 @@ limitations under the License.
 
 import { MBuffer } from "./MBuffer";
 
-export class TextLocation {
+export interface Location {
+	readonly buffer: MBuffer,
+	readonly index: number,
+
+	isEqualTo: (other: Location) => boolean,
+	isBefore: (other: Location) => boolean,
+	isAfter: (other: Location) => boolean,
+	isAtLeast: (other: Location) => boolean,
+	isAtMost: (other: Location) => boolean,
+}
+export class TextLocation implements Location {
 	constructor(protected _buffer: MBuffer | undefined, protected _index: number | undefined) {
 		//TODO bounds checks necessary?
 		_buffer?.registerLocation(this)
@@ -31,38 +41,11 @@ export class TextLocation {
 		throw new Error(`Cannot get index of invalid location (buffer: {${this._buffer?.info()}}, index: ${this._index})`)
 	}
 
-	isEqualTo(other: TextLocation): boolean {
-		return this.buffer===other.buffer && this.index===other.index
-	}
-
-	isBefore(other: TextLocation): boolean {
-		const isSameBuffer = this.buffer === other.buffer
-		if(isSameBuffer) {
-			return this.index < other.index
-		} else {
-			let sameBufferAfterThis = false
-			let b: MBuffer = this.buffer
-
-			while(!sameBufferAfterThis && b.nextBuffer) {
-				b = b.nextBuffer
-				sameBufferAfterThis = b===other.buffer
-			}
-
-			if(sameBufferAfterThis) { return true }
-		}
-		return false
-	}
-
-	isAfter(other: TextLocation): boolean {
-		return !this.isEqualTo(other) && !this.isBefore(other)
-	}
-
-	isAtLeast(other: TextLocation) {
-		return this.isEqualTo(other) || this.isAfter(other)
-	}
-	isAtMost(other: TextLocation) {
-		return this.isEqualTo(other) || this.isBefore(other)
-	}
+	isEqualTo: (other: Location)=>boolean = _isEqualTo.bind(this)
+	isBefore: (other: Location)=>boolean = _isBefore.bind(this)
+	isAfter: (other: Location)=>boolean = _isAfter.bind(this)
+	isAtLeast: (other: Location)=>boolean = _isAtLeast.bind(this)
+	isAtMost: (other: Location)=>boolean = _isAtMost.bind(this)
 	
 	accessor(): TextAccessor {
 		if(this._buffer!==undefined && this._index!==undefined) {
@@ -92,21 +75,49 @@ export class TextLocation {
 	}
 }
 
-export class TextAccessor extends TextLocation {
-	constructor(_buffer: MBuffer, _index: number) {
-		while(_index >= _buffer.length && _buffer.nextBuffer) {
-			_buffer = _buffer.nextBuffer
-			_index = 0
+export class TextAccessor implements Location {
+	constructor(private _buffer: MBuffer, private _index: number) {
+		while(this._index >= this._buffer.length && this._buffer.nextBuffer) {
+			this._buffer = this._buffer.nextBuffer
+			this._index = 0
 		}
-		super(_buffer, _index)
+	}
+
+	get buffer(): MBuffer {
+		if(this._buffer !== undefined) { return this._buffer }
+		throw new Error(`Cannot get buffer of invalid location (buffer: {undefined}, index: ${this._index})`)
+	}
+	get index(): number {
+		if(this._index !== undefined) { return this._index }
+		throw new Error(`Cannot get index of invalid location (buffer: {${this._buffer?.info()}}, index: ${this._index})`)
 	}
 
 	isInRange(end: TextLocation): boolean {
 		return this.isBefore(end)
 	}
+
+	isEqualTo: (other: Location)=>boolean = _isEqualTo.bind(this)
+	isBefore: (other: Location)=>boolean = _isBefore.bind(this)
+	isAfter: (other: Location)=>boolean = _isAfter.bind(this)
+	isAtLeast: (other: Location)=>boolean = _isAtLeast.bind(this)
+	isAtMost: (other: Location)=>boolean = _isAtMost.bind(this)
 	
 	get(): string {
-		return this.buffer.at(this.index)
+		return this._buffer.at(this._index)
+	}
+
+	is(other: string | string[]): boolean {
+		const char = this._buffer.at(this._index)
+
+		if(Array.isArray(other)) {
+			for(const o of other) {
+				if(o === char) { return true }
+			}	
+		} else {
+			if(other === char) { return true }
+		}
+
+		return false
 	}
 
 	advance(): void {
@@ -115,8 +126,8 @@ export class TextAccessor extends TextLocation {
 		}
 		this._index++
 
-		while(this.index >= this.buffer.length && this.buffer.nextBuffer) {
-			this._buffer = this.buffer.nextBuffer
+		while(this._index >= this._buffer.length && this._buffer.nextBuffer) {
+			this._buffer = this._buffer.nextBuffer
 			this._index = 0
 		}
 	}
@@ -143,4 +154,43 @@ export class TextRange {
 	get isValid(): boolean {
 		return this.start.isValid && this.end.isValid
 	}
+
+	findNext(toFind: string[]): TextRange | null {
+		return null
+	}
+
+	rangeUntil(location: Location): TextRange {
+		const end = new TextLocation(location.buffer, location.index)
+		return new TextRange(this.start, end)
+	}
+}
+
+function _isBefore(this: Location, other: Location) {
+	const isSameBuffer = this.buffer === other.buffer
+	if(isSameBuffer) {
+		return this.index < other.index
+	} else {
+		let sameBufferAfterThis = false
+		let b: MBuffer = this.buffer
+
+		while(!sameBufferAfterThis && b.nextBuffer) {
+			b = b.nextBuffer
+			sameBufferAfterThis = b===other.buffer
+		}
+
+		if(sameBufferAfterThis) { return true }
+	}
+	return false
+}
+function _isEqualTo(this: Location, other: Location): boolean {
+	return this.buffer===other.buffer && this.index===other.index
+}
+function _isAfter(this: Location, other: Location): boolean {
+	return !this.isEqualTo(other) && !this.isBefore(other)
+}
+function _isAtLeast(this: Location, other: Location) {
+	return this.isEqualTo(other) || this.isAfter(other)
+}
+function _isAtMost(this: Location, other: Location) {
+	return this.isEqualTo(other) || this.isBefore(other)
 }
