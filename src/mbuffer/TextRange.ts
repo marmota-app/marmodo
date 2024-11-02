@@ -155,13 +155,59 @@ export class TextRange {
 		return this.start.isValid && this.end.isValid
 	}
 
-	findNext(toFind: string[]): TextRange | null {
-		return null
-	}
-
 	rangeUntil(location: Location): TextRange {
 		const end = new TextLocation(location.buffer, location.index)
 		return new TextRange(this.start, end)
+	}
+
+	findNext(toFind: string | string[]): TextRange | null {
+		//straight-forward implementation without considering any optimization
+		//opportunities yet...
+		interface FoundStatus {
+			text: string,
+			index: number,
+			startBuffer: MBuffer | null,
+			startIndex: number
+		}
+		const foundStatus: FoundStatus[] = Array.isArray(toFind)?
+			toFind.map(s => ({
+				text: s,
+				index: 0,
+				startBuffer: null,
+				startIndex: 0,
+			})):
+			[{
+				text: toFind,
+				index: 0,
+				startBuffer: null,
+				startIndex: 0,
+			}]
+		const accessor = this.start.accessor()
+
+		while(accessor.isInRange(this.end)) {
+			const current = accessor.get()
+			for(const status of foundStatus) {
+				if(status.text[status.index] === current) {
+					if(status.startBuffer == null) {
+						status.startBuffer = accessor.buffer
+						status.startIndex = accessor.index
+					}
+					status.index++
+					if(status.index === status.text.length) {
+						accessor.advance()
+						const start = new TextLocation(status.startBuffer, status.startIndex)
+						const end = new TextLocation(accessor.buffer, accessor.index)
+						return new TextRange(start, end)
+					}
+				} else {
+					status.startBuffer = null
+					status.index = 0
+				}
+			}
+			accessor.advance()
+		}
+
+		return null
 	}
 }
 
