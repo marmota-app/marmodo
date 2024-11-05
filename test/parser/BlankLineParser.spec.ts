@@ -23,7 +23,7 @@ describe('BlankLineParser', () => {
 		const parser = new Parsers().BlankLine
 		const textContent = new TextContent(' \t\n')
 
-		const result = parser.parse(textContent.asRange())
+		const result = parser.parse(textContent.start(), textContent.end())
 
 		expect(result).not.toBeNull()
 		expect(result?.textContent).toEqual(' \t\n')
@@ -37,7 +37,7 @@ describe('BlankLineParser', () => {
 		const parser = new Parsers().BlankLine
 		const textContent = new TextContent(t)
 	
-		const result = parser.parse(textContent.asRange())
+		const result = parser.parse(textContent.start(), textContent.end())
 
 		expect(result).toBeNull()
 	}));
@@ -53,7 +53,7 @@ describe('BlankLineParser', () => {
 		const parser = new Parsers().BlankLine
 		const textContent = new TextContent(t[0])
 
-		const result = parser.parse(textContent.asRange())
+		const result = parser.parse(textContent.start(), textContent.end())
 
 		expect(result).not.toBeNull()
 		expect(result?.textContent).toEqual(t[1])

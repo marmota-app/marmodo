@@ -63,7 +63,7 @@ export class UpdateParser {
 			//if the drilled down element could not be updated, update it here
 			const parser = currentElement.parsedWith
 			const range = currentElement.parsedRange
-			const updated = parser.parse(range) as (E | null)
+			const updated = parser.parse(range.start, range.end) as (E | null)
 
 			//TODO check whether it's fully parsed
 			//TODO check whether the original range was fully parsed

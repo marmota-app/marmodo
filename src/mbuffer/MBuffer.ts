@@ -14,11 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { TextLocation } from "./TextLocation"
-import { TextRange } from "./TextRange"
+import { PersistentLocation, TemporaryLocation } from "./TextLocation"
 
 export class MBuffer {
-	private locations: TextLocation[] = []
+	private locations: PersistentLocation[] = []
 	private previous?: MBuffer
 	private next?: MBuffer
 
@@ -79,7 +78,7 @@ export class MBuffer {
 			next._length -= charsToDelete
 
 			//update locations that are after the deleted content
-			const remainingLocations: TextLocation[] = []
+			const remainingLocations: PersistentLocation[] = []
 			for(let location of this.locations) {
 				if(location.buffer !== this) {
 					throw new Error(`Invalid location found registered in this buffer ("${this.buffered}" [${this._start}, ${this._length}]) but pointing to buffer "${location.buffer.buffered}" [${location.buffer._start}, ${location.buffer._length}]`)
@@ -105,13 +104,6 @@ export class MBuffer {
 		return this.buffered.charAt(this._start+index)
 	}
 
-	range(start: number, end: number): TextRange {
-		const startLocation = this.location(start)
-		const endLocation = this.location(end)
-
-		return new TextRange(startLocation, endLocation)
-	}
-
 	contentAsString(): string {
 		return this.buffered.substring(this._start, this._start + this._length)
 	}
@@ -135,16 +127,16 @@ export class MBuffer {
 		return this.previous
 	}
 
-	registerLocation(location: TextLocation): void {
+	registerLocation(location: PersistentLocation): void {
 		if(this.locations.find(l => l === location)) {
 			throw new Error(`Cannot register location ${location.index} at buffer "${this.buffered}" [${this._start}, ${this._length}] - Already registered!`)
 		}
 		this.locations.push(location)
 	}
 
-	location(index: number): TextLocation {
+	location(index: number): TemporaryLocation {
 		if(index <= this._length) {
-			return new TextLocation(this, index)
+			return new TemporaryLocation(this, index)
 		} else {
 			if(this.next) {
 				return this.next.location(index - this._length)
@@ -164,7 +156,7 @@ export class MBuffer {
 	}
 
 	private updateLocationsAfterInsert(insertedAt: number, inserted: MBuffer, last?: MBuffer) {
-		const remainingLocations: TextLocation[] = []
+		const remainingLocations: PersistentLocation[] = []
 
 		for(let location of this.locations) {
 			if(location.buffer !== this) {

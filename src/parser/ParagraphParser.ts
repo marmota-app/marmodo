@@ -15,7 +15,8 @@ limitations under the License.
 */
 
 import { AnyInline, Paragraph } from "../element/MfMElements";
-import { TextRange, Range, } from "../mbuffer/TextRange";
+import { TextLocation } from "../mbuffer/TextLocation";
+import { PersistentRange, TextRange, } from "../mbuffer/TextRange";
 import { MfMParser } from "./MfMParser";
 
 export class MfMParagraph implements Paragraph {
@@ -23,7 +24,7 @@ export class MfMParagraph implements Paragraph {
 
 	constructor(
 		public readonly id: string,
-		public readonly parsedRange: TextRange,
+		public readonly parsedRange: PersistentRange,
 		public readonly parsedWith: ParagraphParser,
 		public readonly content: AnyInline[],
 	) {}
@@ -35,10 +36,10 @@ export class MfMParagraph implements Paragraph {
 	}
 }
 export class ParagraphParser extends MfMParser<'Paragraph', AnyInline, Paragraph> {
-	parse(text: Range): Paragraph | null {
+	parse(start: TextLocation, end: TextLocation): Paragraph | null {
 		const content: AnyInline[] = []
 
-		const nextNewline = text.findNext(['\r', '\n'])
+		const nextNewline = start.findNext(['\r', '\n'], end)
 		if(nextNewline != null) {
 			//If it is '\r', try to skip a following '\n'
 			if(nextNewline.start.get() === '\r' && nextNewline.end.get() === '\n') {
@@ -47,22 +48,20 @@ export class ParagraphParser extends MfMParser<'Paragraph', AnyInline, Paragraph
 			
 			//Try to parse a blank line here...
 			const nextParseLocation = nextNewline.end
-			const nextRange = text.rangeFrom(nextParseLocation)
-			const blankLine = this.parsers.BlankLine.parse(nextRange)
+			const blankLine = this.parsers.BlankLine.parse(nextParseLocation, end)
 
 			if(blankLine !== null) {
-				const contentRange = text.rangeUntil(nextNewline.end)
-				const textElement = this.parsers.Text.parse(contentRange)
+				const textElement = this.parsers.Text.parse(start, nextNewline.end)
 				if(textElement != null) { content.push(textElement) }
 				content.push(blankLine)
 
-				return new MfMParagraph(this.idGenerator.nextId(), text.textRangeUntil(blankLine.parsedRange.end), this, content)
+				return new MfMParagraph(this.idGenerator.nextId(), start.persistentRangeUntil(blankLine.parsedRange.end), this, content)
 			}
 		}
 
-		const textElement = this.parsers.Text.parse(text)
+		const textElement = this.parsers.Text.parse(start, end)
 		if(textElement != null) { content.push(textElement) }
 
-		return new MfMParagraph(this.idGenerator.nextId(), text.fullTextRange(), this, content)
+		return new MfMParagraph(this.idGenerator.nextId(), start.persistentRangeUntil(end), this, content)
 	}
 }

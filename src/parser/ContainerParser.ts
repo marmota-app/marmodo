@@ -15,7 +15,8 @@ limitations under the License.
 */
 
 import { AnyBlock, Container } from "../element/MfMElements"
-import { TextRange, Range, } from "../mbuffer/TextRange"
+import { TextLocation } from "../mbuffer/TextLocation"
+import { PersistentRange, TextRange, } from "../mbuffer/TextRange"
 import { MfMParser } from "./MfMParser"
 
 export class MfMContainer implements Container {
@@ -23,7 +24,7 @@ export class MfMContainer implements Container {
 
 	constructor(
 		public readonly id: string,
-		public readonly parsedRange: TextRange,
+		public readonly parsedRange: PersistentRange,
 		public readonly parsedWith: ContainerParser,
 		public readonly content: AnyBlock[],
 	) {}
@@ -35,12 +36,12 @@ export class MfMContainer implements Container {
 	}
 }
 export class ContainerParser extends MfMParser<'Container', AnyBlock, Container> {
-	parse(text: Range): Container | null {
+	parse(start: TextLocation, end: TextLocation): Container | null {
 		const content: AnyBlock[] = []
 
-		const section = this.parsers.Section.parse(text)
+		const section = this.parsers.Section.parse(start, end)
 		if(section) { content.push(section) }
 		
-		return new MfMContainer(this.idGenerator.nextId(), text.fullTextRange(), this, content)
+		return new MfMContainer(this.idGenerator.nextId(), start.persistentRangeUntil(end), this, content)
 	}
 }

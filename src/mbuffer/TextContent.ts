@@ -16,12 +16,13 @@ limitations under the License.
 
 import { ContentUpdate } from "./ContentUpdate"
 import { MBuffer } from "./MBuffer"
-import { TextRange } from "./TextRange"
+import { TemporaryLocation } from "./TextLocation"
+import { PersistentRange } from "./TextRange"
 
 export interface UpdateInfo {
 	replacedText: string,
 	newText: string,
-	range: TextRange,
+	range: PersistentRange,
 }
 export class TextContent {
 	private buffer: MBuffer
@@ -30,8 +31,9 @@ export class TextContent {
 	}
 
 	update(cu: ContentUpdate): UpdateInfo {
-		const replacedRange = this.buffer.range(cu.rangeOffset, cu.rangeOffset+cu.rangeLength)
-		const replacedText = replacedRange.asString()
+		const start = this.buffer.location(cu.rangeOffset).persist()
+		const end = this.buffer.location(cu.rangeOffset+cu.rangeLength).persist()
+		const replacedText = start.stringUntil(end)
 		const newText = cu.text
 
 		if(cu.rangeLength > 0) {
@@ -41,7 +43,12 @@ export class TextContent {
 			this.buffer.insert(cu.text, cu.rangeOffset)
 		}
 
-		const range = new TextRange(this.buffer.location(cu.rangeOffset), replacedRange.end)
+		//When the range was deleted completely and start === end, then
+		//inserting text will move the start pointer together with the end
+		//(one cannot insert into an empty range). So, we have to get the
+		//new start pointer after the update here, as updatedStart.
+		const updatedStart = this.buffer.location(cu.rangeOffset).persist()
+		const range = new PersistentRange(updatedStart, end)
 
 		return {
 			replacedText,
@@ -54,7 +61,10 @@ export class TextContent {
 		return this.buffer.asString()
 	}
 
-	asRange(): TextRange {
-		return this.buffer.range(0, this.buffer.length)
+	start(): TemporaryLocation {
+		return this.buffer.location(0)
+	}
+	end(): TemporaryLocation {
+		return this.buffer.location(this.buffer.length)
 	}
 }

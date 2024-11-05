@@ -15,13 +15,17 @@ limitations under the License.
 */
 
 import { MBuffer } from "../../src/mbuffer/MBuffer"
+import { PersistentRange } from "../../src/mbuffer/TextRange"
 
+function createRange(buffer: MBuffer, start: number, end: number): PersistentRange {
+	return buffer.location(start).persistentRangeUntil(buffer.location(end))
+}
 describe('TextRange', () => {
 	it('gets back a substring from a buffer when something was inserted', () => {
 		const buffer = new MBuffer('the quick fox jumps over the lazy dog')
 		buffer.insert(' brown', 'the quick'.length)
 		
-		const range = buffer.range('the '.length, 'the quick brown fox'.length)
+		const range = createRange(buffer, 'the '.length, 'the quick brown fox'.length)
 
 		expect(range.asString()).toEqual('quick brown fox')
 	})
@@ -29,7 +33,7 @@ describe('TextRange', () => {
 	it('gets back a substring from a buffer when something was inserted AFTER getting the range', () => {
 		const buffer = new MBuffer('the quick fox jumps over the lazy dog')
 		
-		const range = buffer.range('the '.length, 'the quick fox'.length)
+		const range = createRange(buffer, 'the '.length, 'the quick fox'.length)
 		buffer.insert(' brown', 'the quick'.length)
 
 		expect(range.asString()).toEqual('quick brown fox')
@@ -38,7 +42,7 @@ describe('TextRange', () => {
 	it('gets back a substring from a buffer when something was inserted TWICE AFTER getting the range', () => {
 		const buffer = new MBuffer('the quick fox jumps over the dog')
 		
-		const range = buffer.range('the '.length, 'the quick fox jumps over the dog'.length)
+		const range = createRange(buffer, 'the '.length, 'the quick fox jumps over the dog'.length)
 		buffer.insert(' brown', 'the quick'.length)
 		buffer.insert(' lazy', 'the quick brown fox jumps over the'.length)
 
@@ -48,7 +52,7 @@ describe('TextRange', () => {
 	it('gets back a substring after inserting at the end of the range', () => {
 		const buffer = new MBuffer('the quick brown jumps over the dog')
 		
-		const range = buffer.range('the '.length, 'the quick brown'.length)
+		const range = createRange(buffer, 'the '.length, 'the quick brown'.length)
 		buffer.insert(' fox', 'the quick brown'.length)
 
 		expect(range.asString()).toEqual('quick brown fox')
@@ -56,7 +60,7 @@ describe('TextRange', () => {
 	it('gets back a substring after inserting at the end of the string', () => {
 		const buffer = new MBuffer('the quick brown')
 		
-		const range = buffer.range('the '.length, 'the quick brown'.length)
+		const range = createRange(buffer, 'the '.length, 'the quick brown'.length)
 		buffer.insert(' fox', 'the quick brown'.length)
 
 		expect(range.asString()).toEqual('quick brown fox')
@@ -64,7 +68,7 @@ describe('TextRange', () => {
 	it('gets back a substring after inserting at the end of the string (after an insert)', () => {
 		const buffer = new MBuffer('the brown')
 		
-		const range = buffer.range(''.length, 'the brown'.length)
+		const range = createRange(buffer, ''.length, 'the brown'.length)
 		buffer.insert(' quick', 'the'.length)
 		buffer.insert(' fox', 'the quick brown'.length)
 
@@ -77,7 +81,7 @@ describe('TextRange', () => {
 			const buffer = new MBuffer('tg')
 			buffer.insert('ho', 't'.length)
 			buffer.insert('ed', 'th'.length)
-			buffer.insert('  ', 'the'.length)
+			buffer.insert(' ', 'the'.length)
 			buffer.insert('qy', 'the '.length)
 			buffer.insert('uz', 'the q'.length)
 			buffer.insert('ia', 'the qu'.length)
@@ -101,14 +105,14 @@ describe('TextRange', () => {
 		it('gets back a substring from a buffer ['+i+']', () => {
 			const buffer = createBuffer()
 			
-			const range = buffer.range('the '.length, 'the quick brown fox'.length)
+			const range = createRange(buffer, 'the '.length, 'the quick brown fox'.length)
 	
 			expect(range.asString()).toEqual('quick brown fox')
 		})
 		it('gets back a substring from a buffer after inserting ['+i+']', () => {
 			const buffer = createBuffer()
 			
-			const range = buffer.range('the '.length, 'the quick brown fox'.length)
+			const range = createRange(buffer, 'the '.length, 'the quick brown fox'.length)
 			buffer.insert('red-', 'the quick '.length)
 	
 			expect(range.asString()).toEqual('quick red-brown fox')
@@ -117,7 +121,7 @@ describe('TextRange', () => {
 		it('gets back the correct range when deleting content after the range ['+i+']', () => {
 			const buffer = createBuffer()
 			
-			const range = buffer.range('the '.length, 'the quick brown fox'.length)
+			const range = createRange(buffer, 'the '.length, 'the quick brown fox'.length)
 			buffer.delete('the quick brown fox jumps'.length, ' over the lazy dog'.length)
 	
 			expect(range.asString()).toEqual('quick brown fox')
@@ -125,7 +129,7 @@ describe('TextRange', () => {
 		it('gets back the correct range when deleting content RIGHT after the range ['+i+']', () => {
 			const buffer = createBuffer()
 			
-			const range = buffer.range('the '.length, 'the quick brown fox'.length)
+			const range = createRange(buffer, 'the '.length, 'the quick brown fox'.length)
 			buffer.delete('the quick brown fox'.length, ' jumps over the lazy dog'.length)
 	
 			expect(range.asString()).toEqual('quick brown fox')
@@ -133,7 +137,7 @@ describe('TextRange', () => {
 		it('gets back the correct range when deleting content in the middle of the range ['+i+']', () => {
 			const buffer = createBuffer()
 			
-			const range = buffer.range('the '.length, 'the quick brown fox'.length)
+			const range = createRange(buffer, 'the '.length, 'the quick brown fox'.length)
 			buffer.delete('the quick '.length, 'brown '.length)
 	
 			expect(range.asString()).toEqual('quick fox')
@@ -141,7 +145,7 @@ describe('TextRange', () => {
 		it('gets back the correct range when deleting content in the middle of the range, right after the start ['+i+']', () => {
 			const buffer = createBuffer()
 			
-			const range = buffer.range('the '.length, 'the quick brown fox'.length)
+			const range = createRange(buffer, 'the '.length, 'the quick brown fox'.length)
 			buffer.delete('the '.length, 'quick '.length)
 	
 			expect(range.asString()).toEqual('brown fox')
@@ -149,7 +153,7 @@ describe('TextRange', () => {
 		it('gets back the correct range when deleting content in the middle of the range, right before the end ['+i+']', () => {
 			const buffer = createBuffer()
 			
-			const range = buffer.range('the '.length, 'the quick brown fox'.length)
+			const range = createRange(buffer, 'the '.length, 'the quick brown fox'.length)
 			buffer.delete('the quick brown'.length, ' fox'.length)
 	
 			expect(range.asString()).toEqual('quick brown')
@@ -157,7 +161,7 @@ describe('TextRange', () => {
 		it('gets back the correct range when deleting content before the range ['+i+']', () => {
 			const buffer = createBuffer()
 			
-			const range = buffer.range('the '.length, 'the quick brown fox'.length)
+			const range = createRange(buffer, 'the '.length, 'the quick brown fox'.length)
 			buffer.delete(''.length, 'the'.length)
 	
 			expect(range.asString()).toEqual('quick brown fox')
@@ -165,7 +169,7 @@ describe('TextRange', () => {
 		it('gets back the correct range when deleting content before the range, up-to the start ['+i+']', () => {
 			const buffer = createBuffer()
 			
-			const range = buffer.range('the '.length, 'the quick brown fox'.length)
+			const range = createRange(buffer, 'the '.length, 'the quick brown fox'.length)
 			buffer.delete(''.length, 'the '.length)
 	
 			expect(range.asString()).toEqual('quick brown fox')
@@ -175,75 +179,17 @@ describe('TextRange', () => {
 	it('invalidates the range when deleting the start of the range', () => {
 		const buffer = new MBuffer('the quick brown fox jumps over the lazy dog')
 
-		const range = buffer.range('the '.length, 'the quick brown fox'.length)
+		const range = createRange(buffer, 'the '.length, 'the quick brown fox'.length)
 		buffer.delete(''.length, 'the q'.length)
 
-		expect(range.isValid).toEqual(false)
+		expect(() => range.ensureValid()).toThrow()
 	})
 	it('invalidates the range when deleting the end of the range', () => {
 		const buffer = new MBuffer('the quick brown fox jumps over the lazy dog')
 
-		const range = buffer.range('the '.length, 'the quick brown fox'.length)
+		const range = createRange(buffer, 'the '.length, 'the quick brown fox'.length)
 		buffer.delete('the quick brown fo'.length, 'x jumps'.length)
 
-		expect(range.isValid).toEqual(false)
-	})
-
-	it('can find one of the given strings inside a range', () => {
-		const buffer = new MBuffer('the quick brown fox jumps over the lazy dog')
-		const range = buffer.range(0, buffer.length)
-
-		const found = range.findNext(['brown', 'quick'])
-
-		expect(found).not.toBeNull()
-		expect(found?.asString()).toEqual('quick')
-		expect(found?.start.index).toEqual('the '.length)
-		expect(found?.end.index).toEqual('the quick'.length)
-	})
-	it('returns null when the given string is not found', () => {
-		const buffer = new MBuffer('the quick brown fox jumps over the lazy dog')
-		const range = buffer.range(0, buffer.length)
-
-		const found = range.findNext(['dinosaur', 'bird'])
-
-		expect(found).toBeNull()
-	})
-	it('can find a single string inside a range', () => {
-		const buffer = new MBuffer('the quick brown fox jumps over the lazy dog')
-		const range = buffer.range(0, buffer.length)
-
-		const found = range.findNext('quick')
-
-		expect(found).not.toBeNull()
-		expect(found?.asString()).toEqual('quick')
-		expect(found?.start.index).toEqual('the '.length)
-		expect(found?.end.index).toEqual('the quick'.length)
-	})
-	it('finds a word correctly when there is a different partial match before', () => {
-		const buffer = new MBuffer('the quick frog quacks')
-		const range = buffer.range(0, buffer.length)
-
-		const found = range.findNext('quack')
-
-		expect(found).not.toBeNull()
-		expect(found?.asString()).toEqual('quack')
-		expect(found?.start.index).toEqual('the quick frog '.length)
-		expect(found?.end.index).toEqual('the quick frog quack'.length)
-	})
-	it('does not find text that is outside of the range', () => {
-		const buffer = new MBuffer('the quick brown fox jumps over the lazy dog')
-		const range = buffer.range(0, 'the quick brown fox ju'.length)
-
-		const found = range.findNext(['dog', 'lazy'])
-
-		expect(found).toBeNull()
-	})
-	it('does not find text that is partially outside of the range', () => {
-		const buffer = new MBuffer('the quick brown fox jumps over the lazy dog')
-		const range = buffer.range(0, 'the quick brown fox ju'.length)
-
-		const found = range.findNext('jumps')
-
-		expect(found).toBeNull()
+		expect(() => range.ensureValid()).toThrow()
 	})
 })

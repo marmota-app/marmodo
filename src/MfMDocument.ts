@@ -61,7 +61,7 @@ export class MfMDocument {
 
 	#parseCompleteText(text: string): Container {
 		this.#textContent = new TextContent(text)
-		const parsedContent = this.#parsers.Container.parse(this.#textContent.asRange())
+		const parsedContent = this.#parsers.Container.parse(this.#textContent.start(), this.#textContent.end())
 		if(parsedContent == null) {
 			throw new Error(`Could not parse document - This is an implementation error, since every document should be parsable!`)
 		}
