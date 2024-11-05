@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AnyInline, Text } from "../element/MfMElements";
-import { TextRange } from "../mbuffer/TextRange";
+import { Text } from "../element/MfMElements";
+import { TextRange, Range, } from "../mbuffer/TextRange";
 import { MfMParser } from "./MfMParser";
 
 export class MfMText implements Text {
@@ -39,7 +39,7 @@ export class MfMText implements Text {
 	}
 }
 export class TextParser extends MfMParser<'Text', never, Text> {
-	parse(text: TextRange): Text | null {
-		return new MfMText(this.idGenerator.nextId(), text, this)
+	parse(text: Range): Text | null {
+		return new MfMText(this.idGenerator.nextId(), text.fullTextRange(), this)
 	}
 }

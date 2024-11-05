@@ -14,7 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { TextLocation, TextRange } from "./TextRange"
+import { TextLocation } from "./TextLocation"
+import { TextRange } from "./TextRange"
 
 export class MBuffer {
 	private locations: TextLocation[] = []

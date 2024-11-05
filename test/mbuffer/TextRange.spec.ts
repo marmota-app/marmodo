@@ -219,7 +219,7 @@ describe('TextRange', () => {
 		expect(found?.start.index).toEqual('the '.length)
 		expect(found?.end.index).toEqual('the quick'.length)
 	})
-	it('finds a word correctly when there is a different parial match before', () => {
+	it('finds a word correctly when there is a different partial match before', () => {
 		const buffer = new MBuffer('the quick frog quacks')
 		const range = buffer.range(0, buffer.length)
 

@@ -33,27 +33,43 @@ describe('ParagraphParser', () => {
 		});
 	
 		[
-			'\n',
-			//'\r\n',
-			//' \n',
-			//'\t   \t \t\r\n'
-		].forEach(blankLine => it.skip(`ends the current paragraph at blank line "${replaceWhitespace(blankLine)}"`, () => {
+			['\n', '\n',],
+			['\r\n', '\r\n',],
+			['\n', ' \n',],
+			['\n', '\t   \t \t\r\n',],
+		].forEach(([newLine, blankLine]) => it(`ends the current paragraph at blank line "${replaceWhitespace(blankLine)}"`, () => {
 			const parser = new Parsers().Paragraph
-			const textContent = new TextContent('some text\n\nmore text')
+			const textContent = new TextContent(`some text${newLine}${blankLine}more text`)
 	
 			const paragraph = parser.parse(textContent.asRange())
 	
-			expect(paragraph?.parsedRange.asString()).toEqual('some text\n\n')
+			expect(paragraph?.parsedRange.asString()).toEqual(`some text${newLine}${blankLine}`)
 	
-			expect(paragraph?.content).toHaveLength(3)
+			expect(paragraph?.content).toHaveLength(2)
 			const content = paragraph!.content[0]
 			expect(content).toHaveProperty('type', 'Text')
-			expect(content).toHaveProperty('textContent', 'some text')
+			expect(content).toHaveProperty('textContent', `some text${newLine}`)
 	
-			expect(paragraph!.content[1]).toHaveProperty('type', 'NewLine')
-			expect(paragraph!.content[2]).toHaveProperty('type', 'BlankLine')
-			expect(paragraph!.content[2]).toHaveProperty('textContent', blankLine)
+			expect(paragraph!.content[1]).toHaveProperty('type', 'BlankLine')
+			expect(paragraph!.content[1]).toHaveProperty('textContent', blankLine)
 		}))
+
+		it(`ends the current paragraph at blank line after multiple lines`, () => {
+			const parser = new Parsers().Paragraph
+			const textContent = new TextContent(`some text\nsome text\nsome text\n\nmore text`)
+	
+			const paragraph = parser.parse(textContent.asRange())
+	
+			expect(paragraph?.parsedRange.asString()).toEqual(`some text\nsome text\nsome text\n\n`)
+	
+			expect(paragraph?.content).toHaveLength(2)
+			const content = paragraph!.content[0]
+			expect(content).toHaveProperty('type', 'Text')
+			expect(content).toHaveProperty('textContent', `some text\nsome text\nsome text\n`)
+	
+			expect(paragraph!.content[1]).toHaveProperty('type', 'BlankLine')
+			expect(paragraph!.content[1]).toHaveProperty('textContent', '\n')
+		})
 	})
 
 	describe('parsing updates', () => {
