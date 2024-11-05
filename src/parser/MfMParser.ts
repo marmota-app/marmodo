@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 import { Element, Parser } from "../element/Element"
-import { TextRange } from "../mbuffer/TextRange"
+import { Range } from "../mbuffer/TextRange"
 import { IdGenerator, Parsers } from './Parsers'
 
 export abstract class MfMParser<
@@ -25,6 +25,6 @@ export abstract class MfMParser<
 > implements Parser<TYPE, CONTENT, ELEMENT> {
 	constructor(protected readonly idGenerator: IdGenerator, protected readonly parsers: Parsers) {}
 
-	abstract parse(text: TextRange): Element<TYPE, CONTENT, ELEMENT> | null;
+	abstract parse(text: Range): Element<TYPE, CONTENT, ELEMENT> | null;
 }
 

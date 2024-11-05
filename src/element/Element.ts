@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { TextRange } from "../mbuffer/TextRange";
+import { Range, TextRange, } from "../mbuffer/TextRange";
 
 export interface Parser<
 	TYPE extends string,
 	CONTENT extends Element<any, any, any>,
 	ELEMENT extends Element<TYPE, CONTENT, ELEMENT>,
 > {
-	parse: (text: TextRange) => Element<TYPE, CONTENT, ELEMENT> | null,
+	parse: (text: Range) => Element<TYPE, CONTENT, ELEMENT> | null,
 }
 
 export interface Element<

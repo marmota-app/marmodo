@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 import { AnyBlock, Section } from "../element/MfMElements";
-import { TextRange } from "../mbuffer/TextRange";
+import { TextRange, Range, } from "../mbuffer/TextRange";
 import { MfMParser } from "./MfMParser";
 
 export class MfMSection implements Section {
@@ -35,12 +35,12 @@ export class MfMSection implements Section {
 	}
 }
 export class SectionParser extends MfMParser<'Section', AnyBlock, Section> {
-	parse(text: TextRange): Section | null {
+	parse(text: Range): Section | null {
 		const content: AnyBlock[] = []
 
 		const paragraph = this.parsers.Paragraph.parse(text)
 		if(paragraph) { content.push(paragraph) }
 		
-		return new MfMSection(this.idGenerator.nextId(), text, this, content)
+		return new MfMSection(this.idGenerator.nextId(), text.fullTextRange(), this, content)
 	}
 }

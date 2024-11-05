@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 import { BlankLine } from "../element/MfMElements";
-import { TextRange } from "../mbuffer/TextRange";
+import { Range, TextRange } from "../mbuffer/TextRange";
 import { MfMParser } from "./MfMParser";
 
 export class MfMBlankLine implements BlankLine {
@@ -40,7 +40,7 @@ export class MfMBlankLine implements BlankLine {
 }
 
 export class BlankLineParser extends MfMParser<'BlankLine', never, BlankLine> {
-	parse(text: TextRange): BlankLine | null {
+	parse(text: Range): BlankLine | null {
 		const current = text.start.accessor()
 
 		while(current.isInRange(text.end) && current.is([' ', '\t'])) {
@@ -52,11 +52,11 @@ export class BlankLineParser extends MfMParser<'BlankLine', never, BlankLine> {
 			if(current.isInRange(text.end) && current.is('\n')) {
 				current.advance()
 			}
-			return new MfMBlankLine(this.idGenerator.nextId(), text.rangeUntil(current), this)
+			return new MfMBlankLine(this.idGenerator.nextId(), text.textRangeUntil(current), this)
 		}
 		if(current.isInRange(text.end) && current.is('\n')) {
 			current.advance()
-			return new MfMBlankLine(this.idGenerator.nextId(), text.rangeUntil(current), this)
+			return new MfMBlankLine(this.idGenerator.nextId(), text.textRangeUntil(current), this)
 		}
 
 		return null
