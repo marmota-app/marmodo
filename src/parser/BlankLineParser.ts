@@ -15,7 +15,8 @@ limitations under the License.
 */
 
 import { BlankLine } from "../element/MfMElements";
-import { Range, TextRange } from "../mbuffer/TextRange";
+import { TextLocation } from "../mbuffer/TextLocation";
+import { TextRange, PersistentRange } from "../mbuffer/TextRange";
 import { MfMParser } from "./MfMParser";
 
 export class MfMBlankLine implements BlankLine {
@@ -24,7 +25,7 @@ export class MfMBlankLine implements BlankLine {
 
 	constructor(
 		public readonly id: string,
-		public readonly parsedRange: TextRange,
+		public readonly parsedRange: PersistentRange,
 		public readonly parsedWith: BlankLineParser,
 	) {}
 
@@ -40,23 +41,23 @@ export class MfMBlankLine implements BlankLine {
 }
 
 export class BlankLineParser extends MfMParser<'BlankLine', never, BlankLine> {
-	parse(text: Range): BlankLine | null {
-		const current = text.start.accessor()
+	parse(start: TextLocation, end: TextLocation): BlankLine | null {
+		const current = start.accessor()
 
-		while(current.isInRange(text.end) && current.is([' ', '\t'])) {
+		while(current.isInRange(end) && current.is([' ', '\t'])) {
 			current.advance()
 		}
 
-		if(current.isInRange(text.end) && current.is('\r')) {
+		if(current.isInRange(end) && current.is('\r')) {
 			current.advance()
-			if(current.isInRange(text.end) && current.is('\n')) {
+			if(current.isInRange(end) && current.is('\n')) {
 				current.advance()
 			}
-			return new MfMBlankLine(this.idGenerator.nextId(), text.textRangeUntil(current), this)
+			return new MfMBlankLine(this.idGenerator.nextId(), start.persistentRangeUntil(current), this)
 		}
-		if(current.isInRange(text.end) && current.is('\n')) {
+		if(current.isInRange(end) && current.is('\n')) {
 			current.advance()
-			return new MfMBlankLine(this.idGenerator.nextId(), text.textRangeUntil(current), this)
+			return new MfMBlankLine(this.idGenerator.nextId(), start.persistentRangeUntil(current), this)
 		}
 
 		return null

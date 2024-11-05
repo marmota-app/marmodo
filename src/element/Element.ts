@@ -14,14 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Range, TextRange, } from "../mbuffer/TextRange";
+import { TextLocation } from "../mbuffer/TextLocation";
+import { PersistentRange, } from "../mbuffer/TextRange";
 
 export interface Parser<
 	TYPE extends string,
 	CONTENT extends Element<any, any, any>,
 	ELEMENT extends Element<TYPE, CONTENT, ELEMENT>,
 > {
-	parse: (text: Range) => Element<TYPE, CONTENT, ELEMENT> | null,
+	parse: (start: TextLocation, end: TextLocation) => Element<TYPE, CONTENT, ELEMENT> | null,
 }
 
 export interface Element<
@@ -33,7 +34,7 @@ export interface Element<
 	readonly type: TYPE,
 
 	readonly parsedWith: Parser<TYPE, CONTENT, THIS>,
-	readonly parsedRange: TextRange,
+	readonly parsedRange: PersistentRange,
 
 	asText: () => string,
 	readonly content: CONTENT[],

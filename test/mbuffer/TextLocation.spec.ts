@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 import { MBuffer } from "../../src/mbuffer/MBuffer"
+import { PersistentRange } from "../../src/mbuffer/TextRange"
 
 function createBuffer(): MBuffer {
 	const buffer = new MBuffer('thedog')
@@ -120,5 +121,69 @@ describe('TextLocation', () => {
 
 			expect(first.isAfter(second)).toEqual(false)
 		})
+	})
+
+	describe('finding strings', () => {
+		function createRange(buffer: MBuffer, start: number, end: number): PersistentRange {
+			return buffer.location(start).persistentRangeUntil(buffer.location(end))
+		}
+		
+		it('can find one of the given strings inside a range', () => {
+			const buffer = new MBuffer('the quick brown fox jumps over the lazy dog')
+			const range = createRange(buffer, 0, buffer.length)
+	
+			const found = range.start.findNext(['brown', 'quick'], range.end)
+	
+			expect(found).not.toBeNull()
+			expect(found?.asString()).toEqual('quick')
+			expect(found?.start.index).toEqual('the '.length)
+			expect(found?.end.index).toEqual('the quick'.length)
+		})
+		it('returns null when the given string is not found', () => {
+			const buffer = new MBuffer('the quick brown fox jumps over the lazy dog')
+			const range = createRange(buffer, 0, buffer.length)
+	
+			const found = range.start.findNext(['dinosaur', 'bird'], range.end)
+	
+			expect(found).toBeNull()
+		})
+		it('can find a single string inside a range', () => {
+			const buffer = new MBuffer('the quick brown fox jumps over the lazy dog')
+			const range = createRange(buffer, 0, buffer.length)
+	
+			const found = range.start.findNext('quick', range.end)
+	
+			expect(found).not.toBeNull()
+			expect(found?.asString()).toEqual('quick')
+			expect(found?.start.index).toEqual('the '.length)
+			expect(found?.end.index).toEqual('the quick'.length)
+		})
+		it('finds a word correctly when there is a different partial match before', () => {
+			const buffer = new MBuffer('the quick frog quacks')
+			const range = createRange(buffer, 0, buffer.length)
+	
+			const found = range.start.findNext('quack', range.end)
+	
+			expect(found).not.toBeNull()
+			expect(found?.asString()).toEqual('quack')
+			expect(found?.start.index).toEqual('the quick frog '.length)
+			expect(found?.end.index).toEqual('the quick frog quack'.length)
+		})
+		it('does not find text that is outside of the range', () => {
+			const buffer = new MBuffer('the quick brown fox jumps over the lazy dog')
+			const range = createRange(buffer, 0, 'the quick brown fox ju'.length)
+	
+			const found = range.start.findNext(['dog', 'lazy'], range.end)
+	
+			expect(found).toBeNull()
+		})
+		it('does not find text that is partially outside of the range', () => {
+			const buffer = new MBuffer('the quick brown fox jumps over the lazy dog')
+			const range = createRange(buffer, 0, 'the quick brown fox ju'.length)
+	
+			const found = range.start.findNext('jumps', range.end)
+	
+			expect(found).toBeNull()
+		})	
 	})
 })

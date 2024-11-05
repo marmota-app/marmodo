@@ -22,7 +22,7 @@ describe('SectionParser', () => {
 		const parser = new Parsers().Section
 		const textContent = new TextContent('some text')
 
-		const section = parser.parse(textContent.asRange())
+		const section = parser.parse(textContent.start(), textContent.end())
 
 		expect(section?.content).toHaveLength(1)
 		const content = section!.content[0]

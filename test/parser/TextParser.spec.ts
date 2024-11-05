@@ -21,7 +21,7 @@ describe('TextParser', () => {
 	it('parses complete text', () => {
 		const textContent = new TextContent('some text')
 
-		const text = new Parsers().Text.parse(textContent.asRange())
+		const text = new Parsers().Text.parse(textContent.start(), textContent.end())
 
 		expect(text?.textContent).toEqual('some text')
 	})

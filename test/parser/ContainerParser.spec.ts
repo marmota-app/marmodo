@@ -22,7 +22,7 @@ describe('ContainerParser', () => {
 		const parser = new Parsers().Container
 		const textContent = new TextContent('some text')
 
-		const container = parser.parse(textContent.asRange())
+		const container = parser.parse(textContent.start(), textContent.end())
 
 		expect(container?.content).toHaveLength(1)
 		const content = container!.content[0]

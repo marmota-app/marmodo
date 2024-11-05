@@ -15,22 +15,123 @@ limitations under the License.
 */
 
 import { MBuffer } from "./MBuffer"
+import { PersistentRange, TemporaryRange } from "./TextRange"
 
-export interface Location {
-	readonly buffer: MBuffer,
-	readonly index: number,
+export abstract class TextLocation {
+	abstract readonly buffer: MBuffer
+	abstract readonly index: number
+	abstract ensureValid(message: string): void
 
-	isEqualTo: (other: Location) => boolean,
-	isBefore: (other: Location) => boolean,
-	isAfter: (other: Location) => boolean,
-	isAtLeast: (other: Location) => boolean,
-	isAtMost: (other: Location) => boolean,
-	isInRange: (end: Location) => boolean,
+	isBefore(other: TextLocation) {
+		const isSameBuffer = this.buffer === other.buffer
+		if(isSameBuffer) {
+			return this.index < other.index
+		} else {
+			let sameBufferAfterThis = false
+			let b: MBuffer = this.buffer
+	
+			while(!sameBufferAfterThis && b.nextBuffer) {
+				b = b.nextBuffer
+				sameBufferAfterThis = b===other.buffer
+			}
+	
+			if(sameBufferAfterThis) { return true }
+		}
+		return false
+	}
+	isEqualTo(other: TextLocation): boolean {
+		return this.buffer===other.buffer && this.index===other.index
+	}
+	isAfter(other: TextLocation): boolean {
+		return !this.isEqualTo(other) && !this.isBefore(other)
+	}
+	isAtLeast(other: TextLocation) {
+		return this.isEqualTo(other) || this.isAfter(other)
+	}
+	isAtMost(other: TextLocation) {
+		return this.isEqualTo(other) || this.isBefore(other)
+	}
+	isInRange(end: TextLocation): boolean {
+		return this.isBefore(end)
+	}
+	
+	abstract accessor(): TemporaryLocation
+	abstract persist(): PersistentLocation
+	abstract persistentRangeUntil(end: TextLocation): PersistentRange
 
-	accessor: () => TextAccessor,
+	stringUntil(end: TextLocation): string {
+		this.ensureValid('Cannot create string from invalid start location')
+		end.ensureValid('Cannot create string from invalid end location')
+		if(!end.isAtLeast(this)) {
+			throw new Error(`Cannot create string, end location is not after this location [buffer: {${this.buffer?.info()}}, index: {${this.index}}]`)
+		}
+
+		let result = ''
+
+		const currentLocation = this.accessor()
+		while(currentLocation.isInRange(end)) {
+			result += currentLocation.get()
+			currentLocation.advance()
+		}
+	
+		return result
+	}
+
+	findNext(toFind: string | string[], until: TextLocation): (TemporaryRange | null) {
+		//straight-forward implementation without considering any optimization
+		//opportunities yet...
+		interface FoundStatus {
+			text: string,
+			index: number,
+			startBuffer: MBuffer | null,
+			startIndex: number
+		}
+		const foundStatus: FoundStatus[] = Array.isArray(toFind)?
+			toFind.map(s => ({
+				text: s,
+				index: 0,
+				startBuffer: null,
+				startIndex: 0,
+			})):
+			[{
+				text: toFind,
+				index: 0,
+				startBuffer: null,
+				startIndex: 0,
+			}]
+		const accessor = this.accessor()
+	
+		while(accessor.isInRange(until)) {
+			const current = accessor.get()
+			for(const status of foundStatus) {
+				if(status.text[status.index] === current) {
+					if(status.startBuffer == null) {
+						status.startBuffer = accessor.buffer
+						status.startIndex = accessor.index
+					}
+					status.index++
+					if(status.index === status.text.length) {
+						accessor.advance()
+						const start = new TemporaryLocation(status.startBuffer, status.startIndex)
+						const end = new TemporaryLocation(accessor.buffer, accessor.index)
+						return new TemporaryRange(start, end)
+					}
+				} else {
+					status.startBuffer = null
+					status.index = 0
+				}
+			}
+			accessor.advance()
+		}
+	
+		return null
+	}
+	
 }
-export class TextLocation implements Location {
-	constructor(protected _buffer: MBuffer | undefined, protected _index: number | undefined) {
+export class PersistentLocation extends TextLocation {
+	constructor(private _buffer: MBuffer | undefined, private _index: number | undefined) {
+		super()
+
 		//TODO bounds checks necessary?
 		_buffer?.registerLocation(this)
 	}
@@ -44,18 +145,24 @@ export class TextLocation implements Location {
 		throw new Error(`Cannot get index of invalid location (buffer: {${this._buffer?.info()}}, index: ${this._index})`)
 	}
 
-	isEqualTo: (other: Location)=>boolean = _isEqualTo.bind(this)
-	isBefore: (other: Location)=>boolean = _isBefore.bind(this)
-	isAfter: (other: Location)=>boolean = _isAfter.bind(this)
-	isAtLeast: (other: Location)=>boolean = _isAtLeast.bind(this)
-	isAtMost: (other: Location)=>boolean = _isAtMost.bind(this)
-	isInRange: (other: Location)=>boolean = _isInRange.bind(this)
-
-	accessor(): TextAccessor {
+	accessor(): TemporaryLocation {
 		if(this._buffer!==undefined && this._index!==undefined) {
-			return new TextAccessor(this._buffer, this._index)
+			return new TemporaryLocation(this._buffer, this._index)
 		}
 		throw new Error(`Cannot get accessor of invalid location (buffer: {${this._buffer?.info()}}, index: ${this._index})`)
+	}
+	persist(): PersistentLocation {
+		this.ensureValid('Cannot get persistent location of invalid location')
+		return this
+	}
+	persistentRangeUntil(end: TextLocation): PersistentRange {
+		this.ensureValid('Cannot get persistent range of invalid location')
+		end.ensureValid('Cannot get persistent range to invalid end location')
+		if(!end.isAtLeast(this)) {
+			throw new Error(`Cannot get persistent location when end is not after this location [buffer: {${this._buffer?.info()}}, index: {${this._index}}]`)
+		}
+
+		return new PersistentRange(this, end.persist())
 	}
 
 	update(newBuffer: MBuffer, newIndex: number) {
@@ -69,8 +176,10 @@ export class TextLocation implements Location {
 		}
 	}
 
-	get isValid(): boolean {
-		return this._buffer !== undefined && this.index !== undefined
+	ensureValid(message: string) {
+		if(this._buffer === undefined || this._index === undefined) {
+			throw new Error(`${message} [buffer: {${this._buffer?.info}}, index: {${this.index}}]`)
+		}
 	}
 
 	invalidate() {
@@ -79,8 +188,9 @@ export class TextLocation implements Location {
 	}
 }
 
-export class TextAccessor implements Location {
+export class TemporaryLocation extends TextLocation {
 	constructor(private _buffer: MBuffer, private _index: number) {
+		super()
 		while(this._index >= this._buffer.length && this._buffer.nextBuffer) {
 			this._buffer = this._buffer.nextBuffer
 			this._index = 0
@@ -95,16 +205,14 @@ export class TextAccessor implements Location {
 		if(this._index !== undefined) { return this._index }
 		throw new Error(`Cannot get index of invalid location (buffer: {${this._buffer?.info()}}, index: ${this._index})`)
 	}
+	ensureValid(message: string) {
+		//if(buffer has been modified) {
+		//	throw new Error(`${message} [buffer: "${this._buffer?.info}", index: "${this.index}"]`)
+		//}
+	}
 
-	isEqualTo: (other: Location)=>boolean = _isEqualTo.bind(this)
-	isBefore: (other: Location)=>boolean = _isBefore.bind(this)
-	isAfter: (other: Location)=>boolean = _isAfter.bind(this)
-	isAtLeast: (other: Location)=>boolean = _isAtLeast.bind(this)
-	isAtMost: (other: Location)=>boolean = _isAtMost.bind(this)
-	isInRange: (other: Location)=>boolean = _isInRange.bind(this)
-	
-	accessor(): TextAccessor {
-		return new TextAccessor(this._buffer, this._index)
+	accessor(): TemporaryLocation {
+		return new TemporaryLocation(this._buffer, this._index)
 	}
 
 	get(): string {
@@ -136,37 +244,18 @@ export class TextAccessor implements Location {
 			this._index = 0
 		}
 	}
-}
 
-function _isBefore(this: Location, other: Location) {
-	const isSameBuffer = this.buffer === other.buffer
-	if(isSameBuffer) {
-		return this.index < other.index
-	} else {
-		let sameBufferAfterThis = false
-		let b: MBuffer = this.buffer
-
-		while(!sameBufferAfterThis && b.nextBuffer) {
-			b = b.nextBuffer
-			sameBufferAfterThis = b===other.buffer
+	persist(): PersistentLocation {
+		this.ensureValid('Cannot get persistent location of invalid location')
+		return new PersistentLocation(this._buffer, this._index)
+	}
+	persistentRangeUntil(end: TextLocation): PersistentRange {
+		this.ensureValid('Cannot get persistent range of invalid location')
+		end.ensureValid('Cannot get persistent range to invalid end location')
+		if(!end.isAtLeast(this)) {
+			throw new Error(`Cannot get persistent location when end is not after this location [buffer: {${this._buffer?.info()}}, index: {${this._index}]}`)
 		}
 
-		if(sameBufferAfterThis) { return true }
+		return new PersistentRange(this.persist(), end.persist())
 	}
-	return false
-}
-function _isEqualTo(this: Location, other: Location): boolean {
-	return this.buffer===other.buffer && this.index===other.index
-}
-function _isAfter(this: Location, other: Location): boolean {
-	return !this.isEqualTo(other) && !this.isBefore(other)
-}
-function _isAtLeast(this: Location, other: Location) {
-	return this.isEqualTo(other) || this.isAfter(other)
-}
-function _isAtMost(this: Location, other: Location) {
-	return this.isEqualTo(other) || this.isBefore(other)
-}
-function _isInRange(this: Location, end: Location): boolean {
-	return this.isBefore(end)
 }

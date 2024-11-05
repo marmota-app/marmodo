@@ -15,138 +15,40 @@ limitations under the License.
 */
 
 import { MBuffer } from "./MBuffer";
-import { Location, TextAccessor, TextLocation } from "./TextLocation";
+import { TextLocation, TemporaryLocation, PersistentLocation } from "./TextLocation";
 
-export interface Range {
-	readonly start: Location,
-	readonly end: Location,
-	readonly isValid: boolean,
+export abstract class TextRange {
+	abstract readonly start: TextLocation
+	abstract readonly end: TextLocation
 
-	findNext: (toFind: string | string[]) => AccessorRange | null,
+	asString(): string {
+		this.start.ensureValid('Range not valid! Start:')
+		this.end.ensureValid('Range not valid! End:')
 
-	rangeFrom: (location: Location) => AccessorRange,
-	rangeUntil: (location: Location) => AccessorRange,
-
-	fullTextRange: () => TextRange,
-	textRangeUntil: (location: Location) => TextRange,
-}
-export class TextRange implements Range {
-	constructor(public readonly start: TextLocation, public readonly end: TextLocation) {}
-
-	asString = _asString.bind(this)
-	findNext: (toFind: string | string[]) => AccessorRange | null = _findNext.bind(this)
-
-	get isValid(): boolean {
-		return this.start.isValid && this.end.isValid
-	}
-
-	rangeFrom: (location: Location) => AccessorRange = _rangeFrom.bind(this)
-	rangeUntil: (location: Location) => AccessorRange = _rangeUntil.bind(this)
-
-	fullTextRange(): TextRange {
-		return this
-	}
-	textRangeUntil(location: Location): TextRange {
-		const end = new TextLocation(location.buffer, location.index)
-		return new TextRange(this.start, end)
-	}
-}
-
-export class AccessorRange implements Range {
-	constructor(public readonly start: TextAccessor, public readonly end: TextAccessor) {}
-	readonly isValid = true
-
-	asString = _asString.bind(this)
-	findNext: (toFind: string | string[]) => AccessorRange | null = _findNext.bind(this)
-
-	rangeFrom: (location: Location) => AccessorRange = _rangeFrom.bind(this)
-	rangeUntil: (location: Location) => AccessorRange = _rangeUntil.bind(this)
-
-	fullTextRange(): TextRange {
-		const start = new TextLocation(this.start.buffer, this.start.index)
-		const end = new TextLocation(this.end.buffer, this.end.index)
-		return new TextRange(start, end)
-	}
-	textRangeUntil(location: Location): TextRange {
-		const start = new TextLocation(this.start.buffer, this.start.index)
-		const end = new TextLocation(location.buffer, location.index)
-		return new TextRange(start, end)
-	}
-}
-
-function _rangeFrom(this: Range, location: Location): AccessorRange {
-	return new AccessorRange(
-		location.accessor(),
-		this.end.accessor()
-	)
-}
-function _rangeUntil(this: Range, location: Location): AccessorRange {
-	return new AccessorRange(
-		this.start.accessor(),
-		location.accessor(),
-	)
-}
-
-function _asString(this: Range): string {
-	if(!this.isValid) {
-		throw new Error(`Range not valid! (start: "${this.start.buffer.asString()}", end: "${this.end.buffer.asString}")`)
-	}
-	let result = ''
-
-	const currentLocation = this.start.accessor()
-	while(currentLocation.isInRange(this.end)) {
-		result += currentLocation.get()
-		currentLocation.advance()
-	}
-
-	return result
-}
-function _findNext(this: Range, toFind: string | string[]): (AccessorRange | null) {
-	//straight-forward implementation without considering any optimization
-	//opportunities yet...
-	interface FoundStatus {
-		text: string,
-		index: number,
-		startBuffer: MBuffer | null,
-		startIndex: number
-	}
-	const foundStatus: FoundStatus[] = Array.isArray(toFind)?
-		toFind.map(s => ({
-			text: s,
-			index: 0,
-			startBuffer: null,
-			startIndex: 0,
-		})):
-		[{
-			text: toFind,
-			index: 0,
-			startBuffer: null,
-			startIndex: 0,
-		}]
-	const accessor = this.start.accessor()
-
-	while(accessor.isInRange(this.end)) {
-		const current = accessor.get()
-		for(const status of foundStatus) {
-			if(status.text[status.index] === current) {
-				if(status.startBuffer == null) {
-					status.startBuffer = accessor.buffer
-					status.startIndex = accessor.index
-				}
-				status.index++
-				if(status.index === status.text.length) {
-					accessor.advance()
-					const start = new TextAccessor(status.startBuffer, status.startIndex)
-					const end = new TextAccessor(accessor.buffer, accessor.index)
-					return new AccessorRange(start, end)
-				}
-			} else {
-				status.startBuffer = null
-				status.index = 0
-			}
+		let result = ''
+	
+		const currentLocation = this.start.accessor()
+		while(currentLocation.isInRange(this.end)) {
+			result += currentLocation.get()
+			currentLocation.advance()
 		}
-		accessor.advance()
+	
+		return result
 	}
 
-	return null
+	ensureValid() {
+		this.start.ensureValid('Range invalid: Start of range is invalid!')
+		this.end.ensureValid('Range invalid: End of range is invalid!')
+	}
+}
+export class PersistentRange extends TextRange {
+	constructor(public readonly start: PersistentLocation, public readonly end: PersistentLocation) {
+		super()
+	}
+}
+
+export class TemporaryRange extends TextRange {
+	constructor(public readonly start: TemporaryLocation, public readonly end: TemporaryLocation) {
+		super()
+	}
 }
