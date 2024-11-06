@@ -49,8 +49,8 @@ export interface BlockContainer<
 > extends ContainerElement<TYPE, AnyBlock, THIS> {
 }
 
-export type AnyInline = InlineElement<keyof InlineTypes, AnyInline | never, InlineTypes[keyof InlineTypes]>
-export type AnyBlock = ContainerElement<keyof ContainerTypes, AnyBlock | AnyInline, ContainerTypes[keyof ContainerTypes]>
+export type AnyInline = InlineTypes[keyof InlineTypes]
+export type AnyBlock = ContainerTypes[keyof ContainerTypes]
 
 export type InlineTypes = {
 	'Text': Text,
