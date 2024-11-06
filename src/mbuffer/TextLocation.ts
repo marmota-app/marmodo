@@ -127,6 +127,7 @@ export abstract class TextLocation {
 		return null
 	}
 	
+	abstract info(): string
 }
 export class PersistentLocation extends TextLocation {
 	constructor(private _buffer: MBuffer | undefined, private _index: number | undefined) {
@@ -138,18 +139,18 @@ export class PersistentLocation extends TextLocation {
 
 	get buffer(): MBuffer {
 		if(this._buffer !== undefined) { return this._buffer }
-		throw new Error(`Cannot get buffer of invalid location (buffer: {undefined}, index: ${this._index})`)
+		throw new Error(`Cannot get buffer of invalid location ${this.info()}`)
 	}
 	get index(): number {
 		if(this._index !== undefined) { return this._index }
-		throw new Error(`Cannot get index of invalid location (buffer: {${this._buffer?.info()}}, index: ${this._index})`)
+		throw new Error(`Cannot get index of invalid location ${this.info()}`)
 	}
 
 	accessor(): TemporaryLocation {
 		if(this._buffer!==undefined && this._index!==undefined) {
 			return new TemporaryLocation(this._buffer, this._index)
 		}
-		throw new Error(`Cannot get accessor of invalid location (buffer: {${this._buffer?.info()}}, index: ${this._index})`)
+		throw new Error(`Cannot get accessor of invalid location ${this.info()}`)
 	}
 	persist(): PersistentLocation {
 		this.ensureValid('Cannot get persistent location of invalid location')
@@ -159,7 +160,7 @@ export class PersistentLocation extends TextLocation {
 		this.ensureValid('Cannot get persistent range of invalid location')
 		end.ensureValid('Cannot get persistent range to invalid end location')
 		if(!end.isAtLeast(this)) {
-			throw new Error(`Cannot get persistent location when end is not after this location [buffer: {${this._buffer?.info()}}, index: {${this._index}}]`)
+			throw new Error(`Cannot get persistent location when end is not after this location ${this.info()}`)
 		}
 
 		return new PersistentRange(this, end.persist())
@@ -186,6 +187,10 @@ export class PersistentLocation extends TextLocation {
 		this._buffer = undefined
 		this._index = undefined
 	}
+
+	info() {
+		return `[index: {${this._index}} in buffer: {${this._buffer?.info()}}]`
+	}
 }
 
 export class TemporaryLocation extends TextLocation {
@@ -199,11 +204,11 @@ export class TemporaryLocation extends TextLocation {
 
 	get buffer(): MBuffer {
 		if(this._buffer !== undefined) { return this._buffer }
-		throw new Error(`Cannot get buffer of invalid location (buffer: {undefined}, index: ${this._index})`)
+		throw new Error(`Cannot get buffer of invalid location ${this.info()}`)
 	}
 	get index(): number {
 		if(this._index !== undefined) { return this._index }
-		throw new Error(`Cannot get index of invalid location (buffer: {${this._buffer?.info()}}, index: ${this._index})`)
+		throw new Error(`Cannot get index of invalid location ${this.info()}`)
 	}
 	ensureValid(message: string) {
 		//if(buffer has been modified) {
@@ -234,9 +239,7 @@ export class TemporaryLocation extends TextLocation {
 	}
 
 	advance(): void {
-		if(this._index === undefined) {
-			throw new Error(`Cannot advance index of invalid location (buffer: {${this._buffer?.info()}}, index: ${this._index})`)
-		}
+		this.ensureValid('Cannot advance index of invalid location')
 		this._index++
 
 		while(this._index >= this._buffer.length && this._buffer.nextBuffer) {
@@ -253,9 +256,13 @@ export class TemporaryLocation extends TextLocation {
 		this.ensureValid('Cannot get persistent range of invalid location')
 		end.ensureValid('Cannot get persistent range to invalid end location')
 		if(!end.isAtLeast(this)) {
-			throw new Error(`Cannot get persistent location when end is not after this location [buffer: {${this._buffer?.info()}}, index: {${this._index}]}`)
+			throw new Error(`Cannot get persistent location when end is not after this location ${this.info()}`)
 		}
 
 		return new PersistentRange(this.persist(), end.persist())
+	}
+
+	info() {
+		return `[index: {${this._index}} in buffer: {${this._buffer?.info()}}]`
 	}
 }

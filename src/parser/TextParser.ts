@@ -35,7 +35,7 @@ export class MfMText implements Text {
 		return this.parsedRange.asString()
 	}
 
-	asText(): string {
+	get asText(): string {
 		return this.parsedRange.asString()
 	}
 }

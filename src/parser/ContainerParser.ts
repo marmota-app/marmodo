@@ -29,9 +29,9 @@ export class MfMContainer implements Container {
 		public readonly content: AnyBlock[],
 	) {}
 
-	asText(): string {
+	get asText(): string {
 		return this.content
-			.map(c => c.asText())
+			.map(c => c.asText)
 			.join('')
 	}
 }

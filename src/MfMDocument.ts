@@ -50,7 +50,7 @@ export class MfMDocument {
 		return this.#content
 	}
 	get text(): string {
-		return this.#content.asText()
+		return this.#content.asText
 	}
 
 	update(cu: ContentUpdate, getCompleteText: () => string): void {

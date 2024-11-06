@@ -36,7 +36,7 @@ export interface Element<
 	readonly parsedWith: Parser<TYPE, CONTENT, THIS>,
 	readonly parsedRange: PersistentRange,
 
-	asText: () => string,
+	readonly asText: string,
 	readonly content: CONTENT[],
 }
 
