@@ -35,7 +35,7 @@ export class MfMBlankLine implements BlankLine {
 		return this.parsedRange.asString()
 	}
 
-	asText(): string {
+	get asText(): string {
 		return this.parsedRange.asString()
 	}
 }

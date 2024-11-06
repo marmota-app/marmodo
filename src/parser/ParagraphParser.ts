@@ -29,9 +29,9 @@ export class MfMParagraph implements Paragraph {
 		public readonly content: AnyInline[],
 	) {}
 
-	asText(): string {
+	get asText(): string {
 		return this.content
-			.map(c => c.asText())
+			.map(c => c.asText)
 			.join('')
 	}
 }
@@ -39,8 +39,8 @@ export class ParagraphParser extends MfMParser<'Paragraph', AnyInline, Paragraph
 	parse(start: TextLocation, end: TextLocation): Paragraph | null {
 		const content: AnyInline[] = []
 
-		const nextNewline = start.findNext(['\r', '\n'], end)
-		if(nextNewline != null) {
+		let nextNewline = start.findNext(['\r', '\n'], end)
+		while(nextNewline != null) {
 			//If it is '\r', try to skip a following '\n'
 			if(nextNewline.start.get() === '\r' && nextNewline.end.get() === '\n') {
 				nextNewline.end.advance()
@@ -57,6 +57,7 @@ export class ParagraphParser extends MfMParser<'Paragraph', AnyInline, Paragraph
 
 				return new MfMParagraph(this.idGenerator.nextId(), start.persistentRangeUntil(blankLine.parsedRange.end), this, content)
 			}
+			nextNewline = nextParseLocation.findNext(['\r', '\n'], end)
 		}
 
 		const textElement = this.parsers.Text.parse(start, end)

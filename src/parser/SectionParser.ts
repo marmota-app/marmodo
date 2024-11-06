@@ -17,6 +17,7 @@ limitations under the License.
 import { AnyBlock, Section } from "../element/MfMElements";
 import { TextLocation } from "../mbuffer/TextLocation";
 import { PersistentRange, TextRange, } from "../mbuffer/TextRange";
+import { finiteLoop } from "../utilities/finiteLoop";
 import { MfMParser } from "./MfMParser";
 
 export class MfMSection implements Section {
@@ -29,18 +30,29 @@ export class MfMSection implements Section {
 		public readonly content: AnyBlock[],
 	) {}
 
-	asText(): string {
+	get asText(): string {
 		return this.content
-			.map(c => c.asText())
+			.map(c => c.asText)
 			.join('')
 	}
 }
+
 export class SectionParser extends MfMParser<'Section', AnyBlock, Section> {
 	parse(start: TextLocation, end: TextLocation): Section | null {
 		const content: AnyBlock[] = []
-
-		const paragraph = this.parsers.Paragraph.parse(start, end)
-		if(paragraph) { content.push(paragraph) }
+		
+		let nextParseLocation = start
+		const fl = finiteLoop(() => [ nextParseLocation ])
+		while(nextParseLocation.isBefore(end)) {
+			fl.ensure()
+			const paragraph = this.parsers.Paragraph.parse(nextParseLocation, end)
+			if(paragraph) {
+				content.push(paragraph)
+				nextParseLocation = paragraph.parsedRange.end
+			} else {
+				throw new Error(`could not parse content at ${nextParseLocation.info()}`)
+			}
+		}
 		
 		return new MfMSection(this.idGenerator.nextId(), start.persistentRangeUntil(end), this, content)
 	}

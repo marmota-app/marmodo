@@ -46,6 +46,6 @@ describe('UpdateParser', () => {
 		const expectedBuffer = new TextContent(originalText)
 		expectedBuffer.update(contentUpdate)
 		expect(updated).not.toBeNull()
-		expect(updated?.asText()).toEqual(expectedBuffer.text())
+		expect(updated?.asText).toEqual(expectedBuffer.text())
 	})
 })

@@ -54,7 +54,7 @@ describe('ParagraphParser', () => {
 			expect(paragraph!.content[1]).toHaveProperty('textContent', blankLine)
 		}))
 
-		it.skip(`ends the current paragraph at blank line after multiple lines`, () => {
+		it(`ends the current paragraph at blank line after multiple lines`, () => {
 			const parser = new Parsers().Paragraph
 			const textContent = new TextContent(`some text\nsome text\nsome text\n\nmore text`)
 	
@@ -70,6 +70,8 @@ describe('ParagraphParser', () => {
 			expect(paragraph!.content[1]).toHaveProperty('type', 'BlankLine')
 			expect(paragraph!.content[1]).toHaveProperty('textContent', '\n')
 		})
+
+		it.skip('adds multiple blank lines to the end of the current paragraph', () => {})
 	})
 
 	describe('parsing updates', () => {

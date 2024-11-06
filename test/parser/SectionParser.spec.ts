@@ -18,7 +18,7 @@ import { TextContent } from "../../src/mbuffer/TextContent"
 import { Parsers } from "../../src/parser/Parsers"
 
 describe('SectionParser', () => {
-	it('parses empty text into an empty section', () => {
+	it('parses a single line of text into a section with a single paragraph', () => {
 		const parser = new Parsers().Section
 		const textContent = new TextContent('some text')
 
@@ -27,5 +27,20 @@ describe('SectionParser', () => {
 		expect(section?.content).toHaveLength(1)
 		const content = section!.content[0]
 		expect(content).toHaveProperty('type', 'Paragraph')
+		expect(content).toHaveProperty('asText', 'some text')
+	})
+	it('parses multiple paragraphs into a section', () => {
+		const parser = new Parsers().Section
+		const textContent = new TextContent('first paragraph\nfirst paragraph\n\nsecond paragraph\n\nthird\nthird paragraph\nthird')
+
+		const section = parser.parse(textContent.start(), textContent.end())
+
+		expect(section?.content).toHaveLength(3)
+		expect(section!.content[0]).toHaveProperty('type', 'Paragraph')
+		expect(section!.content[0]).toHaveProperty('asText', 'first paragraph\nfirst paragraph\n\n')
+		expect(section!.content[1]).toHaveProperty('type', 'Paragraph')
+		expect(section!.content[1]).toHaveProperty('asText', 'second paragraph\n\n')
+		expect(section!.content[2]).toHaveProperty('type', 'Paragraph')
+		expect(section!.content[2]).toHaveProperty('asText', 'third\nthird paragraph\nthird')
 	})
 })
