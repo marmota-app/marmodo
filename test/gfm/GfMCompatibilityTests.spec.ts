@@ -18,10 +18,8 @@ limitations under the License.
 
 import { JSDOM } from 'jsdom'
 import fs from 'fs'
-
-//import { Marmdown } from "../../../src/Marmdown"
-//import { MfMDialect } from "../../../src/MfMDialect"
-//import { html } from "../html"
+import { MfMDocument } from '../../src/MfMDocument'
+import { html } from './html'
 
 interface ImplementedExample {
 	name: string,
@@ -39,17 +37,35 @@ interface ImplementedSection {
 	transform?: RequiredTransformation[],
 }
 
+const NYI = {
+	multiple_blank_lines: 'Multiple blank lines in a row',
+	line_indentation: 'Indentation of lines that does not create any element',
+
+	elements: {
+		indented_code_blocks: 'Element still missing: Indented code block',
+
+		line_breaks: 'Element still missing: Line break',
+	}
+}
 const implementedSections: ImplementedSection[] = [
+	{ chapter: '4.8', name: 'Paragraphs',
+		notYetImplemented: [
+			{ name: 'Example 191', reason: NYI.multiple_blank_lines },
+			{ name: 'Example 192', reason: NYI.line_indentation },
+			{ name: 'Example 193', reason: NYI.line_indentation },
+			{ name: 'Example 194', reason: NYI.line_indentation },
+			{ name: 'Example 195', reason: NYI.elements.indented_code_blocks },
+			{ name: 'Example 196', reason: NYI.elements.line_breaks },
+		],
+		incompatible: [],
+	}
 ]
 
 const compatibility: string[] = []
-describe.skip('Github-flavored-Markdown (GfM) compatibility', () => {
+describe('Github-flavored-Markdown (GfM) compatibility', () => {
 	it('should be implemented, see below...', () => {})
 	
-	/*
-	const marmdown = new Marmdown(new MfMDialect())
-
-	const gfmSpecContent = fs.readFileSync('test/integration/gfm/GitHub Flavored Markdown Spec.html', 'utf-8')
+	const gfmSpecContent = fs.readFileSync('test/gfm/GitHub Flavored Markdown Spec.html', 'utf-8')
 	const gfmSpec = new JSDOM(gfmSpecContent)
 	
 
@@ -91,8 +107,6 @@ describe.skip('Github-flavored-Markdown (GfM) compatibility', () => {
 			writeExample('Markdown input', 'markdown', md)
 			writeExample('Expected HTML', 'html', expected)
 			it.skip(name+'(-- '+info.reason+' --)', () => {
-				marmdown.textContent = md
-				expect(withoutEmptyLines(html(marmdown))).toEqual(withoutEmptyLines(expected))
 			})
 		} else if(sectionInfo?.incompatible.filter(nyi => nyi.name === name)?.length??0 > 0) {
 			const info = sectionInfo?.incompatible?.filter(nyi => nyi.name === name)[0] as ImplementedExample
@@ -103,13 +117,13 @@ describe.skip('Github-flavored-Markdown (GfM) compatibility', () => {
 			//tests for known incompatibilities.
 		} else {
 			it(name, () => {
-				marmdown.textContent = md
+				const document = new MfMDocument(md)
 
 				let expectedResult = expected
 				const currentTransform = sectionInfo?.transform?.filter(t => t.name === name)?.[0]
 				currentTransform?.transforms.forEach(t => expectedResult = expectedResult.replaceAll(t[0], t[1]))
 
-				expect(withoutEmptyLines(withoutEmptyLines(html(marmdown)))).toEqual(withoutEmptyLines(expectedResult))
+				expect(withoutEmptyLines(html(document))).toEqual(withoutEmptyLines(expectedResult))
 			})
 		}
 	}
@@ -161,5 +175,4 @@ describe.skip('Github-flavored-Markdown (GfM) compatibility', () => {
 			}
 		}
 	}
-	*/
 })
