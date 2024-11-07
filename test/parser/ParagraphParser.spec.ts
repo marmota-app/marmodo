@@ -71,7 +71,21 @@ describe('ParagraphParser', () => {
 			expect(paragraph!.content[1]).toHaveProperty('textContent', '\n')
 		})
 
-		it.skip('adds multiple blank lines to the end of the current paragraph', () => {})
+		it('adds multiple blank lines to the end of the current paragraph', () => {
+			const parser = new Parsers().Paragraph
+			const textContent = new TextContent(`some text\nsome text\nsome text\n   \n\t\n\nmore text`)
+	
+			const paragraph = parser.parse(textContent.start(), textContent.end())
+	
+			expect(paragraph?.content).toHaveLength(4)
+
+			expect(paragraph!.content[1]).toHaveProperty('type', 'BlankLine')
+			expect(paragraph!.content[1]).toHaveProperty('textContent', '   \n')
+			expect(paragraph!.content[2]).toHaveProperty('type', 'BlankLine')
+			expect(paragraph!.content[2]).toHaveProperty('textContent', '\t\n')
+			expect(paragraph!.content[3]).toHaveProperty('type', 'BlankLine')
+			expect(paragraph!.content[3]).toHaveProperty('textContent', '\n')
+		})
 	})
 
 	describe('parsing updates', () => {

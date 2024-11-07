@@ -48,14 +48,21 @@ export class ParagraphParser extends MfMParser<'Paragraph', AnyInline, Paragraph
 			
 			//Try to parse a blank line here...
 			const nextParseLocation = nextNewline.end
-			const blankLine = this.parsers.BlankLine.parse(nextParseLocation, end)
+			let blankLine = this.parsers.BlankLine.parse(nextParseLocation, end)
 
 			if(blankLine !== null) {
 				const textElement = this.parsers.Text.parse(start, nextNewline.end)
 				if(textElement != null) { content.push(textElement) }
-				content.push(blankLine)
 
-				return new MfMParagraph(this.idGenerator.nextId(), start.persistentRangeUntil(blankLine.parsedRange.end), this, content)
+				let currentRangeEnd = blankLine.parsedRange.end
+				while(blankLine !== null) {
+					content.push(blankLine)
+
+					currentRangeEnd = blankLine.parsedRange.end
+					blankLine = this.parsers.BlankLine.parse(currentRangeEnd, end)		
+				}
+
+				return new MfMParagraph(this.idGenerator.nextId(), start.persistentRangeUntil(currentRangeEnd), this, content)
 			}
 			nextNewline = nextParseLocation.findNext(['\r', '\n'], end)
 		}

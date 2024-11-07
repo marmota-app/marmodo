@@ -38,7 +38,6 @@ interface ImplementedSection {
 }
 
 const NYI = {
-	multiple_blank_lines: 'Multiple blank lines in a row',
 	line_indentation: 'Indentation of lines that does not create any element',
 
 	elements: {
@@ -50,7 +49,6 @@ const NYI = {
 const implementedSections: ImplementedSection[] = [
 	{ chapter: '4.8', name: 'Paragraphs',
 		notYetImplemented: [
-			{ name: 'Example 191', reason: NYI.multiple_blank_lines },
 			{ name: 'Example 192', reason: NYI.line_indentation },
 			{ name: 'Example 193', reason: NYI.line_indentation },
 			{ name: 'Example 194', reason: NYI.line_indentation },
