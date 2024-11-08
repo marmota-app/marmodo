@@ -14,20 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { UpdateCheckResult } from "../element/Element";
+import { MfMElement } from "../element/MfMElement";
 import { Text } from "../element/MfMElements";
+import { UpdateInfo } from "../mbuffer/TextContent";
 import { TextLocation } from "../mbuffer/TextLocation";
 import { PersistentRange, TextRange, } from "../mbuffer/TextRange";
 import { MfMParser } from "./MfMParser";
 
-export class MfMText implements Text {
+export class MfMText extends MfMElement<'Text', never, Text, TextParser> implements Text {
 	readonly type = 'Text'
 	readonly content: never[] = []
-
-	constructor(
-		public readonly id: string,
-		public readonly parsedRange: PersistentRange,
-		public readonly parsedWith: TextParser,
-	) {}
 
 	get textContent() {
 		//This function does not cache the string yet - an optimization
@@ -42,5 +39,21 @@ export class MfMText implements Text {
 export class TextParser extends MfMParser<'Text', never, Text> {
 	parse(start: TextLocation, end: TextLocation): Text | null {
 		return new MfMText(this.idGenerator.nextId(), start.persistentRangeUntil(end), this)
+	}
+	checkUpdate(element: Text, update: UpdateInfo): UpdateCheckResult {
+		if(
+			update.replacedText.indexOf('\n') >= 0 || update.replacedText.indexOf('\r') >= 0 ||
+			update.newText.indexOf('\n') >= 0 || update.newText.indexOf('\r') >= 0
+		) {
+			return {
+				canUpdate: false,
+			}
+		}
+
+		return {
+			canUpdate: true,
+			rangeStart: element.parsedRange.start,
+			rangeEnd: element.parsedRange.end,
+		}
 	}
 }

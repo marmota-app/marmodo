@@ -14,7 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { UpdateCheckResult } from "../element/Element";
 import { BlankLine } from "../element/MfMElements";
+import { UpdateInfo } from "../mbuffer/TextContent";
 import { TextLocation } from "../mbuffer/TextLocation";
 import { TextRange, PersistentRange } from "../mbuffer/TextRange";
 import { MfMParser } from "./MfMParser";
@@ -61,5 +63,14 @@ export class BlankLineParser extends MfMParser<'BlankLine', never, BlankLine> {
 		}
 
 		return null
+	}
+	checkUpdate(element: BlankLine, update: UpdateInfo, documentEnd: TextLocation): UpdateCheckResult {
+		//Blank lines can never be updated, since changing blank lines is
+		//quite risky! It might change the document structure completely!
+		//e.g. when removing a newline or when changing the indentation of
+		//a blank line inside a code block.
+		return {
+			canUpdate: false,
+		}
 	}
 }

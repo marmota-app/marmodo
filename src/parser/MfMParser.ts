@@ -14,7 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Element, Parser } from "../element/Element"
+import { Element, Parser, UpdateCheckResult } from "../element/Element"
+import { UpdateInfo } from "../mbuffer/TextContent"
 import { TextLocation } from "../mbuffer/TextLocation"
 import { IdGenerator, Parsers } from './Parsers'
 
@@ -25,6 +26,13 @@ export abstract class MfMParser<
 > implements Parser<TYPE, CONTENT, ELEMENT> {
 	constructor(protected readonly idGenerator: IdGenerator, protected readonly parsers: Parsers) {}
 
-	abstract parse(start: TextLocation, end: TextLocation): Element<TYPE, CONTENT, ELEMENT> | null;
-}
+	abstract parse(start: TextLocation, end: TextLocation): ELEMENT | null;
 
+	checkUpdate(element: ELEMENT, update: UpdateInfo, documentEnd: TextLocation): UpdateCheckResult {
+		return {
+			canUpdate: true,
+			rangeStart: element.parsedRange.start,
+			rangeEnd: documentEnd,
+		}
+	}
+}

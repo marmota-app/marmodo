@@ -22,8 +22,7 @@ describe('UpdateParser', () => {
 	//The tests in here are quite high-level: They parse some text, then
 	//parse the update and compare the text from the new container to the
 	//original. That might not catch all possible bugs, but it is good enough
-	//for here: Detailed updates that might go wrong should be tested at
-	//the element where they might fail.
+	//for here.
 
 	it('can update text content in paragraph', () => {
 		const parsers = new Parsers()
@@ -41,6 +40,7 @@ describe('UpdateParser', () => {
 		const updated = updateParser.parseUpdate(
 			updateInfo,
 			container,
+			tc.end(),
 		)
 
 		const expectedBuffer = new TextContent(originalText)
