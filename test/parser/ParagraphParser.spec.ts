@@ -14,9 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { TextContent } from "../../src/mbuffer/TextContent"
-import { Parsers } from "../../src/parser/Parsers"
+import { TextContent } from "../../src/mbuffer/TextContent";
+import { Parsers } from "../../src/parser/Parsers";
 import { replaceWhitespace } from "../replaceWhitespace";
+import { expectUpdate } from "../update/expectUpdate";
 
 describe('ParagraphParser', () => {
 	describe('Parsing the content', () => {
@@ -89,5 +90,29 @@ describe('ParagraphParser', () => {
 	})
 
 	describe('parsing updates', () => {
+		const parser = new Parsers().Paragraph
+
+		expectUpdate(
+			parser,
+			'some text\nsome text\nsome text\n\nmore text',
+			{ text: '', rangeOffset: 0, rangeLength: 'some '.length }
+		).canBeParsed()
+
+		expectUpdate(
+			parser,
+			'some text\nsome text\nsome text\n\nmore text',
+			{ text: '\n', rangeOffset: 'some text\n'.length, rangeLength: 0 }
+		).cannotBeParsed('shortens the paragraph')
+		expectUpdate(
+			parser,
+			'some text\nsome text\nsome text\n\nmore text',
+			{ text: '', rangeOffset: 'some text\nsome text\nsome text'.length, rangeLength: '\n'.length }
+		).cannotBeParsed('changes the paragraph ending: removes first \\n')
+		expectUpdate(
+			parser,
+			'some text\nsome text\nsome text\n\nmore text',
+			{ text: '', rangeOffset: 'some text\nsome text\nsome text\n'.length, rangeLength: '\n'.length }
+		).cannotBeParsed('changes the paragraph ending: removes second \\n')
 	})
 })
+

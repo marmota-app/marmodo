@@ -30,14 +30,12 @@ export class Parsers {
 
 	get Paragraph(): ParagraphParser { return this.getParser('Paragraph', () => new ParagraphParser(this.idGenerator, this)) }
 
-	get Text() { return this.getParser('Text', () => new TextParser(this.idGenerator, this)) }
-	get BlankLine() { return this.getParser('BlankLine', () => new BlankLineParser(this.idGenerator, this)) }
+	get Text(): TextParser { return this.getParser('Text', () => new TextParser(this.idGenerator, this)) }
+	get BlankLine(): BlankLineParser { return this.getParser('BlankLine', () => new BlankLineParser(this.idGenerator, this)) }
 
 	private getParser<
 		TYPE extends string,
-		CONTENT extends Element<any, any, any>,
-		ELEMENT extends Element<TYPE, CONTENT, ELEMENT>,
-		PARSER extends Parser<TYPE, CONTENT, ELEMENT>
+		PARSER extends Parser<TYPE, any, any>
 	>(
 		elementType: TYPE,
 		createElementParser: () => PARSER

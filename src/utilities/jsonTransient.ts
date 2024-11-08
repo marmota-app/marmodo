@@ -14,6 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-export function unreachable(message: string, element: never) {
-	throw new Error(message)
+export function jsonTransient<KEY extends string>(obj: { [key in KEY]: any}, propertyName: KEY) {
+	jsonTransientPrivate(obj, propertyName)
+}
+
+export function jsonTransientPrivate(obj: any, propertyName: string) {
+	let descriptor = Object.getOwnPropertyDescriptor(obj, propertyName) || {};
+	descriptor.enumerable = false;
+	Object.defineProperty(obj, propertyName, descriptor)
 }

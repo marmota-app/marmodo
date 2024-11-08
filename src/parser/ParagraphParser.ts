@@ -14,20 +14,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { MfMElement } from "../element/MfMElement";
 import { AnyInline, Paragraph } from "../element/MfMElements";
 import { TextLocation } from "../mbuffer/TextLocation";
 import { PersistentRange, TextRange, } from "../mbuffer/TextRange";
 import { MfMParser } from "./MfMParser";
 
-export class MfMParagraph implements Paragraph {
+export class MfMParagraph extends MfMElement<'Paragraph', AnyInline, Paragraph, ParagraphParser> implements Paragraph {
 	public readonly type = 'Paragraph'
 
 	constructor(
-		public readonly id: string,
-		public readonly parsedRange: PersistentRange,
-		public readonly parsedWith: ParagraphParser,
+		id: string,
+		parsedRange: PersistentRange,
+		parsedWith: ParagraphParser,
 		public readonly content: AnyInline[],
-	) {}
+	) {
+		super(id, parsedRange, parsedWith)
+	}
 
 	get asText(): string {
 		return this.content

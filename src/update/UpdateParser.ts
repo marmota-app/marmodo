@@ -17,6 +17,7 @@ limitations under the License.
 import { Element } from "../element/Element";
 import { Container } from "../element/MfMElements";
 import { UpdateInfo } from "../mbuffer/TextContent";
+import { TextLocation } from "../mbuffer/TextLocation";
 
 interface UpdateResult<
 	T extends string,
@@ -27,15 +28,19 @@ interface UpdateResult<
 	isFirstUpdate: boolean,
 }
 export class UpdateParser {
-	parseUpdate(update: UpdateInfo, rootElement: Container): Container | null {
-		return this.#updateElement(update, rootElement).updated
+	parseUpdate<
+		T extends string,
+		C extends Element<any, any, any>,
+		E extends Element<T, C, E>
+	>(update: UpdateInfo, rootElement: E, documentEnd: TextLocation): E | null {
+		return this.#updateElement(update, rootElement, documentEnd).updated
 	}
 
 	#updateElement<
 		T extends string,
 		C extends Element<any, any, any>,
 		E extends Element<T, C, E>
-	>(update: UpdateInfo, currentElement: E): UpdateResult<T, C, E> {
+	>(update: UpdateInfo, currentElement: E, documentEnd: TextLocation): UpdateResult<T, C, E> {
 		const updateStart = update.range.start
 		const updateEnd = update.range.end
 
@@ -45,7 +50,7 @@ export class UpdateParser {
 		if(isInsideCurrentElement) {
 			//drill down if possible
 			for(let i in currentElement.content) {
-				const result = this.#updateElement(update, currentElement.content[i])
+				const result = this.#updateElement(update, currentElement.content[i], documentEnd)
 				if(result.updated != null) {
 					//the current element **was** updated here, now need to replace
 					//it and schedule a callback.
@@ -63,11 +68,15 @@ export class UpdateParser {
 			//if the drilled down element could not be updated, update it here
 			const parser = currentElement.parsedWith
 			const range = currentElement.parsedRange
-			const updated = parser.parse(range.start, range.end) as (E | null)
+			const checkResult = parser.checkUpdate(currentElement, update, documentEnd)
+			const updated = checkResult.canUpdate?
+				parser.parse(checkResult.rangeStart, checkResult.rangeEnd):
+				null
 
-			//TODO check whether it's fully parsed
-			//TODO check whether the original range was fully parsed
-			
+			if(updated != null && !this.#isCompleteUpdate(updated, currentElement)) {
+				return { updated: null, isFirstUpdate: true, }
+			}
+
 			return {
 				updated,
 				isFirstUpdate: true
@@ -78,6 +87,14 @@ export class UpdateParser {
 			updated: null,
 			isFirstUpdate: false,
 		}
+	}
+
+	#isCompleteUpdate(updated: Element<any, any, any>, original: Element<any, any, any>): boolean {
+		const hasParsedFullRange =
+			updated.parsedRange.start.isEqualTo(original.parsedRange.start) &&
+			updated.parsedRange.end.isEqualTo(original.parsedRange.end)
+
+		return hasParsedFullRange
 	}
 
 	#scheduleUpdatedCallback(element: Element<any, any, any>) {

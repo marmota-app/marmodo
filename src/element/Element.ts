@@ -14,15 +14,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { UpdateInfo } from "../mbuffer/TextContent";
 import { TextLocation } from "../mbuffer/TextLocation";
 import { PersistentRange, } from "../mbuffer/TextRange";
+
+interface UpdateCheckResultPositive {
+	canUpdate: true,
+	rangeStart: TextLocation,
+	rangeEnd: TextLocation,
+}
+interface UpdateCheckResultNegative {
+	canUpdate: false,
+}
+export type UpdateCheckResult = UpdateCheckResultPositive | UpdateCheckResultNegative
 
 export interface Parser<
 	TYPE extends string,
 	CONTENT extends Element<any, any, any>,
 	ELEMENT extends Element<TYPE, CONTENT, ELEMENT>,
 > {
-	parse: (start: TextLocation, end: TextLocation) => Element<TYPE, CONTENT, ELEMENT> | null,
+	parse: (start: TextLocation, end: TextLocation) => ELEMENT | null,
+	checkUpdate: (element: ELEMENT, update: UpdateInfo, documentEnd: TextLocation) => UpdateCheckResult,
 }
 
 export interface Element<

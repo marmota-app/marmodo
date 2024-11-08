@@ -65,6 +65,6 @@ export class TextContent {
 		return this.buffer.location(0)
 	}
 	end(): TemporaryLocation {
-		return this.buffer.location(this.buffer.length)
+		return this.buffer.end()
 	}
 }

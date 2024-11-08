@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { jsonTransient, jsonTransientPrivate } from "../utilities/jsonTransient"
 import { MBuffer } from "./MBuffer"
 import { PersistentRange, TemporaryRange } from "./TextRange"
 
@@ -132,6 +133,7 @@ export abstract class TextLocation {
 export class PersistentLocation extends TextLocation {
 	constructor(private _buffer: MBuffer | undefined, private _index: number | undefined) {
 		super()
+		jsonTransientPrivate(this, '_buffer')
 
 		//TODO bounds checks necessary?
 		_buffer?.registerLocation(this)

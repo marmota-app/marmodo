@@ -145,6 +145,13 @@ export class MBuffer {
 		throw new Error(`Cannot find location at index ${index} in buffer "${this.buffered}" [${this._start}, ${this._length}]`)
 	}
 
+	end(): TemporaryLocation {
+		if(this.next) {
+			return this.next.end()
+		}
+		return new TemporaryLocation(this, this.length)
+	}
+
 	private split(splitAt: number): MBuffer {
 		const newLength = this._length-splitAt
 		this._length = splitAt
