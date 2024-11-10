@@ -14,18 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { TextContent } from "../../src/mbuffer/TextContent"
-import { Parsers } from "../../src/parser/Parsers"
+import { parseAll } from "../parse"
 
 describe('ContainerParser', () => {
 	it('parses empty text into empty containter with one empty section', () => {
-		const parser = new Parsers().Container
-		const textContent = new TextContent('some text')
+		const container = parseAll('Container', 'some text')
 
-		const container = parser.parse(textContent.start(), textContent.end())
-
-		expect(container?.content).toHaveLength(1)
-		const content = container!.content[0]
-		expect(content).toHaveProperty('type', 'Section')
+		expect(container).toHaveChildren([
+			{ type: 'Section' }
+		])
 	})
 })

@@ -14,16 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { TextContent } from "../../src/mbuffer/TextContent"
-import { Parsers } from "../../src/parser/Parsers"
-import { replaceWhitespace } from "../replaceWhitespace"
+import { BlankLine } from "../../src/element/MfMElements";
+import { parseAll } from "../parse";
+import { replaceWhitespace } from "../replaceWhitespace";
 
 describe('BlankLineParser', () => {
 	it('parses a blank line consisting of \\n', () => {
-		const parser = new Parsers().BlankLine
-		const textContent = new TextContent(' \t\n')
-
-		const result = parser.parse(textContent.start(), textContent.end())
+		const result = parseAll('BlankLine', ' \t\n') as BlankLine
 
 		expect(result).not.toBeNull()
 		expect(result?.textContent).toEqual(' \t\n')
@@ -34,10 +31,7 @@ describe('BlankLineParser', () => {
 		'  some text\n',
 		'  ',
 	].forEach(t => it(`does not parse a blank line for ${replaceWhitespace(t)}`, () => {
-		const parser = new Parsers().BlankLine
-		const textContent = new TextContent(t)
-	
-		const result = parser.parse(textContent.start(), textContent.end())
+		const result = parseAll('BlankLine', t)
 
 		expect(result).toBeNull()
 	}));
@@ -50,10 +44,7 @@ describe('BlankLineParser', () => {
 		['   \r\n', '   \r\n'],
 		['   \n\r', '   \n'],
 	].forEach(t => it(`parses ${replaceWhitespace(t[0])} into blank line ${replaceWhitespace(t[1])}`, () => {
-		const parser = new Parsers().BlankLine
-		const textContent = new TextContent(t[0])
-
-		const result = parser.parse(textContent.start(), textContent.end())
+		const result = parseAll('BlankLine', t[0]) as BlankLine
 
 		expect(result).not.toBeNull()
 		expect(result?.textContent).toEqual(t[1])
