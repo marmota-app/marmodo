@@ -14,15 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { TextContent } from "../../src/mbuffer/TextContent"
-import { Parsers } from "../../src/parser/Parsers"
+import { Text } from "../../src/element/MfMElements"
+import { parseAll } from "../parse"
 
 describe('TextParser', () => {
 	it('parses complete text', () => {
-		const textContent = new TextContent('some text')
+		const text = parseAll('Text', 'some text') as Text
 
-		const text = new Parsers().Text.parse(textContent.start(), textContent.end())
-
+		expect(text).not.toBeNull()
 		expect(text?.textContent).toEqual('some text')
 	})
 })
