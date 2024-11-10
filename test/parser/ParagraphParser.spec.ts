@@ -14,23 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { TextContent } from "../../src/mbuffer/TextContent";
 import { Parsers } from "../../src/parser/Parsers";
+import { parseAll } from "../parse";
 import { replaceWhitespace } from "../replaceWhitespace";
 import { expectUpdate } from "../update/expectUpdate";
 
 describe('ParagraphParser', () => {
 	describe('Parsing the content', () => {
 		it('Parses the complete text into a paragraph when it does not contain any newlines', () => {
-			const parser = new Parsers().Paragraph
-			const textContent = new TextContent('some text')
+			const paragraph = parseAll('Paragraph', 'some text')
 	
-			const paragraph = parser.parse(textContent.start(), textContent.end())
-	
-			expect(paragraph?.content).toHaveLength(1)
-			const content = paragraph!.content[0]
-			expect(content).toHaveProperty('type', 'Text')
-			expect(content).toHaveProperty('textContent', 'some text')
+			expect(paragraph).toHaveChildren([
+				{ type: 'Text', textContent: 'some text' }
+			])
 		});
 	
 		[
@@ -39,53 +35,36 @@ describe('ParagraphParser', () => {
 			['\n', ' \n',],
 			['\n', '\t   \t \t\r\n',],
 		].forEach(([newLine, blankLine]) => it(`ends the current paragraph at blank line "${replaceWhitespace(blankLine)}"`, () => {
-			const parser = new Parsers().Paragraph
-			const textContent = new TextContent(`some text${newLine}${blankLine}more text`)
-	
-			const paragraph = parser.parse(textContent.start(), textContent.end())
+			const paragraph = parseAll('Paragraph', `some text${newLine}${blankLine}more text`)
 	
 			expect(paragraph?.parsedRange.asString()).toEqual(`some text${newLine}${blankLine}`)
 	
-			expect(paragraph?.content).toHaveLength(2)
-			const content = paragraph!.content[0]
-			expect(content).toHaveProperty('type', 'Text')
-			expect(content).toHaveProperty('textContent', `some text${newLine}`)
-	
-			expect(paragraph!.content[1]).toHaveProperty('type', 'BlankLine')
-			expect(paragraph!.content[1]).toHaveProperty('textContent', blankLine)
+			expect(paragraph).toHaveChildren([
+				{ type: 'Text', textContent: `some text${newLine}`},
+				{ type: 'BlankLine', textContent: blankLine}
+			])
 		}))
 
 		it(`ends the current paragraph at blank line after multiple lines`, () => {
-			const parser = new Parsers().Paragraph
-			const textContent = new TextContent(`some text\nsome text\nsome text\n\nmore text`)
-	
-			const paragraph = parser.parse(textContent.start(), textContent.end())
+			const paragraph = parseAll('Paragraph', `some text\nsome text\nsome text\n\nmore text`)
 	
 			expect(paragraph?.parsedRange.asString()).toEqual(`some text\nsome text\nsome text\n\n`)
 	
-			expect(paragraph?.content).toHaveLength(2)
-			const content = paragraph!.content[0]
-			expect(content).toHaveProperty('type', 'Text')
-			expect(content).toHaveProperty('textContent', `some text\nsome text\nsome text\n`)
-	
-			expect(paragraph!.content[1]).toHaveProperty('type', 'BlankLine')
-			expect(paragraph!.content[1]).toHaveProperty('textContent', '\n')
+			expect(paragraph).toHaveChildren([
+				{ type: 'Text', textContent: `some text\nsome text\nsome text\n` },
+				{ type: 'BlankLine', textContent: '\n' }
+			])
 		})
 
 		it('adds multiple blank lines to the end of the current paragraph', () => {
-			const parser = new Parsers().Paragraph
-			const textContent = new TextContent(`some text\nsome text\nsome text\n   \n\t\n\nmore text`)
+			const paragraph = parseAll('Paragraph', `some text\nsome text\nsome text\n   \n\t\n\nmore text`)
 	
-			const paragraph = parser.parse(textContent.start(), textContent.end())
-	
-			expect(paragraph?.content).toHaveLength(4)
-
-			expect(paragraph!.content[1]).toHaveProperty('type', 'BlankLine')
-			expect(paragraph!.content[1]).toHaveProperty('textContent', '   \n')
-			expect(paragraph!.content[2]).toHaveProperty('type', 'BlankLine')
-			expect(paragraph!.content[2]).toHaveProperty('textContent', '\t\n')
-			expect(paragraph!.content[3]).toHaveProperty('type', 'BlankLine')
-			expect(paragraph!.content[3]).toHaveProperty('textContent', '\n')
+			expect(paragraph).toHaveChildren([
+				{},
+				{ type: 'BlankLine', textContent: '   \n' },
+				{ type: 'BlankLine',textContent: '\t\n' },
+				{ type: 'BlankLine', textContent: '\n' }
+			])
 		})
 	})
 
