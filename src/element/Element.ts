@@ -37,6 +37,10 @@ export interface Parser<
 	checkUpdate: (element: ELEMENT, update: UpdateInfo, documentEnd: TextLocation) => UpdateCheckResult,
 }
 
+export type ElementOptions = {
+	[key: string]: string,
+}
+
 export interface Element<
 	TYPE extends string,
 	CONTENT extends Element<any, any, any>,
@@ -44,6 +48,7 @@ export interface Element<
 > {
 	readonly id: string,
 	readonly type: TYPE,
+	readonly options: ElementOptions,
 
 	readonly parsedWith: Parser<TYPE, CONTENT, THIS>,
 	readonly parsedRange: PersistentRange,
