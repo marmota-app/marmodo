@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { ElementOptions } from "../element/Element";
 import { MfMElement } from "../element/MfMElement";
 import { AnyInline, Paragraph } from "../element/MfMElements";
 import { TextLocation } from "../mbuffer/TextLocation";
@@ -25,11 +26,12 @@ export class MfMParagraph extends MfMElement<'Paragraph', AnyInline, Paragraph, 
 
 	constructor(
 		id: string,
+		options: ElementOptions,
 		parsedRange: PersistentRange,
 		parsedWith: ParagraphParser,
 		public readonly content: AnyInline[],
 	) {
-		super(id, parsedRange, parsedWith)
+		super(id, options, parsedRange, parsedWith)
 	}
 
 	get asText(): string {
@@ -41,6 +43,7 @@ export class MfMParagraph extends MfMElement<'Paragraph', AnyInline, Paragraph, 
 export class ParagraphParser extends MfMParser<'Paragraph', AnyInline, Paragraph> {
 	parse(start: TextLocation, end: TextLocation): Paragraph | null {
 		const content: AnyInline[] = []
+		const options: ElementOptions = {}
 
 		let nextNewline = start.findNext(['\r', '\n'], end)
 		while(nextNewline != null) {
@@ -65,7 +68,7 @@ export class ParagraphParser extends MfMParser<'Paragraph', AnyInline, Paragraph
 					blankLine = this.parsers.BlankLine.parse(currentRangeEnd, end)		
 				}
 
-				return new MfMParagraph(this.idGenerator.nextId(), start.persistentRangeUntil(currentRangeEnd), this, content)
+				return new MfMParagraph(this.idGenerator.nextId(), options, start.persistentRangeUntil(currentRangeEnd), this, content)
 			}
 			nextNewline = nextParseLocation.findNext(['\r', '\n'], end)
 		}
@@ -73,6 +76,6 @@ export class ParagraphParser extends MfMParser<'Paragraph', AnyInline, Paragraph
 		const textElement = this.parsers.Text.parse(start, end)
 		if(textElement != null) { content.push(textElement) }
 
-		return new MfMParagraph(this.idGenerator.nextId(), start.persistentRangeUntil(end), this, content)
+		return new MfMParagraph(this.idGenerator.nextId(), options, start.persistentRangeUntil(end), this, content)
 	}
 }

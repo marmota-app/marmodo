@@ -14,20 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { ElementOptions } from "../element/Element"
+import { MfMElement } from "../element/MfMElement"
 import { AnyBlock, Container } from "../element/MfMElements"
 import { TextLocation } from "../mbuffer/TextLocation"
 import { PersistentRange, TextRange, } from "../mbuffer/TextRange"
 import { MfMParser } from "./MfMParser"
 
-export class MfMContainer implements Container {
+export class MfMContainer extends MfMElement<'Container', AnyBlock, Container, ContainerParser> {
 	public readonly type = 'Container'
 
 	constructor(
-		public readonly id: string,
-		public readonly parsedRange: PersistentRange,
-		public readonly parsedWith: ContainerParser,
+		id: string,
+		options: ElementOptions,
+		parsedRange: PersistentRange,
+		parsedWith: ContainerParser,
 		public readonly content: AnyBlock[],
-	) {}
+	) {
+		super(id, options, parsedRange, parsedWith)
+	}
 
 	get asText(): string {
 		return this.content
@@ -38,10 +43,11 @@ export class MfMContainer implements Container {
 export class ContainerParser extends MfMParser<'Container', AnyBlock, Container> {
 	parse(start: TextLocation, end: TextLocation): Container | null {
 		const content: AnyBlock[] = []
+		const options: ElementOptions = {}
 
 		const section = this.parsers.Section.parse(start, end)
 		if(section) { content.push(section) }
 		
-		return new MfMContainer(this.idGenerator.nextId(), start.persistentRangeUntil(end), this, content)
+		return new MfMContainer(this.idGenerator.nextId(), options, start.persistentRangeUntil(end), this, content)
 	}
 }

@@ -16,7 +16,7 @@ limitations under the License.
 
 import { PersistentRange } from "../mbuffer/TextRange";
 import { jsonTransient } from "../utilities/jsonTransient";
-import { Element, Parser } from "./Element";
+import { Element, ElementOptions, Parser } from "./Element";
 
 export abstract class MfMElement<
 	TYPE extends string,
@@ -30,6 +30,7 @@ export abstract class MfMElement<
 
 	constructor(
 		public readonly id: string,
+		public readonly options: ElementOptions,
 		public readonly parsedRange: PersistentRange,
 		public readonly parsedWith: PARSER,
 	) {

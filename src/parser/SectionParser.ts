@@ -14,21 +14,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { ElementOptions } from "../element/Element";
+import { MfMElement } from "../element/MfMElement";
 import { AnyBlock, Section } from "../element/MfMElements";
 import { TextLocation } from "../mbuffer/TextLocation";
 import { PersistentRange, TextRange, } from "../mbuffer/TextRange";
 import { finiteLoop } from "../utilities/finiteLoop";
 import { MfMParser } from "./MfMParser";
 
-export class MfMSection implements Section {
+export class MfMSection extends MfMElement<'Section', AnyBlock, Section, SectionParser> {
 	public readonly type = 'Section'
 
 	constructor(
-		public readonly id: string,
-		public readonly parsedRange: PersistentRange,
-		public readonly parsedWith: SectionParser,
+		id: string,
+		options: ElementOptions,
+		parsedRange: PersistentRange,
+		parsedWith: SectionParser,
 		public readonly content: AnyBlock[],
-	) {}
+	) {
+		super(id, options, parsedRange, parsedWith)
+	}
 
 	get asText(): string {
 		return this.content
@@ -40,6 +45,7 @@ export class MfMSection implements Section {
 export class SectionParser extends MfMParser<'Section', AnyBlock, Section> {
 	parse(start: TextLocation, end: TextLocation): Section | null {
 		const content: AnyBlock[] = []
+		const options: ElementOptions = {}
 		
 		let nextParseLocation = start
 		const fl = finiteLoop(() => [ nextParseLocation ])
@@ -54,6 +60,6 @@ export class SectionParser extends MfMParser<'Section', AnyBlock, Section> {
 			}
 		}
 		
-		return new MfMSection(this.idGenerator.nextId(), start.persistentRangeUntil(end), this, content)
+		return new MfMSection(this.idGenerator.nextId(), options, start.persistentRangeUntil(end), this, content)
 	}
 }

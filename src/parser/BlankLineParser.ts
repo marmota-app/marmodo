@@ -14,22 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { UpdateCheckResult } from "../element/Element";
+import { ElementOptions, UpdateCheckResult } from "../element/Element";
+import { MfMElement } from "../element/MfMElement";
 import { BlankLine } from "../element/MfMElements";
 import { UpdateInfo } from "../mbuffer/TextContent";
 import { TextLocation } from "../mbuffer/TextLocation";
 import { TextRange, PersistentRange } from "../mbuffer/TextRange";
 import { MfMParser } from "./MfMParser";
 
-export class MfMBlankLine implements BlankLine {
+export class MfMBlankLine extends MfMElement<'BlankLine', never, BlankLine, BlankLineParser> {
 	public readonly type = 'BlankLine'
 	readonly content: never[] = []
-
-	constructor(
-		public readonly id: string,
-		public readonly parsedRange: PersistentRange,
-		public readonly parsedWith: BlankLineParser,
-	) {}
 
 	get textContent() {
 		//This function does not cache the string yet - an optimization
@@ -45,6 +40,7 @@ export class MfMBlankLine implements BlankLine {
 export class BlankLineParser extends MfMParser<'BlankLine', never, BlankLine> {
 	parse(start: TextLocation, end: TextLocation): BlankLine | null {
 		const current = start.accessor()
+		const options: ElementOptions = {}
 
 		while(current.isInRange(end) && current.is([' ', '\t'])) {
 			current.advance()
@@ -55,11 +51,11 @@ export class BlankLineParser extends MfMParser<'BlankLine', never, BlankLine> {
 			if(current.isInRange(end) && current.is('\n')) {
 				current.advance()
 			}
-			return new MfMBlankLine(this.idGenerator.nextId(), start.persistentRangeUntil(current), this)
+			return new MfMBlankLine(this.idGenerator.nextId(), options, start.persistentRangeUntil(current), this)
 		}
 		if(current.isInRange(end) && current.is('\n')) {
 			current.advance()
-			return new MfMBlankLine(this.idGenerator.nextId(), start.persistentRangeUntil(current), this)
+			return new MfMBlankLine(this.idGenerator.nextId(), options, start.persistentRangeUntil(current), this)
 		}
 
 		return null

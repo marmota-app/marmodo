@@ -14,7 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { Element } from "../element/Element";
+import { AnyBlock } from "../element/MfMElements";
 import { ContentUpdate } from "../mbuffer/ContentUpdate";
+import { MfMDocument } from "../MfMDocument";
 
 export type Content = Empty |
 	Heading |
@@ -154,8 +157,28 @@ export interface ParseResult {
 }
 
 export function parseMarkdown(markdown: string, changes: ContentUpdate[] = []): MarkdownDocument {
+	const document = new MfMDocument(markdown)
+
+	return simplifyToLegacyDocument(document)
+}
+
+function simplifyToLegacyDocument(document: MfMDocument): MarkdownDocument {
+	const container = document.content
+
+	const content: (Content & DefaultContent)[] = []
+	container.content.forEach(e => addSimplified(e, content))
+
 	return {
 		options: {},
-		content: [],
+		content,
 	}
 }
+
+function addSimplified(e: Element<any, any, any>, content: (Content & DefaultContent)[]): void {
+	if(e.type === 'Container' || e.type === 'Section') {
+		e.content.forEach(inner => addSimplified(inner, content))
+	} else {
+		content.push({ ...e, hasChanged: false, })
+	}
+}
+

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { UpdateCheckResult } from "../element/Element";
+import { ElementOptions, UpdateCheckResult } from "../element/Element";
 import { MfMElement } from "../element/MfMElement";
 import { Text } from "../element/MfMElements";
 import { UpdateInfo } from "../mbuffer/TextContent";
@@ -38,7 +38,9 @@ export class MfMText extends MfMElement<'Text', never, Text, TextParser> impleme
 }
 export class TextParser extends MfMParser<'Text', never, Text> {
 	parse(start: TextLocation, end: TextLocation): Text | null {
-		return new MfMText(this.idGenerator.nextId(), start.persistentRangeUntil(end), this)
+		const options: ElementOptions = {}
+
+		return new MfMText(this.idGenerator.nextId(), options, start.persistentRangeUntil(end), this)
 	}
 	checkUpdate(element: Text, update: UpdateInfo): UpdateCheckResult {
 		if(
