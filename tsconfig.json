@@ -18,6 +18,7 @@
 	"include": [
 		"src/**/*",
 		"test/**/*",
-		"jest.d.ts"
+		"jest.d.ts",
+		"index.ts"
 	]
 }

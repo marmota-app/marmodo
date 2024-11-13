@@ -1,14 +1,16 @@
 {
-  "name": "marmodo",
+  "name": "@marmota/marmodo",
   "version": "0.0.1",
   "description": "Parser for marmota-flavored-markdown (MfM)",
-  "main": "dist/src/index.js",
-  "typings": "dist/src/index.d.ts",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "type": "module",
   "scripts": {
     "compile": "tsc",
     "test": "jest ./test",
     "test:watch": "jest --watch ./test",
-    "doc": "jsdoc src --tutorials docs -r -c .jsdoc.conf.json --readme README.md"
+    "doc": "jsdoc src --tutorials docs -r -c .jsdoc.conf.json --readme README.md",
+    "build": "rm -rf dist && tsc --declaration --outDir dist"
   },
   "author": "David Tanzer (business@davidtanzer.net)",
   "license": "Apache-2.0",
