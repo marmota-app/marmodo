@@ -58,6 +58,10 @@ export class IdGenerator {
 		return `line-${this.nextPureId()}`
 	}
 
+	nextTaggedId(tag: string): string {
+		return `${tag}-${this.nextPureId()}`
+	}
+	
 	private nextPureId(): string {
 		const id = String(this.current)
 			.padStart(16, '0')

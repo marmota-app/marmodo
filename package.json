@@ -10,7 +10,7 @@
     "test": "jest ./test",
     "test:watch": "jest --watch ./test",
     "doc": "jsdoc src --tutorials docs -r -c .jsdoc.conf.json --readme README.md",
-    "build": "rm -rf dist && tsc --declaration --outDir dist"
+    "build": "rm -rf dist && tsc --declaration --outDir dist --project tsconfig.build.json"
   },
   "author": "David Tanzer (business@davidtanzer.net)",
   "license": "Apache-2.0",
@@ -23,12 +23,10 @@
     "jsdoc": "^4.0.3",
     "jsdom": "^25.0.1",
     "omnimock": "^1.0.0-rc.2",
-    "taffydb": "^2.7.3",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "contentful-sdk-jsdoc": "^3.1.2"
   }
 }
