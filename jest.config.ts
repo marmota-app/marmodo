@@ -5,6 +5,7 @@ import fs from 'fs'
 const config: Config.InitialOptions = {
 	testEnvironment: "node",
 	setupFilesAfterEnv: [ "<rootDir>/test/setup.ts",  ],
+	modulePathIgnorePatterns: ["<rootDir>/dist/"],
 	preset: 'ts-jest',
 };
 export default config
