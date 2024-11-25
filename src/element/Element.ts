@@ -41,6 +41,16 @@ export type ElementOptions = {
 	[key: string]: string,
 }
 
+export type ElementUpdateCallback<
+	TYPE extends string,
+	CONTENT extends Element<any, any, any>,
+	THIS extends Element<TYPE, CONTENT, THIS>,
+> = (elem: Element<TYPE, CONTENT, THIS>)=>unknown
+export interface ElementUpdateRegistration {
+	id: string,
+	unsubscribe: () => void,
+}
+
 export interface Element<
 	TYPE extends string,
 	CONTENT extends Element<any, any, any>,
@@ -55,5 +65,9 @@ export interface Element<
 
 	readonly asText: string,
 	readonly content: CONTENT[],
+
+	onUpdate: (cb: ElementUpdateCallback<TYPE, CONTENT, THIS>) => ElementUpdateRegistration,
+	updateParsed: () => void,
+	removeFromTree: () => void,
 }
 

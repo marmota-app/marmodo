@@ -15,8 +15,11 @@ limitations under the License.
 */
 
 import { PersistentRange } from "../mbuffer/TextRange";
+import { IdGenerator } from "../parser/Parsers";
 import { jsonTransient } from "../utilities/jsonTransient";
-import { Element, ElementOptions, Parser } from "./Element";
+import { Element, ElementOptions, ElementUpdateCallback, ElementUpdateRegistration, Parser } from "./Element";
+
+let elementIdGenerator: IdGenerator
 
 export abstract class MfMElement<
 	TYPE extends string,
@@ -28,6 +31,8 @@ export abstract class MfMElement<
 	abstract readonly asText: string
 	abstract readonly content: CONTENT[]
 
+	private updateCallbacks: { [key: string]: ElementUpdateCallback<TYPE, CONTENT, THIS>} = {}
+
 	constructor(
 		public readonly id: string,
 		public readonly options: ElementOptions,
@@ -35,5 +40,26 @@ export abstract class MfMElement<
 		public readonly parsedWith: PARSER,
 	) {
 		jsonTransient(this, 'parsedWith')
+	}
+
+	onUpdate(cb: ElementUpdateCallback<TYPE, CONTENT, THIS>): ElementUpdateRegistration {
+		if(elementIdGenerator == null) { elementIdGenerator = new IdGenerator() }
+
+		const id = elementIdGenerator.nextTaggedId('update-callback')
+		this.updateCallbacks[id] = cb
+
+		return {
+			id: id,
+			unsubscribe: () => { delete this.updateCallbacks[id] }
+		}
+	}
+
+	updateParsed(): void {
+		Object.keys(this.updateCallbacks).forEach(k => this.updateCallbacks[k](this))
+	}
+
+	removeFromTree(): void {
+		this.content.forEach(c => c.removeFromTree())
+		this.updateCallbacks = {}
 	}
 }
