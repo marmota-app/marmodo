@@ -17,18 +17,26 @@ limitations under the License.
 import { Container } from "./element/MfMElements";
 import { ContentUpdate } from "./mbuffer/ContentUpdate";
 import { TextContent } from "./mbuffer/TextContent";
-import { Parsers } from "./parser/Parsers";
+import { IdGenerator, Parsers } from "./parser/Parsers";
 import { UpdateParser } from "./update/UpdateParser";
+
+let documentIdGenerator: IdGenerator
 
 export interface MfMDocumentOptions {
 	parsers: Parsers,
 	updateParser: UpdateParser,
+}
+export interface DocumentUpdateRegistration {
+	id: string,
+	unsubscribe: () => void,
 }
 export class MfMDocument {
 	#parsers: Parsers
 	#updateParser: UpdateParser
 	#textContent: TextContent
 	#content: Container
+
+	private updateCallbacks: { [key: string]: ()=>void} = {}
 
 	constructor(initialText: string, options: Partial<MfMDocumentOptions> = {}) {
 		const defaultOptions: MfMDocumentOptions = {
@@ -54,9 +62,30 @@ export class MfMDocument {
 	}
 
 	update(cu: ContentUpdate, getCompleteText: () => string): void {
-		//const updated = this.#updateParser.parseUpdate(cu, this.#content)
+		const updateInfo = this.#textContent.update(cu)
+		const updated = this.#updateParser.parseUpdate(updateInfo, this.#content, this.#textContent.end())
 
-		this.#content = this.#parseCompleteText(getCompleteText())
+		if(updated === null) {
+			this.#content.removeFromTree()
+			this.#content = this.#parseCompleteText(getCompleteText())
+
+			this.updateParsed()
+		}
+	}
+	onUpdate(cb: () => void): DocumentUpdateRegistration {
+		if(documentIdGenerator == null) { documentIdGenerator = new IdGenerator() }
+
+		const id = documentIdGenerator.nextTaggedId('update-callback')
+		this.updateCallbacks[id] = cb
+
+		return {
+			id: id,
+			unsubscribe: () => { delete this.updateCallbacks[id] }
+		}
+	}
+
+	updateParsed(): void {
+		Object.keys(this.updateCallbacks).forEach(k => this.updateCallbacks[k]())
 	}
 
 	#parseCompleteText(text: string): Container {

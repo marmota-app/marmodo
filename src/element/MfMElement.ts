@@ -62,4 +62,8 @@ export abstract class MfMElement<
 		this.content.forEach(c => c.removeFromTree())
 		this.updateCallbacks = {}
 	}
+
+	get referenceMap(): { [key: string]: string; } {
+		return {}
+	}
 }

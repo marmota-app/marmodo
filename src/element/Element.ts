@@ -69,5 +69,7 @@ export interface Element<
 	onUpdate: (cb: ElementUpdateCallback<TYPE, CONTENT, THIS>) => ElementUpdateRegistration,
 	updateParsed: () => void,
 	removeFromTree: () => void,
+
+	readonly referenceMap: { [key: string]: string },
 }
 
