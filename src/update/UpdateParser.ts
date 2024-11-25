@@ -45,17 +45,21 @@ export class UpdateParser {
 		const updateEnd = update.range.end
 
 		const isInsideCurrentElement =
+			currentElement.parsedRange.start.isValid &&
+			currentElement.parsedRange.end.isValid &&
 			updateStart.isAtLeast(currentElement.parsedRange.start) &&
 			updateEnd.isAtMost(currentElement.parsedRange.end)
+
 		if(isInsideCurrentElement) {
 			//drill down if possible
 			for(let i in currentElement.content) {
 				const result = this.#updateElement(update, currentElement.content[i], documentEnd)
 				if(result.updated != null) {
-					//the current element **was** updated here, now need to replace
-					//it and schedule a callback.
-					currentElement.content[i] = result.updated
 					if(result.isFirstUpdate) {
+						//the current element **was** updated here, now need to replace
+						//it and schedule a callback.
+						this.#removeAllUpdateListeners(currentElement.content[i])
+						currentElement.content[i] = result.updated
 						this.#scheduleUpdatedCallback(currentElement)
 					}
 					return {
@@ -67,7 +71,6 @@ export class UpdateParser {
 
 			//if the drilled down element could not be updated, update it here
 			const parser = currentElement.parsedWith
-			const range = currentElement.parsedRange
 			const checkResult = parser.checkUpdate(currentElement, update, documentEnd)
 			const updated = checkResult.canUpdate?
 				parser.parse(checkResult.rangeStart, checkResult.rangeEnd):
@@ -98,6 +101,9 @@ export class UpdateParser {
 	}
 
 	#scheduleUpdatedCallback(element: Element<any, any, any>) {
-		//TODO callback not yet implemented!
+		element.updateParsed()
+	}
+	#removeAllUpdateListeners(element: Element<any, any, any>) {
+		element.removeFromTree()
 	}
 }

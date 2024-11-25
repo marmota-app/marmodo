@@ -21,6 +21,8 @@ import { PersistentRange, TemporaryRange } from "./TextRange"
 export abstract class TextLocation {
 	abstract readonly buffer: MBuffer
 	abstract readonly index: number
+	abstract readonly isValid: boolean
+	
 	abstract ensureValid(message: string): void
 
 	isBefore(other: TextLocation) {
@@ -179,8 +181,11 @@ export class PersistentLocation extends TextLocation {
 		}
 	}
 
+	get isValid(): boolean {
+		return this._buffer != undefined && this._index != undefined
+	}
 	ensureValid(message: string) {
-		if(this._buffer === undefined || this._index === undefined) {
+		if(!this.isValid) {
 			throw new Error(`${message} [buffer: {${this._buffer?.info}}, index: {${this.index}}]`)
 		}
 	}
@@ -212,8 +217,12 @@ export class TemporaryLocation extends TextLocation {
 		if(this._index !== undefined) { return this._index }
 		throw new Error(`Cannot get index of invalid location ${this.info()}`)
 	}
+	get isValid() {
+		//TODO buffer has NOT been modified
+		return true
+	}
 	ensureValid(message: string) {
-		//if(buffer has been modified) {
+		//if(!isValid) {
 		//	throw new Error(`${message} [buffer: "${this._buffer?.info}", index: "${this.index}"]`)
 		//}
 	}
