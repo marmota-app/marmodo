@@ -35,6 +35,13 @@ export class MfMText extends MfMElement<'Text', never, Text, TextParser> impleme
 	get asText(): string {
 		return this.parsedRange.asString()
 	}
+
+	override get referenceMap(): { [key: string]: string; } {
+		return {
+			...super.referenceMap,
+			'element.textContent': this.textContent,
+		}
+	}
 }
 export class TextParser extends MfMParser<'Text', never, Text> {
 	parse(start: TextLocation, end: TextLocation): Text | null {
