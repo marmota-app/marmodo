@@ -171,7 +171,7 @@ export class PersistentLocation extends TextLocation {
 		return new PersistentRange(this, end.persist())
 	}
 
-	update(newBuffer: MBuffer, newIndex: number) {
+	update(newBuffer: MBuffer, newIndex: number): boolean {
 		const oldBuffer = this._buffer
 
 		this._buffer = newBuffer
@@ -179,7 +179,9 @@ export class PersistentLocation extends TextLocation {
 
 		if(oldBuffer !== newBuffer) {
 			newBuffer.registerLocation(this)
+			return true
 		}
+		return false
 	}
 
 	get isValid(): boolean {
