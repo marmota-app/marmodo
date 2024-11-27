@@ -57,16 +57,80 @@ export function expectUpdate<
 	}
 }
 
+export function expectUpdates<
+	TYPE extends string,
+	CONTENT extends Element<any, any, any>,
+	ELEMENT extends Element<TYPE, CONTENT, ELEMENT>,
+>(parser: Parser<TYPE, CONTENT, ELEMENT>, originalText: string, updates: ContentUpdate[]) {
+	return {
+		canBeParsed(reason = '') {
+			it(`can parse update [${updates.map(u => `"${u.text}", ${u.rangeOffset}+${u.rangeLength}`).join(', ')}] to content "${replaceWhitespace(originalText)}"${reason.length>0? ' - '+reason : ''}`, () => {
+				const [text, original] = parse(parser, originalText)
+				const updated = updates.reduce((prev: ELEMENT | null, update) => {
+					if(prev != null) {
+						return updateElement(text, prev, update)
+					}
+					return null
+				}, original)
+
+				const expectedTextContent = new TextContent(originalText)
+				updates.forEach(update => expectedTextContent.update(update))
+				const expectedElement = parser.parse(expectedTextContent.start(), expectedTextContent.end())
+
+				expect(updated).not.toBeNull()
+				expect(updated!.parsedRange.asString()).toEqual(expectedElement?.parsedRange.asString())
+			})
+		},
+		cannotBeParsed(reason = '') {
+			it(`CANNOT parse update [${updates.map(u => `"${u.text}", ${u.rangeOffset}+${u.rangeLength}`).join(', ')}] to content "${replaceWhitespace(originalText)}"${reason.length>0? ' - '+reason : ''}`, () => {
+				const [text, original] = parse(parser, originalText)
+				const updated = updates.reduce((prev: ELEMENT | null, update) => {
+					if(prev != null) {
+						return updateElement(text, prev, update)
+					}
+					return null
+				}, original)
+
+				expect(updated).toBeNull()
+			})
+		},
+		skip: {
+			canBeParsed() {
+				it.skip(`can parse update [${updates.map(u => `"${u.text}", ${u.rangeOffset}+${u.rangeLength}`).join(', ')}] to content "${replaceWhitespace(originalText)}"`, () => {})
+			},
+			cannotBeParsed() {
+				it.skip(`CANNOT parse update [${updates.map(u => `"${u.text}", ${u.rangeOffset}+${u.rangeLength}`).join(', ')}] to content "${replaceWhitespace(originalText)}"`, () => {})
+			},
+		}
+	}
+}
+
 function parseAndUpdate<
 	TYPE extends string,
 	CONTENT extends Element<any, any, any>,
 	ELEMENT extends Element<TYPE, CONTENT, ELEMENT>,
 >(parser: Parser<TYPE, CONTENT, ELEMENT>, originalText: string, update: ContentUpdate): ELEMENT | null {
+	const [text, original] = parse(parser, originalText)
+	return updateElement(text, original, update)
+}
+
+function parse<
+	TYPE extends string,
+	CONTENT extends Element<any, any, any>,
+	ELEMENT extends Element<TYPE, CONTENT, ELEMENT>,
+>(parser: Parser<TYPE, CONTENT, ELEMENT>, originalText: string): [TextContent, ELEMENT] {
 	const text = new TextContent(originalText)
 
 	const original = parser.parse(text.start(), text.end())
 	if(original == null) { throw new Error(`Could not parse string "${originalText}" with parser ${parser}`) }
 
+	return [text, original]
+}
+function updateElement<
+	TYPE extends string,
+	CONTENT extends Element<any, any, any>,
+	ELEMENT extends Element<TYPE, CONTENT, ELEMENT>,
+>(text: TextContent, original: ELEMENT, update: ContentUpdate) {
 	const ui = text.update(update)
 	const updated = updateParser.parseUpdate(ui, original, text.end())
 

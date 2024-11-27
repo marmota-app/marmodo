@@ -128,6 +128,10 @@ ${textFromUpdated}`
 		//-------- DEVELOPMENT --------
 
 		if(updated === null) {
+			if(development) {
+				console.warn(`Update returned null, parsing complete text. Original text="${this.#originalText}", updates = `, this.#updates)
+			}
+	
 			this.#content.removeFromTree()
 			this.#content = this.#parseCompleteText(getCompleteText())
 

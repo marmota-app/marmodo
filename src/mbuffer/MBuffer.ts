@@ -200,7 +200,10 @@ export class MBuffer {
 			}
 
 			if(location.index === insertedAt) {
-				location.update(inserted, inserted._length)
+				const hasUpdatedBuffer = location.update(inserted, inserted._length)
+				if(!hasUpdatedBuffer) {
+					remainingLocations.push(location)
+				}
 			} else if(location.index > insertedAt) {
 				if(!last) { throw new Error(`cannot insert at ${insertedAt} because there is no "last" buffer ("${this.buffered}" [${this._start}, ${this._length}]), location pointing to buffer "${location.buffer.buffered}" [${location.buffer._start}, ${location.buffer._length}], locations: [${this.locations.map(l => l.info())}]`) }
 				location.update(last, location.index - insertedAt)

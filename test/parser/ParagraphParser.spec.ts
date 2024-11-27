@@ -17,7 +17,7 @@ limitations under the License.
 import { Parsers } from "../../src/parser/Parsers";
 import { parseAll } from "../parse";
 import { replaceWhitespace } from "../replaceWhitespace";
-import { expectUpdate } from "../update/expectUpdate";
+import { expectUpdate, expectUpdates } from "../update/expectUpdate";
 
 describe('ParagraphParser', () => {
 	describe('Parsing the content', () => {
@@ -86,6 +86,14 @@ describe('ParagraphParser', () => {
 			'some text',
 			{ text: ' more text', rangeOffset: 'some text'.length, rangeLength: 0 }
 		).canBeParsed('Update at the end of the range can still be parsed')
+		expectUpdates(
+			parser,
+			'some text',
+			[
+				{ text: ' ', rangeOffset: 'some text'.length, rangeLength: 0 },
+				{ text: 'm', rangeOffset: 'some text '.length, rangeLength: 0 },
+			]
+		).canBeParsed('Multiple updates at the end of the range can still be parsed')
 		
 		expectUpdate(
 			parser,
