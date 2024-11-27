@@ -58,7 +58,7 @@ export class UpdateParser {
 					if(result.isFirstUpdate) {
 						//the current element **was** updated here, now need to replace
 						//it and schedule a callback.
-						this.#removeAllUpdateListeners(currentElement.content[i])
+						currentElement.content[i].removeFromTree()
 						currentElement.content[i] = result.updated
 						this.#scheduleUpdatedCallback(currentElement)
 					}
@@ -102,8 +102,5 @@ export class UpdateParser {
 
 	#scheduleUpdatedCallback(element: Element<any, any, any>) {
 		element.updateParsed()
-	}
-	#removeAllUpdateListeners(element: Element<any, any, any>) {
-		element.removeFromTree()
 	}
 }

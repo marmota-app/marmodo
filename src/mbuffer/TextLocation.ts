@@ -22,6 +22,7 @@ export abstract class TextLocation {
 	abstract readonly buffer: MBuffer
 	abstract readonly index: number
 	abstract readonly isValid: boolean
+	abstract readonly type: 'start' | 'end'
 	
 	abstract ensureValid(message: string): void
 
@@ -115,8 +116,8 @@ export abstract class TextLocation {
 					status.index++
 					if(status.index === status.text.length) {
 						accessor.advance()
-						const start = new TemporaryLocation(status.startBuffer, status.startIndex)
-						const end = new TemporaryLocation(accessor.buffer, accessor.index)
+						const start = new TemporaryLocation(status.startBuffer, status.startIndex, 'start')
+						const end = new TemporaryLocation(accessor.buffer, accessor.index, 'end')
 						return new TemporaryRange(start, end)
 					}
 				} else {
@@ -133,7 +134,7 @@ export abstract class TextLocation {
 	abstract info(): string
 }
 export class PersistentLocation extends TextLocation {
-	constructor(private _buffer: MBuffer | undefined, private _index: number | undefined) {
+	constructor(private _buffer: MBuffer | undefined, private _index: number | undefined, public readonly type: 'start' | 'end') {
 		super()
 		jsonTransientPrivate(this, '_buffer')
 
@@ -152,7 +153,7 @@ export class PersistentLocation extends TextLocation {
 
 	accessor(): TemporaryLocation {
 		if(this._buffer!==undefined && this._index!==undefined) {
-			return new TemporaryLocation(this._buffer, this._index)
+			return new TemporaryLocation(this._buffer, this._index, this.type)
 		}
 		throw new Error(`Cannot get accessor of invalid location ${this.info()}`)
 	}
@@ -191,6 +192,8 @@ export class PersistentLocation extends TextLocation {
 	}
 
 	invalidate() {
+		this._buffer?.unregisterLocation(this)
+
 		this._buffer = undefined
 		this._index = undefined
 	}
@@ -201,7 +204,7 @@ export class PersistentLocation extends TextLocation {
 }
 
 export class TemporaryLocation extends TextLocation {
-	constructor(private _buffer: MBuffer, private _index: number) {
+	constructor(private _buffer: MBuffer, private _index: number, public readonly type: 'start' | 'end') {
 		super()
 		while(this._index >= this._buffer.length && this._buffer.nextBuffer) {
 			this._buffer = this._buffer.nextBuffer
@@ -228,10 +231,12 @@ export class TemporaryLocation extends TextLocation {
 	}
 
 	accessor(): TemporaryLocation {
-		return new TemporaryLocation(this._buffer, this._index)
+		return new TemporaryLocation(this._buffer, this._index, this.type)
 	}
 
 	get(): string {
+		//Use at own risk if this is an END-Location: The buffer might not
+		//have text at the index.
 		return this._buffer.at(this._index)
 	}
 
@@ -261,7 +266,7 @@ export class TemporaryLocation extends TextLocation {
 
 	persist(): PersistentLocation {
 		this.ensureValid('Cannot get persistent location of invalid location')
-		return new PersistentLocation(this._buffer, this._index)
+		return new PersistentLocation(this._buffer, this._index, this.type)
 	}
 	persistentRangeUntil(end: TextLocation): PersistentRange {
 		this.ensureValid('Cannot get persistent range of invalid location')
@@ -271,6 +276,16 @@ export class TemporaryLocation extends TextLocation {
 		}
 
 		return new PersistentRange(this.persist(), end.persist())
+	}
+
+	temporaryRangeUntil(end: TemporaryLocation): TemporaryRange {
+		this.ensureValid('Cannot get temporary range of invalid location')
+		end.ensureValid('Cannot get temporary range to invalid end location')
+		if(!end.isAtLeast(this)) {
+			throw new Error(`Cannot get temporary location when end is not after this location ${this.info()}`)
+		}
+
+		return new TemporaryRange(this, end)
 	}
 
 	info() {

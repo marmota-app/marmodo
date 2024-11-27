@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { replaceWhitespace } from "../../test/replaceWhitespace"
 import { PersistentLocation, TemporaryLocation } from "./TextLocation"
 
 export class MBuffer {
@@ -31,16 +32,16 @@ export class MBuffer {
 
 	insert(newContent: string, at: number): void {
 		if(at === this._length) {
-			if(this.hasSharedBuffer) {
+			if(this.hasSharedBuffer || (this._start+this.length)!==this.buffered.length) {
 				const inserted = new MBuffer(newContent, 0, newContent.length, false)
 				if(this.next) { this.linkBuffers(inserted, this.next) }
 				this.linkBuffers(this, inserted)
 
-				this.updateLocationsAfterInsert(at, inserted)
+				this.#updateLocationsAfterInsert(at, inserted)
 			} else {
 				this.buffered = this.buffered + newContent
 				this._length += newContent.length
-				this.updateLocationsAfterInsert(at, this)
+				this.#updateLocationsAfterInsert(at, this)
 			}
 		} else if(at > this._length && this.next) {
 			this.next.insert(newContent, at - this._length)
@@ -52,7 +53,7 @@ export class MBuffer {
 			this.linkBuffers(this, inserted)
 
 
-			this.updateLocationsAfterInsert(at, inserted, last)
+			this.#updateLocationsAfterInsert(at, inserted, last)
 		}
 	}
 
@@ -67,6 +68,7 @@ export class MBuffer {
 			//     should become zero...
 			this._length = at
 			this.next.delete(0, remainingToDelete)
+			this.#updateLocationsAfterDelete(this, at, charsToDelete)
 		} else {
 			let next: MBuffer = this
 			if(at > 0) {
@@ -78,23 +80,29 @@ export class MBuffer {
 			next._length -= charsToDelete
 
 			//update locations that are after the deleted content
-			const remainingLocations: PersistentLocation[] = []
-			for(let location of this.locations) {
-				if(location.buffer !== this) {
-					throw new Error(`Invalid location found registered in this buffer ("${this.buffered}" [${this._start}, ${this._length}]) but pointing to buffer "${location.buffer.buffered}" [${location.buffer._start}, ${location.buffer._length}]`)
-				}
-	
-				if(location.index >= (at+charsToDelete)) {
-					if(!next) { throw new Error(`cannot insert at ${at} because there is no "next" buffer ("${this.buffered}" [${this._start}, ${this._length}]), location pointing to buffer "${location.buffer.buffered}" [${location.buffer._start}, ${location.buffer._length}]`) }
-					location.update(next, location.index - at - charsToDelete)
-				} else if(location.index > at) {
-					location.invalidate()
-				} else {
-					remainingLocations.push(location)
-				}
-			}
-			this.locations = remainingLocations
+			this.#updateLocationsAfterDelete(next, at, charsToDelete)
 		}
+	}
+
+	#updateLocationsAfterDelete(buffer: MBuffer, at: number, charsToDelete: number) {
+		const remainingLocations: PersistentLocation[] = []
+		for(let location of this.locations) {
+			if(location.buffer !== this) {
+				throw new Error(`Invalid location found registered in this buffer ("${this.buffered}" [${this._start}, ${this._length}]) but pointing to buffer "${location.buffer.buffered}" [${location.buffer._start}, ${location.buffer._length}]`)
+			}
+
+			if(location.index >= (at+charsToDelete)) {
+				if(!buffer) { throw new Error(`cannot delete at ${at} because there is no "next" buffer ("${this.buffered}" [${this._start}, ${this._length}]), location pointing to buffer "${location.buffer.buffered}" [${location.buffer._start}, ${location.buffer._length}]`) }
+				location.update(buffer, location.index - at - charsToDelete)
+			} else if(location.type === 'start' && location.index >= at) {
+				location.invalidate()
+			} else if(location.type === 'end' && location.index > at) {
+				location.invalidate()
+			} else {
+				remainingLocations.push(location)
+			}
+		}
+		this.locations = remainingLocations
 	}
 
 	at(index: number) {
@@ -133,13 +141,34 @@ export class MBuffer {
 		}
 		this.locations.push(location)
 	}
+	unregisterLocation(location: PersistentLocation): void {
+		const remainingLocations: PersistentLocation[] = []
 
-	location(index: number): TemporaryLocation {
+		this.locations.forEach(l => {
+			if(l !== location) {
+				remainingLocations.push(l)
+			}
+		})
+		
+		this.locations = remainingLocations
+	}
+
+	startLocation(index: number): TemporaryLocation {
 		if(index <= this._length) {
-			return new TemporaryLocation(this, index)
+			return new TemporaryLocation(this, index, 'start')
 		} else {
 			if(this.next) {
-				return this.next.location(index - this._length)
+				return this.next.startLocation(index - this._length)
+			}
+		}
+		throw new Error(`Cannot find location at index ${index} in buffer "${this.buffered}" [${this._start}, ${this._length}]`)
+	}
+	endLocation(index: number): TemporaryLocation {
+		if(index <= this._length) {
+			return new TemporaryLocation(this, index, 'end')
+		} else {
+			if(this.next) {
+				return this.next.endLocation(index - this._length)
 			}
 		}
 		throw new Error(`Cannot find location at index ${index} in buffer "${this.buffered}" [${this._start}, ${this._length}]`)
@@ -149,7 +178,7 @@ export class MBuffer {
 		if(this.next) {
 			return this.next.end()
 		}
-		return new TemporaryLocation(this, this.length)
+		return new TemporaryLocation(this, this.length, 'end')
 	}
 
 	private split(splitAt: number): MBuffer {
@@ -162,7 +191,7 @@ export class MBuffer {
 		return secondBufferAfterSplit
 	}
 
-	private updateLocationsAfterInsert(insertedAt: number, inserted: MBuffer, last?: MBuffer) {
+	#updateLocationsAfterInsert(insertedAt: number, inserted: MBuffer, last?: MBuffer) {
 		const remainingLocations: PersistentLocation[] = []
 
 		for(let location of this.locations) {
@@ -173,7 +202,7 @@ export class MBuffer {
 			if(location.index === insertedAt) {
 				location.update(inserted, inserted._length)
 			} else if(location.index > insertedAt) {
-				if(!last) { throw new Error(`cannot insert at ${insertedAt} because there is no "last" buffer ("${this.buffered}" [${this._start}, ${this._length}]), location pointing to buffer "${location.buffer.buffered}" [${location.buffer._start}, ${location.buffer._length}]`) }
+				if(!last) { throw new Error(`cannot insert at ${insertedAt} because there is no "last" buffer ("${this.buffered}" [${this._start}, ${this._length}]), location pointing to buffer "${location.buffer.buffered}" [${location.buffer._start}, ${location.buffer._length}], locations: [${this.locations.map(l => l.info())}]`) }
 				location.update(last, location.index - insertedAt)
 			} else {
 				remainingLocations.push(location)
@@ -186,5 +215,25 @@ export class MBuffer {
 	private linkBuffers(first: MBuffer, second: MBuffer) {
 		first.next = second
 		second.previous = first
+	}
+
+	printable(): string {
+		let result = replaceWhitespace(this.buffered)
+		const positions = new Array(this.buffered.length+1).fill(' ')
+		positions[this._start] = 'S'
+		positions[this._start+this.length] = 'E'
+
+		result += '\n'+positions.join('')
+
+		if(this.locations.length > 0) {
+			const locs = new Array(this.buffered.length+1).fill(' ')
+			this.locations.forEach(l => locs[this._start+l.index]='^')
+			result += '\n'+locs.join('')
+		}
+		if(this.next) {
+			result += '\n' + this.next.printable()
+		}
+
+		return result
 	}
 }

@@ -16,12 +16,13 @@ limitations under the License.
 
 import { Container } from "./element/MfMElements";
 import { ContentUpdate } from "./mbuffer/ContentUpdate";
-import { TextContent } from "./mbuffer/TextContent";
+import { TextContent, UpdateInfo } from "./mbuffer/TextContent";
 import { IdGenerator, Parsers } from "./parser/Parsers";
 import { UpdateParser } from "./update/UpdateParser";
 
 let documentIdGenerator: IdGenerator
-
+const development = true
+let updateCounter = 0
 export interface MfMDocumentOptions {
 	parsers: Parsers,
 	updateParser: UpdateParser,
@@ -31,6 +32,11 @@ export interface DocumentUpdateRegistration {
 	unsubscribe: () => void,
 }
 export class MfMDocument {
+	//-------- DEVELOPMENT --------
+	#updates: ContentUpdate[] = []
+	#originalText: string = ''
+	//-------- DEVELOPMENT --------
+
 	#parsers: Parsers
 	#updateParser: UpdateParser
 	#textContent: TextContent
@@ -39,6 +45,10 @@ export class MfMDocument {
 	private updateCallbacks: { [key: string]: ()=>void} = {}
 
 	constructor(initialText: string, options: Partial<MfMDocumentOptions> = {}) {
+		if(development) {
+			this.#originalText = initialText
+		}
+
 		const defaultOptions: MfMDocumentOptions = {
 			parsers: new Parsers(),
 			updateParser: new UpdateParser(),
@@ -62,14 +72,66 @@ export class MfMDocument {
 	}
 
 	update(cu: ContentUpdate, getCompleteText: () => string): void {
-		const updateInfo = this.#textContent.update(cu)
-		const updated = this.#updateParser.parseUpdate(updateInfo, this.#content, this.#textContent.end())
+		let updateInfo: UpdateInfo
+
+		if(development) {
+			this.#updates.push(cu)
+			try {
+				updateInfo = this.#textContent.update(cu)
+			} catch(e) {
+				console.warn(`Update failed. Original text="${this.#originalText}", updates = `, this.#updates)
+			}
+		} else {
+			updateInfo = this.#textContent.update(cu)
+		}
+
+		//-------- DEVELOPMENT --------
+		if(development) {
+			const reconstructedText = this.#textContent.start().stringUntil(this.#textContent.end())
+			const editorText = getCompleteText()
+
+			if(reconstructedText !== editorText) {
+				console.error(
+`Updated text content does not match editor text
+--------------- Editor Text:
+${editorText}
+--------------- Updated TextContent:
+${reconstructedText}`
+				)
+				console.warn(`Update failed. Original text="${this.#originalText}", updates = `, this.#updates)
+			}
+		}
+		//-------- DEVELOPMENT --------
+
+		const updated = this.#updateParser.parseUpdate(updateInfo!, this.#content, this.#textContent.end())
+
+		//-------- DEVELOPMENT --------
+		if(development && updated != null) {
+			const newlyParsed = this.#parsers.Container.parse(this.#textContent.start(), this.#textContent.end())
+
+			const textFromUpdated = updated.asText
+			const textFromNew = newlyParsed!.asText
+
+			if(textFromUpdated !== textFromNew) {
+				console.error(
+`Updated document tree as text does not match newly parsed tree as text
+--------------- Newly parsed, as text:
+${textFromNew}
+--------------- Updated tree, as text:
+${textFromUpdated}`
+				)
+				console.warn(`Update failed. Original text="${this.#originalText}", updates = `, this.#updates)
+			}
+
+			//TODO compare the trees
+		}
+		//-------- DEVELOPMENT --------
 
 		if(updated === null) {
 			this.#content.removeFromTree()
 			this.#content = this.#parseCompleteText(getCompleteText())
 
-			this.updateParsed()
+			this.updateParsedCompletely()
 		}
 	}
 	onUpdate(cb: () => void): DocumentUpdateRegistration {
@@ -84,11 +146,16 @@ export class MfMDocument {
 		}
 	}
 
-	updateParsed(): void {
+	updateParsedCompletely(): void {
 		Object.keys(this.updateCallbacks).forEach(k => this.updateCallbacks[k]())
 	}
 
 	#parseCompleteText(text: string): Container {
+		if(development) {
+			this.#updates = []
+			this.#originalText = text
+		}
+
 		this.#textContent = new TextContent(text)
 		const parsedContent = this.#parsers.Container.parse(this.#textContent.start(), this.#textContent.end())
 		if(parsedContent == null) {

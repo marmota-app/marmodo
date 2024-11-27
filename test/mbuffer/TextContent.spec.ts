@@ -63,8 +63,8 @@ describe('TextContent', () => {
 		expect(updateInfo.newText).toEqual('red')
 		expect(updateInfo.range.asString()).toEqual('red')
 
-		const rangeUntilReplacement = new PersistentRange(completeRange.start, updateInfo.range.start)
-		const rangeAfterReplacement = new PersistentRange(updateInfo.range.end, completeRange.end)
+		const rangeUntilReplacement = new PersistentRange(completeRange.start, updateInfo.range.start.persist())
+		const rangeAfterReplacement = new PersistentRange(updateInfo.range.end.persist(), completeRange.end)
 
 		expect(rangeUntilReplacement.asString()).toEqual('the ')
 		expect(rangeAfterReplacement.asString()).toEqual(' fox jumps over the lazy dog')
@@ -76,5 +76,59 @@ describe('TextContent', () => {
 		const range = content.start().persistentRangeUntil(content.end())
 
 		expect(range.asString()).toEqual('the quick brown fox jumps over the lazy dog')
+	})
+
+	it('can parse multiple updates with deletes and insert', () => {
+		const content = new TextContent('Tes')
+
+		content.update({
+			"rangeLength": 1,
+			"text": "",
+			"rangeOffset": 2,
+		})
+		content.update({
+			"rangeLength": 1,
+			"text": "",
+			"rangeOffset": 1,
+		})
+		content.update({
+			"rangeLength": 0,
+			"text": "t",
+			"rangeOffset": 1,
+		})
+
+		const range = content.start().persistentRangeUntil(content.end())
+		expect(range.asString()).toEqual('Tt')
+	})
+	it('can update with multiple buffers, inserts and deletes', () => {
+		const content = new TextContent('123a456');
+
+		[
+			{
+				"rangeLength": 0,
+				"text": "b",
+				"rangeOffset": 4,
+			},
+			{
+				"rangeLength": 0,
+				"text": "c",
+				"rangeOffset": 5,
+			},
+			{
+				"rangeLength": 1,
+				"text": "",
+				"rangeOffset": 5,
+			},
+			{
+				"rangeLength": 0,
+				"text": "e",
+				"rangeOffset": 5,
+			}
+		].forEach(cu => {
+			content.update(cu)
+		})
+
+		const range = content.start().persistentRangeUntil(content.end())
+		expect(range.asString()).toEqual('123abe456')
 	})
 })
