@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { MBuffer } from "./MBuffer";
 import { TextLocation, TemporaryLocation, PersistentLocation } from "./TextLocation";
 
 export abstract class TextRange {
@@ -40,10 +39,18 @@ export abstract class TextRange {
 		this.start.ensureValid('Range invalid: Start of range is invalid!')
 		this.end.ensureValid('Range invalid: End of range is invalid!')
 	}
+	get isValid() {
+		return this.start.isValid && this.end.isValid
+	}
 }
 export class PersistentRange extends TextRange {
 	constructor(public readonly start: PersistentLocation, public readonly end: PersistentLocation) {
 		super()
+	}
+
+	unregister() {
+		this.start.invalidate()
+		this.end.invalidate()
 	}
 }
 

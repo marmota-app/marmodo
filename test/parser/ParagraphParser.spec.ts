@@ -75,8 +75,18 @@ describe('ParagraphParser', () => {
 			parser,
 			'some text\nsome text\nsome text\n\nmore text',
 			{ text: '', rangeOffset: 0, rangeLength: 'some '.length }
+		).cannotBeParsed('Update does remove the start of the range')
+		expectUpdate(
+			parser,
+			'some text\nsome text\nsome text\n\nmore text',
+			{ text: '', rangeOffset: 's'.length, rangeLength: 'ome '.length }
 		).canBeParsed()
-
+		expectUpdate(
+			parser,
+			'some text',
+			{ text: ' more text', rangeOffset: 'some text'.length, rangeLength: 0 }
+		).canBeParsed('Update at the end of the range can still be parsed')
+		
 		expectUpdate(
 			parser,
 			'some text\nsome text\nsome text\n\nmore text',

@@ -17,12 +17,12 @@ limitations under the License.
 import { ContentUpdate } from "./ContentUpdate"
 import { MBuffer } from "./MBuffer"
 import { TemporaryLocation } from "./TextLocation"
-import { PersistentRange } from "./TextRange"
+import { TemporaryRange } from "./TextRange"
 
 export interface UpdateInfo {
 	replacedText: string,
 	newText: string,
-	range: PersistentRange,
+	range: TemporaryRange,
 }
 export class TextContent {
 	private buffer: MBuffer
@@ -30,9 +30,13 @@ export class TextContent {
 		this.buffer = new MBuffer(text)
 	}
 
+	get internalBuffer() {
+		return this.buffer
+	}
+
 	update(cu: ContentUpdate): UpdateInfo {
-		const start = this.buffer.location(cu.rangeOffset).persist()
-		const end = this.buffer.location(cu.rangeOffset+cu.rangeLength).persist()
+		const start = this.buffer.startLocation(cu.rangeOffset).persist()
+		const end = this.buffer.endLocation(cu.rangeOffset+cu.rangeLength).persist()
 		const replacedText = start.stringUntil(end)
 		const newText = cu.text
 
@@ -47,8 +51,12 @@ export class TextContent {
 		//inserting text will move the start pointer together with the end
 		//(one cannot insert into an empty range). So, we have to get the
 		//new start pointer after the update here, as updatedStart.
-		const updatedStart = this.buffer.location(cu.rangeOffset).persist()
-		const range = new PersistentRange(updatedStart, end)
+
+		const updatedStart = this.buffer.startLocation(cu.rangeOffset)
+		const range = updatedStart.temporaryRangeUntil(end.accessor())
+
+		start.invalidate()
+		end.invalidate()
 
 		return {
 			replacedText,
@@ -62,7 +70,7 @@ export class TextContent {
 	}
 
 	start(): TemporaryLocation {
-		return this.buffer.location(0)
+		return this.buffer.startLocation(0)
 	}
 	end(): TemporaryLocation {
 		return this.buffer.end()

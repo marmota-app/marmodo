@@ -18,7 +18,7 @@ import { MBuffer } from "../../src/mbuffer/MBuffer"
 import { PersistentRange } from "../../src/mbuffer/TextRange"
 
 function createRange(buffer: MBuffer, start: number, end: number): PersistentRange {
-	return buffer.location(start).persistentRangeUntil(buffer.location(end))
+	return buffer.startLocation(start).persistentRangeUntil(buffer.endLocation(end))
 }
 describe('TextRange', () => {
 	it('gets back a substring from a buffer when something was inserted', () => {
@@ -146,9 +146,17 @@ describe('TextRange', () => {
 			const buffer = createBuffer()
 			
 			const range = createRange(buffer, 'the '.length, 'the quick brown fox'.length)
+			buffer.delete('the q'.length, 'uick '.length)
+	
+			expect(range.asString()).toEqual('qbrown fox')
+		})
+		it('cannot get back range when deleting content in the middle of the range, right AT the start ['+i+']', () => {
+			const buffer = createBuffer()
+			
+			const range = createRange(buffer, 'the '.length, 'the quick brown fox'.length)
 			buffer.delete('the '.length, 'quick '.length)
 	
-			expect(range.asString()).toEqual('brown fox')
+			expect(range.isValid).toEqual(false)
 		})
 		it('gets back the correct range when deleting content in the middle of the range, right before the end ['+i+']', () => {
 			const buffer = createBuffer()

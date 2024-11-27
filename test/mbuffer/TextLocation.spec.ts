@@ -29,95 +29,95 @@ describe('TextLocation', () => {
 	describe('before, after, equal', () => {
 		it('can be equal to antoher location', () => {
 			const buffer = createBuffer()
-			const first = buffer.location('the quick brown'.length)
-			const second = buffer.location('the quick brown'.length)
+			const first = buffer.startLocation('the quick brown'.length)
+			const second = buffer.startLocation('the quick brown'.length)
 
 			expect(first.isEqualTo(second)).toEqual(true)
 		})
 		it('can be before another location', () => {
 			const buffer = createBuffer()
-			const first = buffer.location('the quick br'.length)
-			const second = buffer.location('the quick bro'.length)
+			const first = buffer.startLocation('the quick br'.length)
+			const second = buffer.startLocation('the quick bro'.length)
 
 			expect(first.isBefore(second)).toEqual(true)
 		})
 		it('can be before another location (different buffer)', () => {
 			const buffer = createBuffer()
-			const first = buffer.location('th'.length)
-			const second = buffer.location('the quick bro'.length)
+			const first = buffer.startLocation('th'.length)
+			const second = buffer.startLocation('the quick bro'.length)
 
 			expect(first.isBefore(second)).toEqual(true)
 		})
 		it('can be after another location', () => {
 			const buffer = createBuffer()
-			const first = buffer.location('the quick bro'.length)
-			const second = buffer.location('the quick br'.length)
+			const first = buffer.startLocation('the quick bro'.length)
+			const second = buffer.startLocation('the quick br'.length)
 
 			expect(first.isAfter(second)).toEqual(true)
 		})
 		it('can be after another location (different buffer)', () => {
 			const buffer = createBuffer()
-			const first = buffer.location('the quick bro'.length)
-			const second = buffer.location('th'.length)
+			const first = buffer.startLocation('the quick bro'.length)
+			const second = buffer.startLocation('th'.length)
 
 			expect(first.isAfter(second)).toEqual(true)
 		})
 
 		it('is not equal to another location when it is after that location', () => {
 			const buffer = createBuffer()
-			const first = buffer.location('th'.length)
-			const second = buffer.location('the quick bro'.length)
+			const first = buffer.startLocation('th'.length)
+			const second = buffer.startLocation('the quick bro'.length)
 
 			expect(first.isEqualTo(second)).toEqual(false)
 		})
 		it('is not equal to another location when it is before that location', () => {
 			const buffer = createBuffer()
-			const first = buffer.location('the quick bro'.length)
-			const second = buffer.location('th'.length)
+			const first = buffer.startLocation('the quick bro'.length)
+			const second = buffer.startLocation('th'.length)
 
 			expect(first.isEqualTo(second)).toEqual(false)
 		})
 
 		it('is not before another location when it is equal to that location', () => {
 			const buffer = createBuffer()
-			const first = buffer.location('the quick bro'.length)
-			const second = buffer.location('th quick bro'.length)
+			const first = buffer.startLocation('the quick bro'.length)
+			const second = buffer.startLocation('th quick bro'.length)
 
 			expect(first.isBefore(second)).toEqual(false)
 		})
 		it('is not before another location when it is after that location', () => {
 			const buffer = createBuffer()
-			const first = buffer.location('the quick bro'.length)
-			const second = buffer.location('the quick br'.length)
+			const first = buffer.startLocation('the quick bro'.length)
+			const second = buffer.startLocation('the quick br'.length)
 
 			expect(first.isBefore(second)).toEqual(false)
 		})
 		it('is not before another location when it is after that location (different buffer)', () => {
 			const buffer = createBuffer()
-			const first = buffer.location('the quick bro'.length)
-			const second = buffer.location('th'.length)
+			const first = buffer.startLocation('the quick bro'.length)
+			const second = buffer.startLocation('th'.length)
 
 			expect(first.isBefore(second)).toEqual(false)
 		})
 
 		it('is not after another location when it is equal to that location', () => {
 			const buffer = createBuffer()
-			const first = buffer.location('the quick bro'.length)
-			const second = buffer.location('the quick bro'.length)
+			const first = buffer.startLocation('the quick bro'.length)
+			const second = buffer.startLocation('the quick bro'.length)
 
 			expect(first.isAfter(second)).toEqual(false)
 		})
 		it('is not after another location when it is before that location', () => {
 			const buffer = createBuffer()
-			const first = buffer.location('the quick br'.length)
-			const second = buffer.location('the quick bro'.length)
+			const first = buffer.startLocation('the quick br'.length)
+			const second = buffer.startLocation('the quick bro'.length)
 
 			expect(first.isAfter(second)).toEqual(false)
 		})
 		it('is not after another location when it is before that location (different buffer)', () => {
 			const buffer = createBuffer()
-			const first = buffer.location('th'.length)
-			const second = buffer.location('the quick bro'.length)
+			const first = buffer.startLocation('th'.length)
+			const second = buffer.startLocation('the quick bro'.length)
 
 			expect(first.isAfter(second)).toEqual(false)
 		})
@@ -125,7 +125,7 @@ describe('TextLocation', () => {
 
 	describe('finding strings', () => {
 		function createRange(buffer: MBuffer, start: number, end: number): PersistentRange {
-			return buffer.location(start).persistentRangeUntil(buffer.location(end))
+			return buffer.startLocation(start).persistentRangeUntil(buffer.endLocation(end))
 		}
 		
 		it('can find one of the given strings inside a range', () => {

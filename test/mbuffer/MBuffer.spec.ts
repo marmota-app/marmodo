@@ -110,4 +110,47 @@ describe('MBuffer', () => {
 		expect(buffer.contentAsString()).toEqual('the')
 		expect(buffer.asString()).toEqual('the quick red-brown fox')
 	})
+
+	describe('persistent locations and inserts', () => {
+		function createBuffer(): MBuffer {
+			const buffer = new MBuffer('the fox')
+
+			buffer.insert('st brown', 'the'.length)
+			buffer.insert(' quick fa', 'the'.length)
+			buffer.delete('the quick '.length, 'fast '.length)
+
+			return buffer
+		}
+
+		it('does not move a persistent location before the delete', () => {
+			const buffer = createBuffer()
+
+			const before = buffer.startLocation('the'.length).persist()
+			
+			buffer.delete('the '.length, 'quick '.length)
+			
+			expect(buffer.asString()).toEqual('the brown fox')
+			expect(before.index).toEqual(0)
+			expect(before.buffer.contentAsString()).toEqual(' ')
+		})
+
+		it('can delete before a persistent location at the end of a buffer', () => {
+			const buffer = createBuffer()
+
+			const location = buffer.startLocation('the quick brow'.length).persist()
+			buffer.delete('the quick bro'.length, 'w'.length)
+
+			expect(location).toHaveProperty('isValid', true)
+			expect(location).toHaveProperty('index', 0)
+			expect(location.buffer.contentAsString()).toEqual('n')
+		})
+		it('can delete AT a persistent location at the end of a buffer', () => {
+			const buffer = createBuffer()
+
+			const location = buffer.startLocation('the quick brow'.length).persist()
+			buffer.delete('the quick brow'.length, 'n'.length)
+
+			expect(location).toHaveProperty('isValid', false)
+		})
+	})
 })
