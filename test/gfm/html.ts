@@ -1,4 +1,4 @@
-import { AnyBlock, AnyInline, BlankLine, Container, Paragraph, Section, Text } from "../../src/element/MfMElements";
+import { AnyBlock, AnyInline, BlankLine, Container, Heading, Paragraph, Section, Text } from "../../src/element/MfMElements";
 import { MfMDocument } from "../../src/MfMDocument";
 import { unreachable } from "../../src/utilities/unreachable";
 
@@ -11,6 +11,7 @@ function block(b: AnyBlock): string {
 		case 'Container': return undecorated(b)
 		case 'Section': return undecorated(b)
 		case 'Paragraph': return paragraph(b)
+		case 'Heading': return heading(b)
 		default: throw unreachable(`Unsupported block element: ${(b as any).type}`, b)
 	}
 }
@@ -20,6 +21,10 @@ function undecorated(c: Container | Section): string {
 }
 function paragraph(p: Paragraph): string {
 	return `<p>${p.content.map(inline).join('')}</p>\n`
+}
+function heading(h: Heading): string {
+	const content = h.content.length > 0 ? h.content[0].content.map(inline).join('') : ''
+	return `<h${h.level}>${content}</h${h.level}>\n`
 }
 
 function inline(i: AnyInline) {

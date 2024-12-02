@@ -41,36 +41,33 @@ export class MfMParagraph extends MfMElement<'Paragraph', AnyInline, Paragraph, 
 	}
 }
 export class ParagraphParser extends MfMParser<'Paragraph', AnyInline, Paragraph> {
+	readonly type = 'Paragraph'
+
 	parse(start: TextLocation, end: TextLocation): Paragraph | null {
 		const content: AnyInline[] = []
 		const options: ElementOptions = {}
 
-		let nextNewline = start.findNext(['\r', '\n'], end)
+		let nextNewline = start.findNextNewline(end)
 		while(nextNewline != null) {
-			//If it is '\r', try to skip a following '\n'
-			if(nextNewline.start.get() === '\r' && nextNewline.end.get() === '\n') {
-				nextNewline.end.advance()
-			}
-			
-			//Try to parse a blank line here...
+			//Try to parse a blank line here, and also end the paragraph on
+			//a new block
 			const nextParseLocation = nextNewline.end
-			let blankLine = this.parsers.BlankLine.parse(nextParseLocation, end)
-
-			if(blankLine !== null) {
-				const textElement = this.parsers.Text.parse(start, nextNewline.end)
+			
+			if(this.lineStartsNewBlock(nextParseLocation, end)) {
+				const textElement = this.parsers.Text.parse(start, nextNewline!.end)
 				if(textElement != null) { content.push(textElement) }
-
-				let currentRangeEnd = blankLine.parsedRange.end
-				while(blankLine !== null) {
-					content.push(blankLine)
-
-					currentRangeEnd = blankLine.parsedRange.end
-					blankLine = this.parsers.BlankLine.parse(currentRangeEnd, end)		
-				}
-
-				return new MfMParagraph(this.idGenerator.nextId(), options, start.persistentRangeUntil(currentRangeEnd), this, content)
+				return new MfMParagraph(this.idGenerator.nextId(), options, start.persistentRangeUntil(nextNewline.end), this, content)
 			}
-			nextNewline = nextParseLocation.findNext(['\r', '\n'], end)
+
+			const blankLinesEnd = this.addBlankLinesTo(content, nextParseLocation, end, () => {
+				const textElement = this.parsers.Text.parse(start, nextNewline!.end)
+				if(textElement != null) { content.push(textElement) }
+			})
+			if(!blankLinesEnd.isEqualTo(nextParseLocation)) {
+				return new MfMParagraph(this.idGenerator.nextId(), options, start.persistentRangeUntil(blankLinesEnd), this, content)
+			}
+
+			nextNewline = nextParseLocation.findNextNewline(end)
 		}
 
 		const textElement = this.parsers.Text.parse(start, end)

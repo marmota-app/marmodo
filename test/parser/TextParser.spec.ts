@@ -15,13 +15,32 @@ limitations under the License.
 */
 
 import { Text } from "../../src/element/MfMElements"
+import { Parsers } from "../../src/parser/Parsers"
 import { parseAll } from "../parse"
+import { expectUpdate } from "../update/expectUpdate"
 
 describe('TextParser', () => {
-	it('parses complete text', () => {
-		const text = parseAll('Text', 'some text') as Text
+	describe('Parsing the text', () => {
+		it('parses complete text', () => {
+			const text = parseAll('Text', 'some text') as Text
+	
+			expect(text).not.toBeNull()
+			expect(text?.textContent).toEqual('some text')
+		})
+	})
 
-		expect(text).not.toBeNull()
-		expect(text?.textContent).toEqual('some text')
+	describe('Parsing updates', () => {
+		const parser = new Parsers().Text
+
+		expectUpdate(
+			parser,
+			'some text\nmore text',
+			{ text: '#', rangeOffset: 'some '.length, rangeLength: 0 }
+		).canBeParsed('Inserted in the middle of a line')
+		expectUpdate(
+			parser,
+			'some text\nmore text',
+			{ text: '#', rangeOffset: 'some text\n'.length, rangeLength: 0 }
+		).cannotBeParsed('Would create a new heading')
 	})
 })

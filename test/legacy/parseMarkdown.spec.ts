@@ -30,6 +30,7 @@ import {
 	StrikeThroughTextContent,
 	ItalicTextContent,
 } from '../../src/legacy/parseMarkdown'
+import { MfMHeading } from '../../src/parser/HeadingParser'
 
 const assume = expect
 
@@ -53,7 +54,7 @@ describe('parseMarkdown', () => {
 	describe('parse headings', () => {
 		const headlines: string[] = [ '#', '##', '###', '####', ]
 		headlines.forEach((h: string) => {
-			it.skip(`heading level ${h.length} creates Headline`, () => {
+			it(`heading level ${h.length} creates Headline`, () => {
 				const markdown = h + ' Foobar\n'
 
 				const result = parseMarkdown(markdown)
@@ -61,10 +62,9 @@ describe('parseMarkdown', () => {
 				expect(result.content).toHaveLength(1)
 				expect(result.content[0]).toHaveProperty('type', 'Heading')
 				expect(result.content[0]).toHaveProperty('level', h.length)
-				expect(result.content[0]).toHaveProperty('text', 'Foobar')
 			})
 
-			it.skip(`creates empty heading fro single ${h}`, () => {
+			it(`creates empty heading for single ${h}`, () => {
 				const markdown = h
 
 				const result = parseMarkdown(markdown)
@@ -72,27 +72,26 @@ describe('parseMarkdown', () => {
 				expect(result.content).toHaveLength(1)
 				expect(result.content[0]).toHaveProperty('type', 'Heading')
 				expect(result.content[0]).toHaveProperty('level', h.length)
-				expect(result.content[0]).toHaveProperty('text', '')
 			})
 		})
 
 		const texts: string[] = [ 'Foobar\n', 'Foobar', 'Foo bar', 'Foo\r\n', 'Foo\n\r', 'foo # foobar', ]
 		texts.forEach((text: string) => {
-			it.skip(`heading create Headling with text ${text}`, () => {
+			it(`heading create Headling with text ${text}`, () => {
 				const markdown = '# ' + text
 
 				const result = parseMarkdown(markdown)
 
-				const expectedText = text.replace('\n', '').replace('\r', '')
+				const expectedText = '# '+text
 
 				expect(result.content).toHaveLength(1)
 				expect(result.content[0]).toHaveProperty('type', 'Heading')
-				expect(result.content[0]).toHaveProperty('text', expectedText)
+				expect(result.content[0]).toHaveProperty('asText', expectedText)
 			})
 		})
 
 
-		it.skip('parses two headings into multiple heading', () => {
+		it('parses two headings into multiple heading', () => {
 			const markdown = '# foo\n# bar'
 
 			const result = parseMarkdown(markdown)
@@ -100,7 +99,6 @@ describe('parseMarkdown', () => {
 			expect(result.content[0]).toHaveProperty('type', 'Heading')
 			expect(result.content[1]).toHaveProperty('type', 'Heading')
 		})
-
 	})
 
 	describe('parse paragraph', () => {

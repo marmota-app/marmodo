@@ -21,11 +21,11 @@ import { IdGenerator, Parsers } from "./parser/Parsers";
 import { UpdateParser } from "./update/UpdateParser";
 
 let documentIdGenerator: IdGenerator
-const development = true
 let updateCounter = 0
 export interface MfMDocumentOptions {
 	parsers: Parsers,
 	updateParser: UpdateParser,
+	development: boolean,
 }
 export interface DocumentUpdateRegistration {
 	id: string,
@@ -42,20 +42,24 @@ export class MfMDocument {
 	#textContent: TextContent
 	#content: Container
 
+	#development: boolean
+
 	private updateCallbacks: { [key: string]: ()=>void} = {}
 
 	constructor(initialText: string, options: Partial<MfMDocumentOptions> = {}) {
-		if(development) {
-			this.#originalText = initialText
-		}
-
 		const defaultOptions: MfMDocumentOptions = {
 			parsers: new Parsers(),
 			updateParser: new UpdateParser(),
+			development: true,
 		}
 		const allOptions: MfMDocumentOptions = {
 			...defaultOptions,
 			...options,
+		}
+
+		this.#development = allOptions.development
+		if(this.#development) {
+			this.#originalText = initialText
 		}
 		this.#parsers = allOptions.parsers
 		this.#updateParser = allOptions.updateParser
@@ -74,7 +78,7 @@ export class MfMDocument {
 	update(cu: ContentUpdate, getCompleteText: () => string): void {
 		let updateInfo: UpdateInfo
 
-		if(development) {
+		if(this.#development) {
 			this.#updates.push(cu)
 			try {
 				updateInfo = this.#textContent.update(cu)
@@ -86,7 +90,7 @@ export class MfMDocument {
 		}
 
 		//-------- DEVELOPMENT --------
-		if(development) {
+		if(this.#development) {
 			const reconstructedText = this.#textContent.start().stringUntil(this.#textContent.end())
 			const editorText = getCompleteText()
 
@@ -106,7 +110,7 @@ ${reconstructedText}`
 		const updated = this.#updateParser.parseUpdate(updateInfo!, this.#content, this.#textContent.end())
 
 		//-------- DEVELOPMENT --------
-		if(development && updated != null) {
+		if(this.#development && updated != null) {
 			const newlyParsed = this.#parsers.Container.parse(this.#textContent.start(), this.#textContent.end())
 
 			const textFromUpdated = updated.asText
@@ -128,7 +132,7 @@ ${textFromUpdated}`
 		//-------- DEVELOPMENT --------
 
 		if(updated === null) {
-			if(development) {
+			if(this.#development) {
 				console.warn(`Update returned null, parsing complete text. Original text="${this.#originalText}", updates = `, this.#updates)
 			}
 	
@@ -155,7 +159,7 @@ ${textFromUpdated}`
 	}
 
 	#parseCompleteText(text: string): Container {
-		if(development) {
+		if(this.#development) {
 			this.#updates = []
 			this.#originalText = text
 		}

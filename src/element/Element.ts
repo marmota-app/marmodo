@@ -33,8 +33,10 @@ export interface Parser<
 	CONTENT extends Element<any, any, any>,
 	ELEMENT extends Element<TYPE, CONTENT, ELEMENT>,
 > {
+	type: TYPE,
 	parse: (start: TextLocation, end: TextLocation) => ELEMENT | null,
 	checkUpdate: (element: ELEMENT, update: UpdateInfo, documentEnd: TextLocation) => UpdateCheckResult,
+	acceptUpdate: (original: ELEMENT, updated: ELEMENT) => boolean,
 }
 
 export type ElementOptions = {

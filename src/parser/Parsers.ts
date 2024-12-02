@@ -14,9 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { AnyBlock } from '../element'
 import { Element, Parser } from '../element/Element'
 import { BlankLineParser } from './BlankLineParser'
 import { ContainerParser } from './ContainerParser'
+import { HeadingContentParser, HeadingParser } from './HeadingParser'
 import { ParagraphParser } from './ParagraphParser'
 import { SectionParser } from './SectionParser'
 import { TextParser } from './TextParser'
@@ -28,11 +30,20 @@ export class Parsers {
 	get Container(): ContainerParser { return this.getParser('Container', () => new ContainerParser(this.idGenerator, this)) }
 	get Section(): SectionParser { return this.getParser('Section', () => new SectionParser(this.idGenerator, this)) }
 
+	get Heading(): HeadingParser { return this.getParser('Heading', () => new HeadingParser(this.idGenerator, this)) }
 	get Paragraph(): ParagraphParser { return this.getParser('Paragraph', () => new ParagraphParser(this.idGenerator, this)) }
 
+	get HeadingContent(): HeadingContentParser { return this.getParser('HeadingContent', () => new HeadingContentParser(this.idGenerator, this)) }
 	get Text(): TextParser { return this.getParser('Text', () => new TextParser(this.idGenerator, this)) }
 	get BlankLine(): BlankLineParser { return this.getParser('BlankLine', () => new BlankLineParser(this.idGenerator, this)) }
 
+	get allBlocks(): Parser<any, any, any>[] {
+		return [
+			this.Heading,
+
+			this.Paragraph,
+		]
+	}
 	private getParser<
 		TYPE extends string,
 		PARSER extends Parser<TYPE, any, any>

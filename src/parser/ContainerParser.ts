@@ -19,6 +19,7 @@ import { MfMElement } from "../element/MfMElement"
 import { AnyBlock, Container } from "../element/MfMElements"
 import { TextLocation } from "../mbuffer/TextLocation"
 import { PersistentRange, TextRange, } from "../mbuffer/TextRange"
+import { finiteLoop } from "../utilities/finiteLoop"
 import { MfMParser } from "./MfMParser"
 
 export class MfMContainer extends MfMElement<'Container', AnyBlock, Container, ContainerParser> {
@@ -41,12 +42,23 @@ export class MfMContainer extends MfMElement<'Container', AnyBlock, Container, C
 	}
 }
 export class ContainerParser extends MfMParser<'Container', AnyBlock, Container> {
+	readonly type = 'Container'
+	
 	parse(start: TextLocation, end: TextLocation): Container | null {
 		const content: AnyBlock[] = []
 		const options: ElementOptions = {}
+		let nextParseLocation = start
 
-		const section = this.parsers.Section.parse(start, end)
-		if(section) { content.push(section) }
+		const loop = finiteLoop(() => [ nextParseLocation.info() ])
+		while(nextParseLocation.isBefore(end)) {
+			loop.ensure()
+			const section = this.parsers.Section.parse(nextParseLocation, end)
+			if(section == null) {
+				throw new Error(`Could not parse section at location ${nextParseLocation.info()}`)
+			}
+			content.push(section)
+			nextParseLocation = section.parsedRange.end
+		}
 		
 		return new MfMContainer(this.idGenerator.nextId(), options, start.persistentRangeUntil(end), this, content)
 	}

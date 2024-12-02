@@ -66,6 +66,15 @@ describe('ParagraphParser', () => {
 				{ type: 'BlankLine', textContent: '\n' }
 			])
 		})
+
+		it('ends current paragraph at the start of a new block-level element: Heading', () => {
+			const paragraph = parseAll('Paragraph', `some text\nsome text\nsome text\n# heading`)
+	
+			expect(paragraph?.parsedRange.asString()).toEqual(`some text\nsome text\nsome text\n`)
+			expect(paragraph).toHaveChildren([
+				{ type: 'Text', textContent: `some text\nsome text\nsome text\n` },
+			])
+		})
 	})
 
 	describe('parsing updates', () => {

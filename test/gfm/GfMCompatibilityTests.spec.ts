@@ -39,14 +39,44 @@ interface ImplementedSection {
 
 const NYI = {
 	line_indentation: 'Indentation of lines that does not create any element',
+	escaping: 'Escaping characters with backslashes',
+	indentation: 'Indenting elements with up-to three whitespace characters',
+	paragraph_continuation: 'Continuing a paragraph with indentation after the first line',
 
 	elements: {
 		indented_code_blocks: 'Element still missing: Indented code block',
+		heading: {
+			closing_sequences: 'Missing feature: Closing sequences of "#" and " " after a heading',
+		},
+		horizontal_rule: 'Element still missing: Horizontal rule',
 
+		emphasis: 'Element still missing: Emphasis',
 		line_breaks: 'Element still missing: Line break',
 	}
 }
+const INCOMPATIBLE = {
+	removing_trailing_spaces: 'Trailing spaces are not removed',
+}
+
 const implementedSections: ImplementedSection[] = [
+	{ chapter: '4.2', name: 'ATX headings',
+		notYetImplemented: [
+			{ name: 'Example 35', reason: NYI.escaping },
+			{ name: 'Example 36', reason: NYI.elements.emphasis },
+			{ name: 'Example 38', reason: NYI.indentation },
+			{ name: 'Example 39', reason: NYI.elements.indented_code_blocks },
+			{ name: 'Example 40', reason: NYI.paragraph_continuation },
+			{ name: 'Example 41', reason: NYI.elements.heading.closing_sequences },
+			{ name: 'Example 42', reason: NYI.elements.heading.closing_sequences },
+			{ name: 'Example 43', reason: NYI.elements.heading.closing_sequences },
+			{ name: 'Example 46', reason: NYI.escaping },
+			{ name: 'Example 47', reason: NYI.elements.horizontal_rule },
+			{ name: 'Example 49', reason: NYI.elements.heading.closing_sequences },
+		],
+		incompatible: [
+			{ name: 'Example 37', reason: INCOMPATIBLE.removing_trailing_spaces },
+		],
+	},
 	{ chapter: '4.8', name: 'Paragraphs',
 		notYetImplemented: [
 			{ name: 'Example 192', reason: NYI.line_indentation },
@@ -56,7 +86,7 @@ const implementedSections: ImplementedSection[] = [
 			{ name: 'Example 196', reason: NYI.elements.line_breaks },
 		],
 		incompatible: [],
-	}
+	},
 ]
 
 const compatibility: string[] = []

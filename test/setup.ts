@@ -16,7 +16,7 @@ limitations under the License.
 
 import { Element } from "../src/element/Element"
 
-export type ElementContent = { [key: string]: string }
+export type ElementContent = { [key: string]: any }
 
 expect.extend({
 	toHaveChildren(received: any, actual: ElementContent[]) {

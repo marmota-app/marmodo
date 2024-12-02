@@ -38,6 +38,8 @@ export class MfMBlankLine extends MfMElement<'BlankLine', never, BlankLine, Blan
 }
 
 export class BlankLineParser extends MfMParser<'BlankLine', never, BlankLine> {
+	readonly type = 'BlankLine'
+	
 	parse(start: TextLocation, end: TextLocation): BlankLine | null {
 		const current = start.accessor()
 		const options: ElementOptions = {}
