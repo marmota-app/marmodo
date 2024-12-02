@@ -16,7 +16,7 @@ limitations under the License.
 
 import { ElementOptions } from "../element/Element";
 import { MfMElement } from "../element/MfMElement";
-import { AnyBlock, Section } from "../element/MfMElements";
+import { AnyBlock, Heading, Section } from "../element/MfMElements";
 import { TextLocation } from "../mbuffer/TextLocation";
 import { PersistentRange, TextRange, } from "../mbuffer/TextRange";
 import { finiteLoop } from "../utilities/finiteLoop";
@@ -30,6 +30,7 @@ export class MfMSection extends MfMElement<'Section', AnyBlock, Section, Section
 		options: ElementOptions,
 		parsedRange: PersistentRange,
 		parsedWith: SectionParser,
+		public readonly level: number,
 		public readonly content: AnyBlock[],
 	) {
 		super(id, options, parsedRange, parsedWith)
@@ -43,23 +44,69 @@ export class MfMSection extends MfMElement<'Section', AnyBlock, Section, Section
 }
 
 export class SectionParser extends MfMParser<'Section', AnyBlock, Section> {
+	readonly type = 'Section'
+	
 	parse(start: TextLocation, end: TextLocation): Section | null {
-		const content: AnyBlock[] = []
 		const options: ElementOptions = {}
+
+		const [sectionLevel, content, parsedEnd] = this.#parseSectionContent(start, end)
 		
+		return new MfMSection(this.idGenerator.nextId(), options, start.persistentRangeUntil(parsedEnd), this, sectionLevel, content)
+	}
+
+	#parseSectionContent(start: TextLocation, end: TextLocation): [number, AnyBlock[], TextLocation] {
+		const content: AnyBlock[] = []
+		let sectionLevel = 1
+		
+		//TODO horizontal rules also start sections. also, if a horizontal
+		//     rule is immediately followed by a heading of the same level,
+		//     the heading does NOTcreate a section
 		let nextParseLocation = start
-		const fl = finiteLoop(() => [ nextParseLocation ])
+		const fl = finiteLoop(() => [ nextParseLocation.info() ])
 		while(nextParseLocation.isBefore(end)) {
 			fl.ensure()
-			const paragraph = this.parsers.Paragraph.parse(nextParseLocation, end)
-			if(paragraph) {
-				content.push(paragraph)
-				nextParseLocation = paragraph.parsedRange.end
-			} else {
+			let elementParsed = false
+
+			for(let parser of this.parsers.allBlocks) {
+				const parsedElement = parser.parse(nextParseLocation, end)
+				if(parsedElement) {
+					if(parsedElement.type === 'Heading') {
+						const heading = parsedElement as Heading
+
+						if(content.length === 0) {
+							sectionLevel = heading.level
+							content.push(parsedElement)
+							nextParseLocation = parsedElement.parsedRange.end
+							elementParsed = true
+							break
+						} else if(heading.level <= sectionLevel) {
+							return [sectionLevel, content, nextParseLocation]
+						} else {
+							const innerSection = this.parsers.Section.parse(nextParseLocation, end)
+							if(innerSection) {
+								content.push(innerSection)
+								nextParseLocation = innerSection.parsedRange.end
+								elementParsed = true
+								break
+							}
+						}
+					} else {
+						content.push(parsedElement)
+						nextParseLocation = parsedElement.parsedRange.end
+						elementParsed = true
+						break
+					}
+				}
+			}
+			if(!elementParsed) {
 				throw new Error(`could not parse content at ${nextParseLocation.info()}`)
 			}
 		}
-		
-		return new MfMSection(this.idGenerator.nextId(), options, start.persistentRangeUntil(end), this, content)
+
+		return [ sectionLevel, content, nextParseLocation ]
+	}
+
+	acceptUpdate(original: Section, updated: Section): boolean {
+		return updated.level===original.level && super.acceptUpdate(original, updated)
 	}
 }

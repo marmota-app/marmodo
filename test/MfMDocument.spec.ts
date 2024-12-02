@@ -36,7 +36,8 @@ describe('MfMDocument', () => {
 	describe('parsing updates', () => {
 		it('re-parses the document when the update parser returns null', () => {
 			const document = new MfMDocument('the quick fox jumps over the lazy dog', {
-				updateParser: new TestUpdateParser()
+				updateParser: new TestUpdateParser(),
+				development: false,
 			})
 
 			document.update(
@@ -46,12 +47,12 @@ describe('MfMDocument', () => {
 
 			expect(document.text).toEqual('the complete document')
 		})
-		it.skip('parses an update', () => {
+		it('parses an update to the original document', () => {
 			const document = new MfMDocument('the quick fox jumps over the lazy dog')
 
 			document.update(
 				{text: ' brown', rangeOffset: 'the quick'.length, rangeLength: 0},
-				() => 'unused'
+				() => 'the quick brown fox jumps over the lazy dog'
 			)
 
 			expect(document.text).toEqual('the quick brown fox jumps over the lazy dog')

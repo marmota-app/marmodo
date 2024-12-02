@@ -21,7 +21,17 @@ describe('ContainerParser', () => {
 		const container = parseAll('Container', 'some text')
 
 		expect(container).toHaveChildren([
-			{ type: 'Section' }
+			{ type: 'Section' },
+		])
+	})
+
+	it('parses multiple sections into container', () => {
+		const container = parseAll('Container', 'some text\n# section 1\ncontent 1\ncontent 1\n\n# section 2\ncontent 2')
+
+		expect(container).toHaveChildren([
+			{ type: 'Section' },
+			{ type: 'Section' },
+			{ type: 'Section' },
 		])
 	})
 })

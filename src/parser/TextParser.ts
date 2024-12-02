@@ -16,7 +16,7 @@ limitations under the License.
 
 import { ElementOptions, UpdateCheckResult } from "../element/Element";
 import { MfMElement } from "../element/MfMElement";
-import { Text } from "../element/MfMElements";
+import { allBlockStarts, Text } from "../element/MfMElements";
 import { UpdateInfo } from "../mbuffer/TextContent";
 import { TextLocation } from "../mbuffer/TextLocation";
 import { PersistentRange, TextRange, } from "../mbuffer/TextRange";
@@ -44,25 +44,36 @@ export class MfMText extends MfMElement<'Text', never, Text, TextParser> impleme
 	}
 }
 export class TextParser extends MfMParser<'Text', never, Text> {
+	readonly type = 'Text'
+	
 	parse(start: TextLocation, end: TextLocation): Text | null {
 		const options: ElementOptions = {}
 
 		return new MfMText(this.idGenerator.nextId(), options, start.persistentRangeUntil(end), this)
 	}
 	checkUpdate(element: Text, update: UpdateInfo): UpdateCheckResult {
-		if(
-			update.replacedText.indexOf('\n') >= 0 || update.replacedText.indexOf('\r') >= 0 ||
-			update.newText.indexOf('\n') >= 0 || update.newText.indexOf('\r') >= 0
-		) {
-			return {
-				canUpdate: false,
+		return this.checkUpdateDoesNotChangeNewlines(element, update)
+	}
+
+	acceptUpdate(original: Text, updated: Text): boolean {
+		if(this.#containsAnyAfterNewline(allBlockStarts, updated)) {
+			return false
+		}
+		return true
+	}
+	#containsAnyAfterNewline(texts: string[], element: Text): boolean {
+		const updatedText = element.asText
+
+		for(const text of texts) {
+			const index = updatedText.indexOf(text)
+			if(index === 0) {
+				return true
+			}
+			if(index > 0 && (updatedText.charAt(index-1)==='\r' || updatedText.charAt(index-1)==='\n')) {
+				return true
 			}
 		}
 
-		return {
-			canUpdate: true,
-			rangeStart: element.parsedRange.start,
-			rangeEnd: element.parsedRange.end,
-		}
+		return false
 	}
 }

@@ -178,7 +178,7 @@ function addSimplified(e: Element<any, any, any>, content: (Content & DefaultCon
 	if(e.type === 'Container' || e.type === 'Section') {
 		e.content.forEach(inner => addSimplified(inner, content))
 	} else {
-		content.push({ ...e, hasChanged: false, })
+		content.push(e as any)
 	}
 }
 

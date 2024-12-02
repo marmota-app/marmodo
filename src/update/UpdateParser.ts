@@ -76,8 +76,12 @@ export class UpdateParser {
 				parser.parse(checkResult.rangeStart, checkResult.rangeEnd):
 				null
 
-			if(updated != null && !this.#isCompleteUpdate(updated, currentElement)) {
-				return { updated: null, isFirstUpdate: true, }
+			if(updated != null) {
+				const updateInomplete = !this.#isCompleteUpdate(updated, currentElement)
+				const updateRejected = !parser.acceptUpdate(currentElement, updated)
+				if(updateInomplete || updateRejected) {
+					return { updated: null, isFirstUpdate: true, }
+				}
 			}
 
 			return {

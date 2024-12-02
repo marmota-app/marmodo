@@ -60,13 +60,22 @@ export type ContainerTypes = {
 	'Container': Container,
 	'Section': Section,
 
+	'Heading': Heading,
 	'Paragraph': Paragraph,
 }
 
 export interface Container extends BlockContainer<'Container', Container> {}
-export interface Section extends BlockContainer<'Section', Section> {}
+export interface Section extends BlockContainer<'Section', Section> {
+	level: number,
+}
 
+export interface Heading extends ContainerElement<'Heading', HeadingContent | BlankLine, Heading> {
+	level: number,
+}
 export interface Paragraph extends LeafContainer<'Paragraph', Paragraph> {}
 
+export interface HeadingContent extends ContainerInline<'HeadingContent', HeadingContent> {}
 export interface Text extends LeafInline<'Text', Text> {}
 export interface BlankLine extends LeafInline<'BlankLine', BlankLine> {}
+
+export const allBlockStarts: string[] = [ '#' ]

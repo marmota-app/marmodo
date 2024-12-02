@@ -27,6 +27,8 @@ export abstract class TextLocation {
 	abstract ensureValid(message: string): void
 
 	isBefore(other: TextLocation) {
+		if(this === other) { return false }
+		
 		const isSameBuffer = this.buffer === other.buffer
 		if(isSameBuffer) {
 			return this.index < other.index
@@ -43,7 +45,8 @@ export abstract class TextLocation {
 		}
 		return false
 	}
-	isEqualTo(other: TextLocation): boolean {
+	isEqualTo(other: TextLocation | null | undefined): boolean {
+		if(other == null) { return false }
 		return this.buffer===other.buffer && this.index===other.index
 	}
 	isAfter(other: TextLocation): boolean {
@@ -81,6 +84,21 @@ export abstract class TextLocation {
 		return result
 	}
 
+	startsWith(toFind: string | string[], until: TextLocation): boolean {
+		const foundRange = this.findNext(toFind, until)
+		if(this.isEqualTo(foundRange?.start)) {
+			return true
+		}
+		return false
+	}
+	findNextNewline(until: TextLocation): (TemporaryRange | null) {
+		let nextNewline = this.findNext(['\r', '\n'], until)
+		//If it is '\r', try to skip a following '\n'
+		if(nextNewline != null && nextNewline.start.get() === '\r' && nextNewline.end.get() === '\n') {
+			nextNewline.end.advance()
+		}
+		return nextNewline
+	}
 	findNext(toFind: string | string[], until: TextLocation): (TemporaryRange | null) {
 		//straight-forward implementation without considering any optimization
 		//opportunities yet...
@@ -242,6 +260,9 @@ export class TemporaryLocation extends TextLocation {
 		return this._buffer.at(this._index)
 	}
 
+	isWhitespace() {
+		return this.is([' ', '\t'])
+	}
 	is(other: string | string[]): boolean {
 		const char = this._buffer.at(this._index)
 
