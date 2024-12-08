@@ -21,6 +21,7 @@ import { ContainerParser } from './ContainerParser'
 import { HeadingContentParser, HeadingParser } from './HeadingParser'
 import { ParagraphParser } from './ParagraphParser'
 import { SectionParser } from './SectionParser'
+import { StrongEmphasisParser } from './delimitedinline/StrongEmphasisParser'
 import { TextParser } from './TextParser'
 
 export class Parsers {
@@ -36,6 +37,8 @@ export class Parsers {
 	get HeadingContent(): HeadingContentParser { return this.getParser('HeadingContent', () => new HeadingContentParser(this.idGenerator, this)) }
 	get Text(): TextParser { return this.getParser('Text', () => new TextParser(this.idGenerator, this)) }
 	get BlankLine(): BlankLineParser { return this.getParser('BlankLine', () => new BlankLineParser(this.idGenerator, this)) }
+
+	get StrongEmphasis(): StrongEmphasisParser { return this.getParser('StrongEmphasis', () => new StrongEmphasisParser(this.idGenerator, this)) }
 
 	get allBlocks(): Parser<any, any, any>[] {
 		return [

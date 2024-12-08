@@ -77,5 +77,6 @@ export interface Paragraph extends LeafContainer<'Paragraph', Paragraph> {}
 export interface HeadingContent extends ContainerInline<'HeadingContent', HeadingContent> {}
 export interface Text extends LeafInline<'Text', Text> {}
 export interface BlankLine extends LeafInline<'BlankLine', BlankLine> {}
+export interface StrongEmphasis extends ContainerInline<'StrongEmphasis', StrongEmphasis> {}
 
 export const allBlockStarts: string[] = [ '#' ]

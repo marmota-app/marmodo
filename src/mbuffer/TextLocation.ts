@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 import { jsonTransient, jsonTransientPrivate } from "../utilities/jsonTransient"
+import { isCharacter, isLineEnding, isPunctuation, isWhitespace } from "./characters"
 import { MBuffer } from "./MBuffer"
 import { PersistentRange, TemporaryRange } from "./TextRange"
 
@@ -260,21 +261,17 @@ export class TemporaryLocation extends TextLocation {
 		return this._buffer.at(this._index)
 	}
 
-	isWhitespace() {
-		return this.is([' ', '\t'])
+	isWhitespace(): boolean {
+		return isWhitespace(this._buffer.at(this.index))
+	}
+	isPunctuation(): boolean {
+		return isPunctuation(this._buffer.at(this.index))
+	}
+	isLineEnding(): boolean {
+		return isLineEnding(this._buffer.at(this.index))
 	}
 	is(other: string | string[]): boolean {
-		const char = this._buffer.at(this._index)
-
-		if(Array.isArray(other)) {
-			for(const o of other) {
-				if(o === char) { return true }
-			}	
-		} else {
-			if(other === char) { return true }
-		}
-
-		return false
+		return isCharacter(other, this._buffer.at(this._index))
 	}
 
 	advance(): void {
