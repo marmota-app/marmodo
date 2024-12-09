@@ -30,25 +30,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { AnyInline } from "../../element";
 import { ElementOptions } from "../../element/Element";
 import { PersistentRange } from "../../mbuffer/TextRange";
 import { DelimitedInlineParser, DelimitedMfMElement } from "./DelimitedInlineParser";
 
 export class MfMStrongEmphasis extends DelimitedMfMElement<'StrongEmphasis', MfMStrongEmphasis, StrongEmphasisParser> {
 	readonly type = 'StrongEmphasis'
-	readonly content: never[] = []
 
 	constructor(
 		id: string,
 		options: ElementOptions,
 		parsedRange: PersistentRange,
 		parsedWith: StrongEmphasisParser,
+		delimiter: string,
+		content: AnyInline[],
 	) {
-		super(id, options, parsedRange, parsedWith)
+		super(id, options, parsedRange, parsedWith, delimiter, content)
 	}
 }
 export class StrongEmphasisParser extends DelimitedInlineParser<'StrongEmphasis', MfMStrongEmphasis, StrongEmphasisParser> {
 	override readonly type = 'StrongEmphasis'
 	override readonly ElementClass = MfMStrongEmphasis
 	override readonly self = this
+	override readonly delimiters = [ '*', '_' ]
+	override readonly delimiterLength = 2
 }

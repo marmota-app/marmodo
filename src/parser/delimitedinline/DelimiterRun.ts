@@ -19,25 +19,33 @@ import { TemporaryLocation, TextLocation } from "../../mbuffer/TextLocation";
 import { finiteLoop } from "../../utilities/finiteLoop";
 
 interface DelimiterInfo {
+	delimiterChar: string,
 	isLeftFlanking: boolean,
 	isRightFlanking: boolean,
 }
 interface SearchOptions {
+	leftFlanking: boolean,
 	rightFlanking: boolean,
 	minLength: number,
+	maxStartIndex: number,
 }
 export function findNextDelimiterRun(delimiters: string[], start: TextLocation, end: TextLocation, searchOptions: Partial<SearchOptions> = {}): [TextLocation, TextLocation, DelimiterInfo] | null {
 	const options: SearchOptions = {
+		leftFlanking: false,
 		rightFlanking: false,
 		minLength: 0,
+		maxStartIndex: Number.MAX_SAFE_INTEGER,
+
 		...searchOptions,
 	}
 	let delimiterStart = start.accessor()
 	let beforeStart = ''
+	let startIndex = 0
 
 	const outerLoop = finiteLoop(() => [ delimiterStart.info() ])
 	while(!delimiterStart.isEqualTo(end)) {
 		outerLoop.ensure()
+		if(startIndex > options.maxStartIndex) { return null }
 
 		let delimiter = ''
 		delimiters.forEach(d => { if(delimiterStart.get() === d) { delimiter = d }})
@@ -50,7 +58,9 @@ export function findNextDelimiterRun(delimiters: string[], start: TextLocation, 
 			while(!delimiterEnd.isEqualTo(end) && delimiterEnd.get() === delimiter) {
 				innerLoop.ensure()
 				delimiterEnd.advance()
+
 				delimiterLength++
+				startIndex++
 			}
 		
 			if(!delimiterStart.isEqualTo(delimiterEnd)) {
@@ -60,16 +70,18 @@ export function findNextDelimiterRun(delimiters: string[], start: TextLocation, 
 				const isFlanking = isLeftFlanking || isRightFlanking
 				const isLongEnough = delimiterLength >= options.minLength
 				const isRightFlankingLikeSearch = options.rightFlanking==false || isRightFlanking
+				const isLeftFlankingLikeSearch = options.leftFlanking==false || isLeftFlanking
 
-				if(isFlanking && isLongEnough && isRightFlankingLikeSearch) {
-					return [delimiterStart, delimiterEnd, { isLeftFlanking, isRightFlanking }]
+				if(isFlanking && isLongEnough && isRightFlankingLikeSearch && isLeftFlankingLikeSearch) {
+					return [delimiterStart, delimiterEnd, { delimiterChar: delimiter, isLeftFlanking, isRightFlanking }]
 				}
 			}
 		
 			delimiterStart = delimiterEnd
 		} else {
 			beforeStart = delimiterStart.get()
-			delimiterStart.advance()	
+			delimiterStart.advance()
+			startIndex++
 		}
 	}
 

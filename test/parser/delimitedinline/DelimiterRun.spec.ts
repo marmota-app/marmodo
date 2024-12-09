@@ -133,6 +133,40 @@ describe('DelimiterRun', () => {
 			expect(end.index).toEqual('some ***text'.length+3)
 			expect(start.stringUntil(end)).toEqual('***')
 		})
+		it('finds next matching delimiter run based on search criteria (second occurence, first not left-flanking)', () => {
+			const tc = new TextContent('some*** text ***left')
+
+			const result = findNextDelimiterRun(['*'], tc.start(), tc.end(), {
+				leftFlanking: true,
+			})
+			expect(result).not.toBeNull()
+
+			const [start, end] = result!
+			expect(start.index).toEqual('some*** text '.length)
+			expect(end.index).toEqual('some*** text '.length+3)
+			expect(start.stringUntil(end)).toEqual('***')
+		})
+		it('finds next matching delimiter run based on search criteria (max index)', () => {
+			const tc = new TextContent('some ***text***both')
+
+			const result = findNextDelimiterRun(['*'], tc.start(), tc.end(), {
+				maxStartIndex: 'some *'.length,
+			})
+			expect(result).not.toBeNull()
+
+			const [start, end] = result!
+			expect(start.index).toEqual('some '.length)
+			expect(end.index).toEqual('some '.length+3)
+			expect(start.stringUntil(end)).toEqual('***')
+		})
+		it('does not next matching delimiter run based on search criteria (index > max index)', () => {
+			const tc = new TextContent('some ***text***both')
+
+			const result = findNextDelimiterRun(['*'], tc.start(), tc.end(), {
+				maxStartIndex: 'some'.length,
+			})
+			expect(result).toBeNull()
+		})
 	})
 
 	//Tests from the GfM Spec...
