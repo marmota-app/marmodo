@@ -291,7 +291,7 @@ describe('parseMarkdown', () => {
 	describe('paragraph content: bold text', () => {
 		const boldTags: string[] = [ '**', '__', ]
 		boldTags.forEach(tag => {
-			it.skip(`parses ${tag} as bold text`, () => {
+			it(`parses ${tag} as bold text`, () => {
 				const markdown = `text ${tag}bold text${tag} text`
 
 				const result = parseMarkdown(markdown)
@@ -300,19 +300,19 @@ describe('parseMarkdown', () => {
 
 				expect((result.content[0] as Paragraph).content).toHaveLength(3)
 				expect((result.content[0] as Paragraph).content[0]).toHaveProperty('type', 'Text')
-				expect((result.content[0] as Paragraph).content[0]).toHaveProperty('content', 'text ')
+				expect((result.content[0] as Paragraph).content[0]).toHaveProperty('textContent', 'text ')
 
-				expect((result.content[0] as Paragraph).content[1]).toHaveProperty('type', 'Bold')
+				expect((result.content[0] as Paragraph).content[1]).toHaveProperty('type', 'StrongEmphasis')
 				assertTextContent((result.content[0] as Paragraph).content[1], 'bold text')
 
 				expect((result.content[0] as Paragraph).content[2]).toHaveProperty('type', 'Text')
-				expect((result.content[0] as Paragraph).content[2]).toHaveProperty('content', ' text')
+				expect((result.content[0] as Paragraph).content[2]).toHaveProperty('textContent', ' text')
 			})
 		})
 
 		const unclosedBoldStrings = [ '**not bold', '**not bold__', ]
 		unclosedBoldStrings.forEach(notBold => {
-			it.skip(`does not render "${notBold}" as bold`, () => {
+			it(`does not render "${notBold}" as bold`, () => {
 				const markdown = 'text before ' + notBold
 
 				const result = parseMarkdown(markdown)
@@ -321,14 +321,14 @@ describe('parseMarkdown', () => {
 
 				const paragraph: Paragraph = (result.content[0] as Paragraph)
 				paragraph.content.forEach(c => expect(c).toHaveProperty('type', 'Text'))
-				const textContent = paragraph.content.map(c => (c as TextContent)['content']).join('')
+				const textContent = paragraph.content.map(c => (c as TextContent)['textContent']).join('')
 				expect(textContent).toEqual(markdown)
 			})
 		})
 
 		const boldStringsWithSpaces = [ '**bold **', '** bold**', '** bold **', ]
 		boldStringsWithSpaces.forEach(bold => {
-			it.skip(`renders "${bold}" (with spaces) as bold`, () => {
+			it(`does not render "${bold}" (with spaces) as bold`, () => {
 				const markdown = 'text before ' + bold
 
 				const result = parseMarkdown(markdown)
@@ -336,25 +336,23 @@ describe('parseMarkdown', () => {
 				assume(result.content[0]).toHaveProperty('type', 'Paragraph')
 
 				const paragraph: Paragraph = (result.content[0] as Paragraph)
-				expect(paragraph.content).toHaveLength(2)
-				expect((result.content[0] as Paragraph).content[1]).toHaveProperty('type', 'Bold')
-				assertTextContent((result.content[0] as Paragraph).content[1], bold.replace(/\*\*/g, ''))
+				expect(paragraph.content).toHaveLength(1)
 			})
 		})
 
-		it.skip('can parse a second bold block in the same line', () => {
+		it('can parse a second bold block in the same line', () => {
 			const result = parseMarkdown('**bold 1** other text **bold 2**')
 			assume(result.content).toHaveLength(1)
 			assume(result.content[0]).toHaveProperty('type', 'Paragraph')
 
 			expect((result.content[0] as Paragraph).content).toHaveLength(3)
-			expect((result.content[0] as Paragraph).content[0]).toHaveProperty('type', 'Bold')
+			expect((result.content[0] as Paragraph).content[0]).toHaveProperty('type', 'StrongEmphasis')
 			assertTextContent((result.content[0] as Paragraph).content[0], 'bold 1')
 
 			expect((result.content[0] as Paragraph).content[1]).toHaveProperty('type', 'Text')
-			expect((result.content[0] as Paragraph).content[1]).toHaveProperty('content', ' other text ')
+			expect((result.content[0] as Paragraph).content[1]).toHaveProperty('textContent', ' other text ')
 
-			expect((result.content[0] as Paragraph).content[2]).toHaveProperty('type', 'Bold')
+			expect((result.content[0] as Paragraph).content[2]).toHaveProperty('type', 'StrongEmphasis')
 			assertTextContent((result.content[0] as Paragraph).content[2], 'bold 2')
 		})
 	})
@@ -362,7 +360,7 @@ describe('parseMarkdown', () => {
 	describe('paragraph content: italic text', () => {
 		const italicTags: string[] = [ '*', '_', ]
 		italicTags.forEach(tag => {
-			it.skip(`parses ${tag} as italic text`, () => {
+			it(`parses ${tag} as italic text`, () => {
 				const markdown = `text ${tag}italic text${tag} text`
 
 				const result = parseMarkdown(markdown)
@@ -371,19 +369,19 @@ describe('parseMarkdown', () => {
 
 				expect((result.content[0] as Paragraph).content).toHaveLength(3)
 				expect((result.content[0] as Paragraph).content[0]).toHaveProperty('type', 'Text')
-				expect((result.content[0] as Paragraph).content[0]).toHaveProperty('content', 'text ')
+				expect((result.content[0] as Paragraph).content[0]).toHaveProperty('textContent', 'text ')
 
-				expect((result.content[0] as Paragraph).content[1]).toHaveProperty('type', 'Italic')
+				expect((result.content[0] as Paragraph).content[1]).toHaveProperty('type', 'Emphasis')
 				assertTextContent((result.content[0] as Paragraph).content[1], 'italic text')
 
 				expect((result.content[0] as Paragraph).content[2]).toHaveProperty('type', 'Text')
-				expect((result.content[0] as Paragraph).content[2]).toHaveProperty('content', ' text')
+				expect((result.content[0] as Paragraph).content[2]).toHaveProperty('textContent', ' text')
 			})
 		})
 
 		const unclosedItalicStrings = [ '*not italic', '*not italic_', ]
 		unclosedItalicStrings.forEach(notItalic => {
-			it.skip(`does not render "${notItalic}" as italic`, () => {
+			it(`does not render "${notItalic}" as italic`, () => {
 				const markdown = 'text before ' + notItalic
 
 				const result = parseMarkdown(markdown)
@@ -392,14 +390,14 @@ describe('parseMarkdown', () => {
 
 				const paragraph: Paragraph = (result.content[0] as Paragraph)
 				paragraph.content.forEach(c => expect(c).toHaveProperty('type', 'Text'))
-				const textContent = paragraph.content.map(c => (c as TextContent)['content']).join('')
+				const textContent = paragraph.content.map(c => (c as TextContent)['textContent']).join('')
 				expect(textContent).toEqual(markdown)
 			})
 		})
 
 		const italicStringsWithSpaces = [ '*italic *', '* italic*', '* italic *', ]
 		italicStringsWithSpaces.forEach(italic => {
-			it.skip(`renders "${italic}" (with spaces) as italic`, () => {
+			it(`does not render "${italic}" (with spaces) as italic`, () => {
 				const markdown = 'text before ' + italic
 
 				const result = parseMarkdown(markdown)
@@ -407,25 +405,23 @@ describe('parseMarkdown', () => {
 				assume(result.content[0]).toHaveProperty('type', 'Paragraph')
 
 				const paragraph: Paragraph = (result.content[0] as Paragraph)
-				expect(paragraph.content).toHaveLength(2)
-				expect((result.content[0] as Paragraph).content[1]).toHaveProperty('type', 'Italic')
-				assertTextContent((result.content[0] as Paragraph).content[1], italic.replace(/\*/g, ''))
+				expect(paragraph.content).toHaveLength(1)
 			})
 		})
 
-		it.skip('can parse a second italic block in the same line', () => {
+		it('can parse a second italic block in the same line', () => {
 			const result = parseMarkdown('*italic 1* other text *italic 2*')
 			assume(result.content).toHaveLength(1)
 			assume(result.content[0]).toHaveProperty('type', 'Paragraph')
 
 			expect((result.content[0] as Paragraph).content).toHaveLength(3)
-			expect((result.content[0] as Paragraph).content[0]).toHaveProperty('type', 'Italic')
+			expect((result.content[0] as Paragraph).content[0]).toHaveProperty('type', 'Emphasis')
 			assertTextContent((result.content[0] as Paragraph).content[0], 'italic 1')
 
 			expect((result.content[0] as Paragraph).content[1]).toHaveProperty('type', 'Text')
-			expect((result.content[0] as Paragraph).content[1]).toHaveProperty('content', ' other text ')
+			expect((result.content[0] as Paragraph).content[1]).toHaveProperty('textContent', ' other text ')
 
-			expect((result.content[0] as Paragraph).content[2]).toHaveProperty('type', 'Italic')
+			expect((result.content[0] as Paragraph).content[2]).toHaveProperty('type', 'Emphasis')
 			assertTextContent((result.content[0] as Paragraph).content[2], 'italic 2')
 		})
 	})
@@ -464,11 +460,11 @@ describe('parseMarkdown', () => {
 		expect(strikeThroughContent[0]).toHaveProperty('type', 'Text')
 		expect(strikeThroughContent[0]).toHaveProperty('content', 'text ')
 
-		expect(strikeThroughContent[1]).toHaveProperty('type', 'Bold')
+		expect(strikeThroughContent[1]).toHaveProperty('type', 'StrongEmphasis')
 		assertTextContent(strikeThroughContent[1], 'bold')
 
-		expect(strikeThroughContent[2]).toHaveProperty('type', 'Italic')
-		expect((strikeThroughContent[2] as ItalicTextContent).content[0]).toHaveProperty('type', 'Bold')
+		expect(strikeThroughContent[2]).toHaveProperty('type', 'Emphasis')
+		expect((strikeThroughContent[2] as ItalicTextContent).content[0]).toHaveProperty('type', 'StrongEmphasis')
 		assertTextContent((strikeThroughContent[2] as ItalicTextContent).content[0], 'bold-italic')
 	})
 
@@ -531,7 +527,7 @@ describe('parseMarkdown', () => {
 			expect((result.content[0] as Paragraph).content[2]).toHaveProperty('type', 'Text')
 			expect((result.content[0] as Paragraph).content[2]).toHaveProperty('content', ' text ')
 
-			expect((result.content[0] as Paragraph).content[3]).toHaveProperty('type', 'Bold')
+			expect((result.content[0] as Paragraph).content[3]).toHaveProperty('type', 'StrongEmphasis')
 			assertTextContent((result.content[0] as Paragraph).content[3], 'bold text')
 		})
 		it.skip('parses bold and inline code correctly', () => {
@@ -545,7 +541,7 @@ describe('parseMarkdown', () => {
 			expect((result.content[0] as Paragraph).content[0]).toHaveProperty('type', 'Text')
 			expect((result.content[0] as Paragraph).content[0]).toHaveProperty('content', 'text ')
 
-			expect((result.content[0] as Paragraph).content[1]).toHaveProperty('type', 'Bold')
+			expect((result.content[0] as Paragraph).content[1]).toHaveProperty('type', 'StrongEmphasis')
 			assertTextContent((result.content[0] as Paragraph).content[1], 'bold text')
 
 			expect((result.content[0] as Paragraph).content[2]).toHaveProperty('type', 'Text')

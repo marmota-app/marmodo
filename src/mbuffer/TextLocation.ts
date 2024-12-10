@@ -283,6 +283,14 @@ export class TemporaryLocation extends TextLocation {
 			this._index = 0
 		}
 	}
+	backoff(): void {
+		this.ensureValid('Cannot backoff index of invalid location')
+		this._index--;
+		while((this._index < 0 || this.buffer.length === 0) && this._buffer.previousBuffer) {
+			this._buffer = this._buffer.previousBuffer
+			this._index = 0
+		}
+	}
 
 	persist(): PersistentLocation {
 		this.ensureValid('Cannot get persistent location of invalid location')

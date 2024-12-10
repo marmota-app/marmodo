@@ -18,5 +18,5 @@ export function assertTextContent(element: any, expected: string) {
 	expect(element).toHaveProperty('content')
 	expect(element.content).toHaveLength(1)
 	expect(element.content[0]).toHaveProperty('type', 'Text')
-	expect(element.content[0]).toHaveProperty('content', expected)
+	expect(element.content[0]).toHaveProperty('textContent', expected)
 }

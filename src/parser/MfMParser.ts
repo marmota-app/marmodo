@@ -89,3 +89,11 @@ export abstract class MfMParser<
 		return false
 	}
 }
+
+export abstract class MfMInlineParser<
+	TYPE extends string,
+	CONTENT extends Element<any, any, any>,
+	ELEMENT extends Element<TYPE, CONTENT, ELEMENT>,
+> extends MfMParser<TYPE, CONTENT, ELEMENT> {
+	abstract nextPossibleStart(start: TextLocation, end: TextLocation): TextLocation | null
+}

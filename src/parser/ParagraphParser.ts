@@ -44,7 +44,6 @@ export class ParagraphParser extends MfMParser<'Paragraph', AnyInline, Paragraph
 	readonly type = 'Paragraph'
 
 	parse(start: TextLocation, end: TextLocation): Paragraph | null {
-		const content: AnyInline[] = []
 		const options: ElementOptions = {}
 
 		let nextNewline = start.findNextNewline(end)
@@ -54,14 +53,14 @@ export class ParagraphParser extends MfMParser<'Paragraph', AnyInline, Paragraph
 			const nextParseLocation = nextNewline.end
 			
 			if(this.lineStartsNewBlock(nextParseLocation, end)) {
-				const textElement = this.parsers.Text.parse(start, nextNewline!.end)
-				if(textElement != null) { content.push(textElement) }
-				return new MfMParagraph(this.idGenerator.nextId(), options, start.persistentRangeUntil(nextNewline.end), this, content)
+				const completeContent = this.parsers.parseInlines(start, nextNewline!.end, nextNewline!.end)
+				return new MfMParagraph(this.idGenerator.nextId(), options, start.persistentRangeUntil(nextNewline.end), this, completeContent)
 			}
 
+			const content: AnyInline[] = []
 			const blankLinesEnd = this.addBlankLinesTo(content, nextParseLocation, end, () => {
-				const textElement = this.parsers.Text.parse(start, nextNewline!.end)
-				if(textElement != null) { content.push(textElement) }
+				const completeContent = this.parsers.parseInlines(start, nextNewline!.end, nextNewline!.end)
+				content.push(...completeContent)
 			})
 			if(!blankLinesEnd.isEqualTo(nextParseLocation)) {
 				return new MfMParagraph(this.idGenerator.nextId(), options, start.persistentRangeUntil(blankLinesEnd), this, content)
@@ -70,9 +69,7 @@ export class ParagraphParser extends MfMParser<'Paragraph', AnyInline, Paragraph
 			nextNewline = nextParseLocation.findNextNewline(end)
 		}
 
-		const textElement = this.parsers.Text.parse(start, end)
-		if(textElement != null) { content.push(textElement) }
-
-		return new MfMParagraph(this.idGenerator.nextId(), options, start.persistentRangeUntil(end), this, content)
+		const completeContent = this.parsers.parseInlines(start, end, end)
+		return new MfMParagraph(this.idGenerator.nextId(), options, start.persistentRangeUntil(end), this, completeContent)
 	}
 }
