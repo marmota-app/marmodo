@@ -46,7 +46,7 @@ export type Heading = {
 
 export type Newline = { type: 'Newline', }
 export type LineBreak = { type: 'LineBreak', }
-export type TextContent = { type: 'Text', content: string, }
+export type TextContent = { type: 'Text', content: string, textContent: string, }
 export type BoldTextContent = { type: 'Bold', content: ParagraphContent[], options: ContentOptions, }
 export type ItalicTextContent = { type: 'Italic', content: ParagraphContent[], options: ContentOptions, }
 export type StrikeThroughTextContent = { type: 'StrikeThrough', content: ParagraphContent[], options: ContentOptions, }

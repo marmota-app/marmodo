@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { TextContent } from "../../src/mbuffer";
 import { Parsers } from "../../src/parser/Parsers";
 import { parseAll } from "../parse";
 import { replaceWhitespace } from "../replaceWhitespace";
@@ -73,6 +74,46 @@ describe('ParagraphParser', () => {
 			expect(paragraph?.parsedRange.asString()).toEqual(`some text\nsome text\nsome text\n`)
 			expect(paragraph).toHaveChildren([
 				{ type: 'Text', textContent: `some text\nsome text\nsome text\n` },
+			])
+		})
+
+		it('parses strong emphasis inside paragraph (until end of input)', () => {
+			const paragraph = parseAll('Paragraph', `some **bold** text`)
+	
+			expect(paragraph?.parsedRange.asString()).toEqual(`some **bold** text`)
+			expect(paragraph).toHaveChildren([
+				{ type: 'Text', textContent: `some ` },
+				{ delimiter: '**', asText: '**bold**' },
+				{ type: 'Text', textContent: ' text'},
+			])
+		})
+		it('parses strong emphasis inside paragraph (next line is heading)', () => {
+			const paragraph = parseAll('Paragraph', `some **bold** text\n# heading`)
+	
+			expect(paragraph?.parsedRange.asString()).toEqual(`some **bold** text\n`)
+			expect(paragraph).toHaveChildren([
+				{ type: 'Text', textContent: `some ` },
+				{ delimiter: '**', asText: '**bold**' },
+				{ type: 'Text', textContent: ' text\n'},
+			])
+		})
+		it('parses strong emphasis inside paragraph (ended by blank line)', () => {
+			const paragraph = parseAll('Paragraph', `some **bold** text\n\nmore text`)
+	
+			expect(paragraph?.parsedRange.asString()).toEqual(`some **bold** text\n\n`)
+			expect(paragraph).toHaveChildren([
+				{ type: 'Text', textContent: `some ` },
+				{ delimiter: '**', asText: '**bold**' },
+				{ type: 'Text', textContent: ' text\n'},
+				{}, //blank line
+			])
+		})
+		it('parses non-emphazised text', () => {
+			const paragraph = parseAll('Paragraph', `some **not bold text`)
+	
+			expect(paragraph?.parsedRange.asString()).toEqual(`some **not bold text`)
+			expect(paragraph).toHaveChildren([
+				{ type: 'Text', textContent: `some **not bold text` },
 			])
 		})
 	})

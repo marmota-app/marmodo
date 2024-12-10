@@ -19,23 +19,23 @@ import { Element } from "../src/element/Element"
 export type ElementContent = { [key: string]: any }
 
 expect.extend({
-	toHaveChildren(received: any, actual: ElementContent[]) {
+	toHaveChildren(received: any, expected: ElementContent[]) {
 		if(Array.isArray(received.content)) {
 			const element = received as Element<any, any, any>
 
-			if(element.content.length !== actual.length) {
+			if(element.content.length !== expected.length) {
 				return {
 					pass: false,
-					message: () => `Expected content to have length ${actual.length}, but was ${element.content.length}`
+					message: () => `Expected content to have length ${expected.length}, but was ${element.content.length}`
 				}
 			}
 
 			for(let i in element.content) {
-				const exp = element.content[i]
-				const act = actual[i]
+				const act = element.content[i]
+				const exp = expected[i]
 
-				for(let key of Object.keys(act)) {
-					if(exp[key] != act[key]) {
+				for(let key of Object.keys(exp)) {
+					if(act[key] != exp[key]) {
 						return {
 							pass: false,
 							message: () => `Expected element property ${key} to have value "${exp[key]}", but was "${act[key]}"`
@@ -45,7 +45,7 @@ expect.extend({
 			}
 			return {
 				pass: true,
-				message: () => `Element ${JSON.stringify(element)} contains all properties of ${JSON.stringify(actual)}`
+				message: () => `Element ${JSON.stringify(element)} contains all properties of ${JSON.stringify(expected)}`
 			}
 		}
 		return {

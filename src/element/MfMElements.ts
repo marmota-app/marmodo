@@ -55,6 +55,8 @@ export type AnyBlock = ContainerTypes[keyof ContainerTypes]
 export type InlineTypes = {
 	'Text': Text,
 	'BlankLine': BlankLine,
+	'StrongEmphasis': StrongEmphasis,
+	'Emphasis': Emphasis,
 }
 export type ContainerTypes = {
 	'Container': Container,
@@ -77,6 +79,8 @@ export interface Paragraph extends LeafContainer<'Paragraph', Paragraph> {}
 export interface HeadingContent extends ContainerInline<'HeadingContent', HeadingContent> {}
 export interface Text extends LeafInline<'Text', Text> {}
 export interface BlankLine extends LeafInline<'BlankLine', BlankLine> {}
+
 export interface StrongEmphasis extends ContainerInline<'StrongEmphasis', StrongEmphasis> {}
+export interface Emphasis extends ContainerInline<'Emphasis', Emphasis> {}
 
 export const allBlockStarts: string[] = [ '#' ]

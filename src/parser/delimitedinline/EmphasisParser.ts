@@ -14,29 +14,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AnyInline } from "../../element";
+import { AnyInline, Emphasis } from "../../element";
 import { ElementOptions } from "../../element/Element";
 import { PersistentRange } from "../../mbuffer/TextRange";
 import { DelimitedInlineParser, DelimitedMfMElement } from "./DelimitedInlineParser";
 
-export class MfMStrongEmphasis extends DelimitedMfMElement<'StrongEmphasis', MfMStrongEmphasis, StrongEmphasisParser> {
-	readonly type = 'StrongEmphasis'
+export class MfMEmphasis extends DelimitedMfMElement<'Emphasis', MfMEmphasis, EmphasisParser> {
+	readonly type = 'Emphasis'
 
 	constructor(
 		id: string,
 		options: ElementOptions,
 		parsedRange: PersistentRange,
-		parsedWith: StrongEmphasisParser,
+		parsedWith: EmphasisParser,
 		delimiter: string,
 		content: AnyInline[],
 	) {
 		super(id, options, parsedRange, parsedWith, delimiter, content)
 	}
 }
-export class StrongEmphasisParser extends DelimitedInlineParser<'StrongEmphasis', MfMStrongEmphasis, StrongEmphasisParser> {
-	override readonly type = 'StrongEmphasis'
-	override readonly ElementClass = MfMStrongEmphasis
+export class EmphasisParser extends DelimitedInlineParser<'Emphasis', MfMEmphasis, EmphasisParser> {
+	override readonly type = 'Emphasis'
+	override readonly ElementClass = MfMEmphasis
 	override readonly self = this
 	override readonly delimiters = [ '*', '_' ]
-	override readonly delimiterLength = 2
+	override readonly delimiterLength = 1
 }

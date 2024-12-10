@@ -2,7 +2,7 @@ import { AnyInline, ContainerInline, ElementOptions } from "../../element"
 import { MfMElement } from "../../element/MfMElement"
 import { TextLocation } from "../../mbuffer/TextLocation"
 import { PersistentRange } from "../../mbuffer/TextRange"
-import { MfMParser } from "../MfMParser"
+import { MfMInlineParser, MfMParser } from "../MfMParser"
 import { findNextDelimiterRun } from "./DelimiterRun"
 
 export abstract class DelimitedMfMElement<
@@ -38,7 +38,7 @@ export abstract class DelimitedInlineParser<
 	TYPE extends string,
 	ELEMENT extends ContainerInline<TYPE, ELEMENT>,
 	PARSER extends DelimitedInlineParser<TYPE, ELEMENT, PARSER>,
-> extends MfMParser<TYPE, AnyInline, ELEMENT> {
+> extends MfMInlineParser<TYPE, AnyInline, ELEMENT> {
 	abstract readonly type: TYPE
 	abstract readonly ElementClass: new (
 		id: string,
@@ -62,7 +62,9 @@ export abstract class DelimitedInlineParser<
 		})
 
 		if(startDelimiter != null) {
-			const contentStart = startDelimiter[1]
+			const contentStart = startDelimiter[0].accessor()
+			for(let i=0; i<this.delimiterLength; i++) { contentStart.advance() }
+
 			const endDelimiter = findNextDelimiterRun([ startDelimiter[2].delimiterChar ], contentStart, end, {
 				rightFlanking: true,
 				minLength: this.delimiterLength,
@@ -71,18 +73,31 @@ export abstract class DelimitedInlineParser<
 			if(endDelimiter != null) {
 				const contentEnd = endDelimiter[0]
 
-				const text = this.parsers.Text.parse(contentStart, contentEnd)
+				//This delimited inline could be part of a longer delimiter run.
+				//So, maxDelimiterEnd marks the last position in the delimiter
+				//run that could end this element.
+				//Inner elements could - but don't necessarily have to - reach
+				//up to that max delimiter end, so we parse until there.
+				const maxDelimiterEnd = endDelimiter[1].accessor()
+				for(let i=0; i<this.delimiterLength; i++) { maxDelimiterEnd.backoff() }
 
-				if(text !== null) {
-					return new this.ElementClass(
-						this.idGenerator.nextId(),
-						options,
-						start.persistentRangeUntil(end),
-						this.self,
-						startDelimiter[0].stringUntil(startDelimiter[1]),
-						[ text ]
-					)
-				}
+				//The real end of the content is the last position of the
+				//parsed content. And the real delimiter end is then delimiterLength
+				//after that (this is guaranteed to be within the ending
+				//delimiter run).
+				const content = this.parsers.parseInlines(contentStart, contentEnd, maxDelimiterEnd)
+				const parsedContentEnd = content[content.length-1].parsedRange.end
+				const parsedDelimiterEnd = parsedContentEnd.accessor()
+				for(let i=0; i<this.delimiterLength; i++) { parsedDelimiterEnd.advance() }
+
+				return new this.ElementClass(
+					this.idGenerator.nextId(),
+					options,
+					start.persistentRangeUntil(parsedDelimiterEnd),
+					this.self,
+					startDelimiter[0].stringUntil(contentStart),
+					content
+				)
 			}
 		}
 

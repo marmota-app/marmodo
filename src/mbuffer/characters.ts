@@ -27,7 +27,7 @@ export function isCharacter(other: string | string[], char: string): boolean {
 }
 
 export function isWhitespace(char: string): boolean {
-	return isCharacter([' ', '\t'], char)
+	return isCharacter([' ', '\t', '\u00A0', '\u202F', ], char)
 }
 
 export function isPunctuation(char: string): boolean {
