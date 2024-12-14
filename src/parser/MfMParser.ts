@@ -20,6 +20,13 @@ import { UpdateInfo } from "../mbuffer/TextContent"
 import { TextLocation } from "../mbuffer/TextLocation"
 import { IdGenerator, Parsers } from './Parsers'
 
+export function andFalse(_: UpdateCheckResult): UpdateCheckResult {
+	return { canUpdate: false, and: andFalse }
+}
+export function andOther(other: UpdateCheckResult): UpdateCheckResult {
+	return other
+}
+
 export abstract class MfMParser<
 	TYPE extends string,
 	CONTENT extends Element<any, any, any>,
@@ -35,6 +42,7 @@ export abstract class MfMParser<
 			canUpdate: true,
 			rangeStart: element.parsedRange.start,
 			rangeEnd: documentEnd,
+			and: (otherResult: UpdateCheckResult)=>otherResult,
 		}
 	}
 
@@ -49,6 +57,7 @@ export abstract class MfMParser<
 		) {
 			return {
 				canUpdate: false,
+				and: andFalse,
 			}
 		}
 
@@ -56,6 +65,7 @@ export abstract class MfMParser<
 			canUpdate: true,
 			rangeStart: element.parsedRange.start,
 			rangeEnd: element.parsedRange.end,
+			and: andOther,
 		}
 	}
 

@@ -20,7 +20,7 @@ import { allBlockStarts, Text } from "../element/MfMElements";
 import { UpdateInfo } from "../mbuffer/TextContent";
 import { TextLocation } from "../mbuffer/TextLocation";
 import { PersistentRange, TextRange, } from "../mbuffer/TextRange";
-import { MfMParser } from "./MfMParser";
+import { andFalse, andOther, MfMParser } from "./MfMParser";
 
 export class MfMText extends MfMElement<'Text', never, Text, TextParser> implements Text {
 	readonly type = 'Text'
@@ -52,7 +52,7 @@ export class TextParser extends MfMParser<'Text', never, Text> {
 		return new MfMText(this.idGenerator.nextId(), options, start.persistentRangeUntil(end), this)
 	}
 	checkUpdate(element: Text, update: UpdateInfo): UpdateCheckResult {
-		return this.checkUpdateDoesNotChangeNewlines(element, update)
+		return this.checkUpdateDoesNotChangeNewlines(element, update).and(this.#checkUpdateDoesNotAddPunctuation(element, update))
 	}
 
 	acceptUpdate(original: Text, updated: Text): boolean {
@@ -75,5 +75,20 @@ export class TextParser extends MfMParser<'Text', never, Text> {
 		}
 
 		return false
+	}
+	#checkUpdateDoesNotAddPunctuation(element: Text, update: UpdateInfo): UpdateCheckResult {
+		for(let i=0; i<update.newText.length; i++) {
+			const ch = update.newText.charAt(i)
+			switch(ch) {
+				case '=': case '*': case '_': case '[': case '!': case '~': case '`':
+					return { canUpdate: false, and: andFalse, }
+			}
+		}
+		return {
+			canUpdate: true,
+			rangeStart: element.parsedRange.start,
+			rangeEnd: element.parsedRange.end,
+			and: andOther,
+		}
 	}
 }

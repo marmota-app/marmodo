@@ -20,7 +20,7 @@ import { BlankLine } from "../element/MfMElements";
 import { UpdateInfo } from "../mbuffer/TextContent";
 import { TextLocation } from "../mbuffer/TextLocation";
 import { TextRange, PersistentRange } from "../mbuffer/TextRange";
-import { MfMParser } from "./MfMParser";
+import { andFalse, MfMParser } from "./MfMParser";
 
 export class MfMBlankLine extends MfMElement<'BlankLine', never, BlankLine, BlankLineParser> {
 	public readonly type = 'BlankLine'
@@ -69,6 +69,7 @@ export class BlankLineParser extends MfMParser<'BlankLine', never, BlankLine> {
 		//a blank line inside a code block.
 		return {
 			canUpdate: false,
+			and: andFalse,
 		}
 	}
 }
