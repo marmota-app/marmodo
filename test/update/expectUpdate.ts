@@ -28,7 +28,7 @@ export function expectUpdate<
 	ELEMENT extends Element<TYPE, CONTENT, ELEMENT>,
 >(parser: Parser<TYPE, CONTENT, ELEMENT>, originalText: string, update: ContentUpdate) {
 	return {
-		canBeParsed(reason = '') {
+		canBeParsed(reason = '', assertions: (updated: ELEMENT) => unknown = ()=>{}) {
 			it(`can parse update ["${update.text}", ${update.rangeOffset}+${update.rangeLength}] to content "${replaceWhitespace(originalText)}"${reason.length>0? ' - '+reason : ''}`, () => {
 				const updated = parseAndUpdate(parser, originalText, update)
 
@@ -38,6 +38,8 @@ export function expectUpdate<
 
 				expect(updated).not.toBeNull()
 				expect(updated!.parsedRange.asString()).toEqual(expectedElement?.parsedRange.asString())
+
+				assertions(updated!)
 			})
 		},
 		cannotBeParsed(reason = '') {

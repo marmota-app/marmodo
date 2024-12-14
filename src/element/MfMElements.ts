@@ -80,6 +80,15 @@ export interface HeadingContent extends ContainerInline<'HeadingContent', Headin
 export interface Text extends LeafInline<'Text', Text> {}
 export interface BlankLine extends LeafInline<'BlankLine', BlankLine> {}
 
+export interface Options extends ContainerInline<'Options', Options> {
+	keys: string[],
+	get(key: string): string | null | undefined,
+}
+export interface Option extends ContainerInline<'Option', Option> {
+	key: string,
+	value: string | null | undefined,
+}
+
 export interface StrongEmphasis extends ContainerInline<'StrongEmphasis', StrongEmphasis> {}
 export interface Emphasis extends ContainerInline<'Emphasis', Emphasis> {}
 

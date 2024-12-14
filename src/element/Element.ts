@@ -22,9 +22,11 @@ interface UpdateCheckResultPositive {
 	canUpdate: true,
 	rangeStart: TextLocation,
 	rangeEnd: TextLocation,
+	and: (otherResult: UpdateCheckResult)=>UpdateCheckResult,
 }
 interface UpdateCheckResultNegative {
 	canUpdate: false,
+	and: (otherResult: UpdateCheckResult)=>UpdateCheckResult,
 }
 export type UpdateCheckResult = UpdateCheckResultPositive | UpdateCheckResultNegative
 

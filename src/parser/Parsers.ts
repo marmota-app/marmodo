@@ -27,6 +27,8 @@ import { SectionParser } from './SectionParser'
 import { TextParser } from './TextParser'
 import { EmphasisParser } from './delimitedinline/EmphasisParser'
 import { StrongEmphasisParser } from './delimitedinline/StrongEmphasisParser'
+import { OptionParser } from './options/OptionParser'
+import { OptionsParser } from './options/OptionsParser'
 
 interface ParseLocation {
 	parser: Parser<any, any, any>,
@@ -48,6 +50,10 @@ export class Parsers {
 
 	get StrongEmphasis(): StrongEmphasisParser { return this.getParser('StrongEmphasis', () => new StrongEmphasisParser(this.idGenerator, this)) }
 	get Emphasis(): EmphasisParser { return this.getParser('Emphasis', () => new EmphasisParser(this.idGenerator, this)) }
+
+	get FirstOption(): OptionParser { return this.getParser('Option', () => new OptionParser(this.idGenerator, this, true)) }
+	get Option(): OptionParser { return this.getParser('Option', () => new OptionParser(this.idGenerator, this)) }
+	get Options(): OptionsParser { return this.getParser('Options', () => new OptionsParser(this.idGenerator, this)) }
 
 	get allBlocks(): Parser<any, any, any>[] {
 		return [
