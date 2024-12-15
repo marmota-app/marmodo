@@ -27,14 +27,13 @@ export class MfMHeading extends MfMElement<'Heading', HeadingContent | BlankLine
 
 	constructor(
 		id: string,
-		options: ElementOptions,
 		parsedRange: PersistentRange,
 		parsedWith: HeadingParser,
 		public readonly content: (HeadingContent | BlankLine)[],
 		private headingIdentifier: string,
 		private headingSpacing: string,
 	) {
-		super(id, options, parsedRange, parsedWith)
+		super(id, parsedRange, parsedWith)
 	}
 
 	get level(): number {
@@ -103,7 +102,6 @@ export class HeadingParser extends MfMParser<'Heading', HeadingContent | BlankLi
 
 		return new MfMHeading(
 			this.idGenerator.nextId(),
-			{},
 			start.persistentRangeUntil(end),
 			this,
 			headingContent,
@@ -125,12 +123,11 @@ export class MfMHeadingContent extends MfMElement<'HeadingContent', AnyInline, H
 
 	constructor(
 		id: string,
-		options: ElementOptions,
 		parsedRange: PersistentRange,
 		parsedWith: HeadingContentParser,
 		public readonly content: AnyInline[],
 	) {
-		super(id, options, parsedRange, parsedWith)
+		super(id, parsedRange, parsedWith)
 	}
 
 	get asText(): string {
@@ -154,7 +151,6 @@ export class HeadingContentParser extends MfMParser<'HeadingContent', AnyInline,
 
 		return new MfMHeadingContent(
 			this.idGenerator.nextId(),
-			{},
 			start.persistentRangeUntil(parseEnd),
 			this,
 			content

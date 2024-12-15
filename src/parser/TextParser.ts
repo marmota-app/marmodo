@@ -47,9 +47,7 @@ export class TextParser extends MfMParser<'Text', never, Text> {
 	readonly type = 'Text'
 	
 	parse(start: TextLocation, end: TextLocation): Text | null {
-		const options: ElementOptions = {}
-
-		return new MfMText(this.idGenerator.nextId(), options, start.persistentRangeUntil(end), this)
+		return new MfMText(this.idGenerator.nextId(), start.persistentRangeUntil(end), this)
 	}
 	checkUpdate(element: Text, update: UpdateInfo): UpdateCheckResult {
 		return this.checkUpdateDoesNotChangeNewlines(element, update).and(this.#checkUpdateDoesNotAddPunctuation(element, update))

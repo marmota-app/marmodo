@@ -69,7 +69,6 @@ export class OptionParser extends MfMParser<'Option', AnyInline, Option> {
 
 		const option = new MfMOption(
 			this.idGenerator.nextId(),
-			{},
 			start.persistentRangeUntil(rangeEnd),
 			this
 		)

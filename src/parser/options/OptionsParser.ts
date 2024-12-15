@@ -14,25 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AnyInline, ElementOptions, Option, Options } from "../../element"
+import { AnyInline, Option, Options } from "../../element"
 import { MfMElement } from "../../element/MfMElement"
 import { TextLocation } from "../../mbuffer/TextLocation"
 import { PersistentRange } from "../../mbuffer/TextRange"
 import { finiteLoop } from "../../utilities/finiteLoop"
 import { MfMParser } from "../MfMParser"
-import { MfMOption, OptionParser } from "./OptionParser"
+import { OptionParser } from "./OptionParser"
 
 export class MfMOptions extends MfMElement<'Options', AnyInline, Options, OptionsParser> implements Options {
 	public readonly type = 'Options'
 
 	constructor(
 		id: string,
-		options: ElementOptions,
 		parsedRange: PersistentRange,
 		parsedWith: OptionsParser,
 		public readonly content: Option[],
 	) {
-		super(id, options, parsedRange, parsedWith)
+		super(id, parsedRange, parsedWith)
 	}
 
 	get(key: string) {
@@ -70,7 +69,6 @@ export class OptionsParser extends MfMParser<'Options', AnyInline, Options> {
 			cur.advance()
 			const result = new MfMOptions(
 				this.idGenerator.nextId(),
-				{},
 				start.persistentRangeUntil(cur),
 				this,
 				content,

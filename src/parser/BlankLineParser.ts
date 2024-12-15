@@ -14,12 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { ElementOptions, UpdateCheckResult } from "../element/Element";
+import { UpdateCheckResult } from "../element/Element";
 import { MfMElement } from "../element/MfMElement";
 import { BlankLine } from "../element/MfMElements";
 import { UpdateInfo } from "../mbuffer/TextContent";
 import { TextLocation } from "../mbuffer/TextLocation";
-import { TextRange, PersistentRange } from "../mbuffer/TextRange";
 import { andFalse, MfMParser } from "./MfMParser";
 
 export class MfMBlankLine extends MfMElement<'BlankLine', never, BlankLine, BlankLineParser> {
@@ -42,7 +41,6 @@ export class BlankLineParser extends MfMParser<'BlankLine', never, BlankLine> {
 	
 	parse(start: TextLocation, end: TextLocation): BlankLine | null {
 		const current = start.accessor()
-		const options: ElementOptions = {}
 
 		while(current.isInRange(end) && current.is([' ', '\t'])) {
 			current.advance()
@@ -53,11 +51,11 @@ export class BlankLineParser extends MfMParser<'BlankLine', never, BlankLine> {
 			if(current.isInRange(end) && current.is('\n')) {
 				current.advance()
 			}
-			return new MfMBlankLine(this.idGenerator.nextId(), options, start.persistentRangeUntil(current), this)
+			return new MfMBlankLine(this.idGenerator.nextId(), start.persistentRangeUntil(current), this)
 		}
 		if(current.isInRange(end) && current.is('\n')) {
 			current.advance()
-			return new MfMBlankLine(this.idGenerator.nextId(), options, start.persistentRangeUntil(current), this)
+			return new MfMBlankLine(this.idGenerator.nextId(), start.persistentRangeUntil(current), this)
 		}
 
 		return null

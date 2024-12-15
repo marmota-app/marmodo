@@ -41,8 +41,9 @@ export interface Parser<
 	acceptUpdate: (original: ELEMENT, updated: ELEMENT) => boolean,
 }
 
-export type ElementOptions = {
-	[key: string]: string,
+export interface ElementOptions {
+	keys: string[],
+	get: (key: string) => string | null | undefined,
 }
 
 export type ElementUpdateCallback<
