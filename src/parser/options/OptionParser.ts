@@ -92,6 +92,8 @@ export class OptionParser extends MfMParser<'Option', AnyInline, Option> {
 				option.content.push(secondText)
 			}
 		} else {
+			if(optionEnd.isEqualTo(start)) { return null }
+			
 			const firstText = this.parsers.Text.parse(start, optionEnd)
 			if(firstText != null) {
 				option.content.push(firstText)
