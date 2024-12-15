@@ -33,6 +33,8 @@ function inline(i: AnyInline, isLast: boolean): string {
 		case 'BlankLine': return ''
 		case 'StrongEmphasis': return `<strong>${i.content.map((c, x) => inline(c, x===i.content.length-1)).join('')}</strong>`
 		case 'Emphasis': return `<em>${i.content.map((c, x) => inline(c, x===i.content.length-1)).join('')}</em>`
+		case 'Options': return ''
+		case 'Option': return ''
 		default: throw unreachable(`Unsupported inline element: ${(i as any).type}`, i)
 	}
 }

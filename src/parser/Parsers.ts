@@ -51,8 +51,8 @@ export class Parsers {
 	get StrongEmphasis(): StrongEmphasisParser { return this.getParser('StrongEmphasis', () => new StrongEmphasisParser(this.idGenerator, this)) }
 	get Emphasis(): EmphasisParser { return this.getParser('Emphasis', () => new EmphasisParser(this.idGenerator, this)) }
 
-	get FirstOption(): OptionParser { return this.getParser('Option', () => new OptionParser(this.idGenerator, this, true)) }
-	get Option(): OptionParser { return this.getParser('Option', () => new OptionParser(this.idGenerator, this)) }
+	get FirstOption(): OptionParser { return this.getParser('FirstOption', () => new OptionParser(this.idGenerator, this, true)) }
+	get Option(): OptionParser { return this.getParser('Option', () => new OptionParser(this.idGenerator, this, false)) }
 	get Options(): OptionsParser { return this.getParser('Options', () => new OptionsParser(this.idGenerator, this)) }
 
 	get allBlocks(): Parser<any, any, any>[] {
@@ -134,7 +134,7 @@ export class Parsers {
 
 	private getParser<
 		TYPE extends string,
-		PARSER extends Parser<TYPE, any, any>
+		PARSER extends Parser<any, any, any>
 	>(
 		elementType: TYPE,
 		createElementParser: () => PARSER

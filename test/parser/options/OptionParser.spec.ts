@@ -28,6 +28,11 @@ describe('Option', () => {
 			expect(result).toHaveProperty('key', 'default')
 			expect(result).toHaveProperty('value', 'val')
 		})
+		it('does not parse empty text as option', () => {
+			const result = parseAll('FirstOption', '')
+	
+			expect(result).toBeNull()
+		})
 		it('stops parsing at a semicolon', () => {
 			const result = parseAll('FirstOption', 'val;more content')
 	
@@ -128,5 +133,25 @@ describe('Option', () => {
 			'key1=val1;',
 			{ text: '=', rangeOffset: 'key1=val'.length, rangeLength: 0 }
 		).cannotBeParsed('adds a second = sign in the value part')
+		expectUpdate(
+			parser,
+			'key1=val1;more text',
+			{ text: '}', rangeOffset: 'key1=val'.length, rangeLength: 0 }
+		).cannotBeParsed('inserts } into the option')
+		expectUpdate(
+			parser,
+			'key1=val1;more text',
+			{ text: ';', rangeOffset: 'key1=val'.length, rangeLength: 0 }
+		).cannotBeParsed('inserts ; into the option')
+		expectUpdate(
+			parser,
+			'key1=val1}more text',
+			{ text: '', rangeOffset: 'key1=val1'.length, rangeLength: 1 }
+		).cannotBeParsed('deletes } from the end of the option')
+		expectUpdate(
+			parser,
+			'key1=val1;more text',
+			{ text: '', rangeOffset: 'key1=val1'.length, rangeLength: 1 }
+		).cannotBeParsed('deletes ; from the end of the option')
 	})
 })

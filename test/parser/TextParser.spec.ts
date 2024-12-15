@@ -43,7 +43,7 @@ describe('TextParser', () => {
 			{ text: '#', rangeOffset: 'some text\n'.length, rangeLength: 0 }
 		).cannotBeParsed('Would create a new heading');
 
-		[ '*', '=', '_', '!', '[', '~', '`' ].forEach(p => expectUpdate(
+		[ '*', '=', '_', '!', '[', ']', '~', '`', '{', '}', ';' ].forEach(p => expectUpdate(
 			parser,
 			'some text\nmore text',
 			{ text: `some text${p}more text`, rangeOffset: 'some text\n'.length, rangeLength: 0 }

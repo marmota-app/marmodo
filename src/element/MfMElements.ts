@@ -57,6 +57,8 @@ export type InlineTypes = {
 	'BlankLine': BlankLine,
 	'StrongEmphasis': StrongEmphasis,
 	'Emphasis': Emphasis,
+	'Option': Option,
+	'Options': Options,
 }
 export type ContainerTypes = {
 	'Container': Container,

@@ -14,19 +14,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AnyInline, Options } from "../../element"
+import { AnyInline, ElementOptions, Option, Options } from "../../element"
 import { MfMElement } from "../../element/MfMElement"
 import { TextLocation } from "../../mbuffer/TextLocation"
+import { PersistentRange } from "../../mbuffer/TextRange"
+import { finiteLoop } from "../../utilities/finiteLoop"
 import { MfMParser } from "../MfMParser"
+import { MfMOption, OptionParser } from "./OptionParser"
 
 export class MfMOptions extends MfMElement<'Options', AnyInline, Options, OptionsParser> implements Options {
 	public readonly type = 'Options'
-	readonly content: AnyInline[] = []
+
+	constructor(
+		id: string,
+		options: ElementOptions,
+		parsedRange: PersistentRange,
+		parsedWith: OptionsParser,
+		public readonly content: Option[],
+	) {
+		super(id, options, parsedRange, parsedWith)
+	}
 
 	get(key: string) {
-		return undefined
+		return this.content.find(c => c.key===key)?.value
 	}
-	get keys(): string[] { return [] }
+	get keys(): string[] { return this.content.map(c => c.key) }
 
 	get asText(): string {
 		return this.parsedRange.asString()
@@ -37,6 +49,35 @@ export class OptionsParser extends MfMParser<'Options', AnyInline, Options> {
 	readonly type = 'Options'
 	
 	parse(start: TextLocation, end: TextLocation): Options | null {
+		let cur = start.accessor()
+		if(cur.get() !== '{') { return null }
+		cur.advance()
+
+		const content: Option[] = []
+		let previousOption: Option | null = null
+		const loop = finiteLoop(() => [ cur.info() ])
+		do {
+			loop.ensure()
+			const nextParser: OptionParser = (previousOption!=null)? this.parsers.Option : this.parsers.FirstOption
+			previousOption = nextParser.parse(cur, end)
+			if(previousOption != null) {
+				content.push(previousOption)
+				cur = previousOption.parsedRange.end.accessor()
+			}
+		} while(previousOption != null)
+
+		if(cur.isBefore(end) && cur.get() === '}') {
+			cur.advance()
+			const result = new MfMOptions(
+				this.idGenerator.nextId(),
+				{},
+				start.persistentRangeUntil(cur),
+				this,
+				content,
+			)
+	
+			return result
+		}
 		return null
 	}
 }
