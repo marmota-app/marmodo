@@ -27,13 +27,12 @@ export class MfMSection extends MfMElement<'Section', AnyBlock, Section, Section
 
 	constructor(
 		id: string,
-		options: ElementOptions,
 		parsedRange: PersistentRange,
 		parsedWith: SectionParser,
 		public readonly level: number,
 		public readonly content: AnyBlock[],
 	) {
-		super(id, options, parsedRange, parsedWith)
+		super(id, parsedRange, parsedWith)
 	}
 
 	get asText(): string {
@@ -47,11 +46,9 @@ export class SectionParser extends MfMParser<'Section', AnyBlock, Section> {
 	readonly type = 'Section'
 	
 	parse(start: TextLocation, end: TextLocation): Section | null {
-		const options: ElementOptions = {}
-
 		const [sectionLevel, content, parsedEnd] = this.#parseSectionContent(start, end)
 		
-		return new MfMSection(this.idGenerator.nextId(), options, start.persistentRangeUntil(parsedEnd), this, sectionLevel, content)
+		return new MfMSection(this.idGenerator.nextId(), start.persistentRangeUntil(parsedEnd), this, sectionLevel, content)
 	}
 
 	#parseSectionContent(start: TextLocation, end: TextLocation): [number, AnyBlock[], TextLocation] {

@@ -12,13 +12,12 @@ export abstract class DelimitedMfMElement<
 > extends MfMElement<TYPE, AnyInline, ELEMENT, PARSER> {
 	constructor(
 		id: string,
-		options: ElementOptions,
 		parsedRange: PersistentRange,
 		parsedWith: PARSER,
 		public readonly delimiter: string,
 		public readonly content: AnyInline[],
 	) {
-		super(id, options, parsedRange, parsedWith)
+		super(id, parsedRange, parsedWith)
 	}
 
 	get asText(): string {
@@ -42,7 +41,6 @@ export abstract class DelimitedInlineParser<
 	abstract readonly type: TYPE
 	abstract readonly ElementClass: new (
 		id: string,
-		options: ElementOptions,
 		parsedRange: PersistentRange,
 		parsedWith: PARSER,
 		delimiter: string,
@@ -53,8 +51,6 @@ export abstract class DelimitedInlineParser<
 	abstract readonly delimiterLength: number
 
 	parse(start: TextLocation, end: TextLocation): ELEMENT | null {
-		const options: ElementOptions = {}
-
 		const startDelimiter = findNextDelimiterRun(this.delimiters, start, end, {
 			minLength: this.delimiterLength,
 			maxStartIndex: 0,
@@ -92,7 +88,6 @@ export abstract class DelimitedInlineParser<
 
 				return new this.ElementClass(
 					this.idGenerator.nextId(),
-					options,
 					start.persistentRangeUntil(parsedDelimiterEnd),
 					this.self,
 					startDelimiter[0].stringUntil(contentStart),

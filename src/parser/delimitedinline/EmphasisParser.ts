@@ -24,13 +24,12 @@ export class MfMEmphasis extends DelimitedMfMElement<'Emphasis', MfMEmphasis, Em
 
 	constructor(
 		id: string,
-		options: ElementOptions,
 		parsedRange: PersistentRange,
 		parsedWith: EmphasisParser,
 		delimiter: string,
 		content: AnyInline[],
 	) {
-		super(id, options, parsedRange, parsedWith, delimiter, content)
+		super(id, parsedRange, parsedWith, delimiter, content)
 	}
 }
 export class EmphasisParser extends DelimitedInlineParser<'Emphasis', MfMEmphasis, EmphasisParser> {

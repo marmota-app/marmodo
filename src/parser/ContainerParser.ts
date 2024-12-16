@@ -14,11 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { ElementOptions } from "../element/Element"
 import { MfMElement } from "../element/MfMElement"
 import { AnyBlock, Container } from "../element/MfMElements"
 import { TextLocation } from "../mbuffer/TextLocation"
-import { PersistentRange, TextRange, } from "../mbuffer/TextRange"
+import { PersistentRange } from "../mbuffer/TextRange"
 import { finiteLoop } from "../utilities/finiteLoop"
 import { MfMParser } from "./MfMParser"
 
@@ -27,12 +26,11 @@ export class MfMContainer extends MfMElement<'Container', AnyBlock, Container, C
 
 	constructor(
 		id: string,
-		options: ElementOptions,
 		parsedRange: PersistentRange,
 		parsedWith: ContainerParser,
 		public readonly content: AnyBlock[],
 	) {
-		super(id, options, parsedRange, parsedWith)
+		super(id, parsedRange, parsedWith)
 	}
 
 	get asText(): string {
@@ -46,7 +44,6 @@ export class ContainerParser extends MfMParser<'Container', AnyBlock, Container>
 	
 	parse(start: TextLocation, end: TextLocation): Container | null {
 		const content: AnyBlock[] = []
-		const options: ElementOptions = {}
 		let nextParseLocation = start
 
 		const loop = finiteLoop(() => [ nextParseLocation.info() ])
@@ -60,6 +57,6 @@ export class ContainerParser extends MfMParser<'Container', AnyBlock, Container>
 			nextParseLocation = section.parsedRange.end
 		}
 		
-		return new MfMContainer(this.idGenerator.nextId(), options, start.persistentRangeUntil(end), this, content)
+		return new MfMContainer(this.idGenerator.nextId(), start.persistentRangeUntil(end), this, content)
 	}
 }
