@@ -14,14 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { Options } from '../../src/element'
 import {
 	Block, ContentOptions, Heading, HorizontalRule, InlineCodeTextContent, List, ListItem, Paragraph, parseMarkdown, Preformatted
 } from '../../src/legacy/parseMarkdown'
 
 const assume = expect
 
-describe.skip('parseMarkdown: Options with curly braces', () => {
-	it('supports options on code blocks', () => {
+describe('parseMarkdown: Options with curly braces', () => {
+	it.skip('supports options on code blocks', () => {
 		const markdown = '```{ javascript }\n```'
 
 		const result = parseMarkdown(markdown)
@@ -33,7 +34,7 @@ describe.skip('parseMarkdown: Options with curly braces', () => {
 		expect(options).toHaveProperty('default', 'javascript')
 	})
 
-	it('supports options block on paragraph inline code block', () => {
+	it.skip('supports options block on paragraph inline code block', () => {
 		const markdown = '`{ javascript }inner text`'
 
 		const result = parseMarkdown(markdown)
@@ -50,7 +51,7 @@ describe.skip('parseMarkdown: Options with curly braces', () => {
 		expect(inlineCode.content[0]).toHaveProperty('content', 'inner text')
 	})
 
-	it('supports options on horizontal rule', () => {
+	it.skip('supports options on horizontal rule', () => {
 		const markdown = '---{ defaultoption }\n'
 
 		const result = parseMarkdown(markdown)
@@ -72,8 +73,8 @@ describe.skip('parseMarkdown: Options with curly braces', () => {
 		expect(hResult).toHaveLength(1)
 		expect(hResult[0]).toHaveProperty('type', 'Heading')
 
-		const options = (hResult[0] as Heading).options
-		expect(options).toHaveProperty('default', 'defaultoption')
+		const options = (hResult[0] as Heading).options as unknown as Options
+		expect(options.get('default')).toEqual('defaultoption')
 	})
 
 	it('supports options on paragraphs', () => {
@@ -85,11 +86,12 @@ describe.skip('parseMarkdown: Options with curly braces', () => {
 		expect(pResult.length).toBeGreaterThanOrEqual(2)
 		expect(pResult.at(1)).toHaveProperty('type', 'Paragraph')
 
-		const options = (pResult.at(1) as Paragraph).options
-		expect(options).toHaveProperty('default', 'defaultoption')
+		const options = (pResult.at(1) as Paragraph).options as unknown as Options
+		expect(options.get('default')).toEqual('defaultoption')
 	})
 
-	const styles: string[] = ['_', '**', '~~']
+	//TODO!!!
+	const styles: string[] = ['_', '**', /*'~~'*/]
 	styles.forEach(style => {
 		it(`supports options on ${style}`, () => {
 			const markdown = `${style}{ defaultoption }text${style}`
@@ -100,12 +102,13 @@ describe.skip('parseMarkdown: Options with curly braces', () => {
 			assume(result.content[0]).toHaveProperty('type', 'Paragraph')
 			assume((result.content[0] as Paragraph).content[0]).toHaveProperty('options')
 		
-			const options = ((result.content[0] as Paragraph).content[0] as { options: ContentOptions }).options
-			expect(options).toHaveProperty('default', 'defaultoption')
+			const options = ((result.content[0] as Paragraph).content[0] as { options: ContentOptions }).options  as unknown as Options
+			expect(options).toHaveProperty('keys', [ 'default' ])
+			expect(options.get('default')).toEqual('defaultoption')
 		})
 	})
 
-	it('supports options on links', () => {
+	it.skip('supports options on links', () => {
 		const markdown = '[text](target){defaultoption}'
 
 		const result = parseMarkdown(markdown)
@@ -118,7 +121,7 @@ describe.skip('parseMarkdown: Options with curly braces', () => {
 		expect(options).toHaveProperty('default', 'defaultoption')
 	})
 
-	it('supports options on image links', () => {
+	it.skip('supports options on image links', () => {
 		const markdown = '![text](target){defaultoption}'
 
 		const result = parseMarkdown(markdown)
@@ -137,7 +140,7 @@ describe.skip('parseMarkdown: Options with curly braces', () => {
 	]
 	const uppercaseLinks = lowercaseLinks.map(l => l.toUpperCase())
 	const videoLinks = [ ...lowercaseLinks, ...uppercaseLinks, ]
-	videoLinks.forEach(link => it(`has "video" type option when link is ${link}`, () => {
+	videoLinks.forEach(link => it.skip(`has "video" type option when link is ${link}`, () => {
 		const markdown = `![text](${link})`
 
 		const result = parseMarkdown(markdown)
@@ -150,7 +153,7 @@ describe.skip('parseMarkdown: Options with curly braces', () => {
 		expect(options).toHaveProperty('type', 'video')
 	}))
 
-	it('supports options on asides', () => {
+	it.skip('supports options on asides', () => {
 		const markdown = '^{defaultoption} Aside content'
 
 		const result = parseMarkdown(markdown)
@@ -162,7 +165,7 @@ describe.skip('parseMarkdown: Options with curly braces', () => {
 		const options = (result.content[0] as Block).options
 		expect(options).toHaveProperty('default', 'defaultoption')
 	})
-	it('supports options on block quotes', () => {
+	it.skip('supports options on block quotes', () => {
 		const markdown = '>{defaultoption} Block quote content'
 
 		const result = parseMarkdown(markdown)
@@ -175,7 +178,7 @@ describe.skip('parseMarkdown: Options with curly braces', () => {
 		expect(options).toHaveProperty('default', 'defaultoption')
 	})
 
-	it('supports options on lists (first item)', () => {
+	it.skip('supports options on lists (first item)', () => {
 		const markdown = '*{defaultoption} item 1\n* item2'
 
 		const result = parseMarkdown(markdown)
@@ -194,7 +197,7 @@ describe.skip('parseMarkdown: Options with curly braces', () => {
 		const itemOptions = ((result.content[0] as List).items[0] as ListItem).options
 		expect(itemOptions).toHaveProperty('default', 'defaultoption')
 	})
-	it('supports options on lists (subsequent item)', () => {
+	it.skip('supports options on lists (subsequent item)', () => {
 		const markdown = '* item 1\n*{defaultoption} item2'
 
 		const result = parseMarkdown(markdown)
@@ -216,68 +219,71 @@ describe.skip('parseMarkdown: Options with curly braces', () => {
 	})
 
 	it('does not parse incomplete option block', () => {
-		const markdown = '`{ javascript`'
+		const markdown = '_{ javascript_'
 
 		const result = parseMarkdown(markdown)
 
 		assume(result.content).toHaveLength(1)
 		assume(result.content[0]).toHaveProperty('type', 'Paragraph')
-		assume((result.content[0] as Paragraph).content[0]).toHaveProperty('type', 'InlineCode')
+		assume((result.content[0] as Paragraph).content[0]).toHaveProperty('type', 'Emphasis')
 
 		const inlineCode = (((result.content[0] as Paragraph).content[0] as InlineCodeTextContent))
-		const options = inlineCode.options
+		const options = inlineCode.options as unknown as Options
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(options).toEqual({})
+		expect(options).toHaveProperty('keys', [])
 		expect(inlineCode.content).toHaveLength(1)
 		expect(inlineCode.content[0]).toHaveProperty('type', 'Text')
-		expect(inlineCode.content[0]).toHaveProperty('content', '{ javascript')
+		expect(inlineCode.content[0]).toHaveProperty('textContent', '{ javascript')
 	})
 
 	it('parses named option instead of default', () => {
-		const markdown = '`{ foo = bar }inner text`'
+		const markdown = '_{ foo = bar }inner text_'
 
 		const result = parseMarkdown(markdown)
 
 		assume(result.content).toHaveLength(1)
 		assume(result.content[0]).toHaveProperty('type', 'Paragraph')
-		assume((result.content[0] as Paragraph).content[0]).toHaveProperty('type', 'InlineCode')
+		assume((result.content[0] as Paragraph).content[0]).toHaveProperty('type', 'Emphasis')
 
 		const inlineCode = (((result.content[0] as Paragraph).content[0] as InlineCodeTextContent))
-		const options = inlineCode.options
-		expect(options).not.toHaveProperty('default')
-		expect(options).toHaveProperty('foo', 'bar')
-		expect(inlineCode.content).toHaveLength(1)
-		expect(inlineCode.content[0]).toHaveProperty('type', 'Text')
-		expect(inlineCode.content[0]).toHaveProperty('content', 'inner text')
+		const options = inlineCode.options as unknown as Options
+		expect(options).toHaveProperty('keys', ['foo'])
+		expect(options.get('foo')).toEqual('bar')
+		expect(inlineCode.content).toHaveLength(2)
+		expect(inlineCode.content[1]).toHaveProperty('type', 'Text')
+		expect(inlineCode.content[1]).toHaveProperty('textContent', 'inner text')
 	})
 
 	it('parses default option and key/value options', () => {
-		const markdown = '`{ def; foo = bar; baz=another option }inner text`'
+		const markdown = '_{ def; foo = bar; baz=another option }inner text_'
 
 		const result = parseMarkdown(markdown)
 
 		assume(result.content).toHaveLength(1)
 		assume(result.content[0]).toHaveProperty('type', 'Paragraph')
-		assume((result.content[0] as Paragraph).content[0]).toHaveProperty('type', 'InlineCode')
+		assume((result.content[0] as Paragraph).content[0]).toHaveProperty('type', 'Emphasis')
 
 		const inlineCode = (((result.content[0] as Paragraph).content[0] as InlineCodeTextContent))
-		const options = inlineCode.options
-		expect(options).toHaveProperty('default', 'def')
-		expect(options).toHaveProperty('foo', 'bar')
-		expect(options).toHaveProperty('baz', 'another option')
-		expect(inlineCode.content).toHaveLength(1)
-		expect(inlineCode.content[0]).toHaveProperty('type', 'Text')
-		expect(inlineCode.content[0]).toHaveProperty('content', 'inner text')
+		const options = inlineCode.options as unknown as Options
+		expect(options.get('default')).toEqual('def')
+		expect(options.get('foo')).toEqual('bar')
+		expect(options.get('baz')).toEqual('another option')
+		expect(inlineCode.content).toHaveLength(2)
+		expect(inlineCode.content[1]).toHaveProperty('type', 'Text')
+		expect(inlineCode.content[1]).toHaveProperty('textContent', 'inner text')
 	})
 
-	it('does not parse default option after first entry', () => {
-		const markdown = '`{ foo=bar; def }code content`'
+	//Intentionally incompatible, at least for now: Options are not parsed
+	//at all when there is an invalid option. This might be annoying when
+	//updating the text, but right now, we're tryint to live with it.
+	it.skip('does not parse default option after first entry', () => {
+		const markdown = '_{ foo=bar; def }code content_'
 
 		const result = parseMarkdown(markdown)
 
 		assume(result.content).toHaveLength(1)
 		assume(result.content[0]).toHaveProperty('type', 'Paragraph')
-		assume((result.content[0] as Paragraph).content[0]).toHaveProperty('type', 'InlineCode')
+		assume((result.content[0] as Paragraph).content[0]).toHaveProperty('type', 'Emphasis')
 
 		const inlineCode = (((result.content[0] as Paragraph).content[0] as InlineCodeTextContent))
 		const options = inlineCode.options
@@ -290,7 +296,7 @@ describe.skip('parseMarkdown: Options with curly braces', () => {
 		expect(inlineCode.content[0]).toHaveProperty('content', 'code content')
 	})
 
-	describe('slide options', () => {
+	describe.skip('slide options', () => {
 		const slideStarts = [ '#', '---' ]
 
 		slideStarts.forEach(slideStart => {

@@ -17,7 +17,9 @@ limitations under the License.
 import { serializeOptions } from '../../src/legacy/MarkdownOptions'
 import { ContentOptions } from '../../src/legacy/parseMarkdown'
 
-describe.skip('Markdown Options', () => {
+//The tests here do not test any new code from marmodo, but I'll keep them
+//to keep the legacy tests complete
+describe('Markdown Options', () => {
 	describe('serializeOptions', () => {
 		it('serializes empty options to "{}"', () => {
 			const options: ContentOptions = {}

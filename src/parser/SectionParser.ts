@@ -43,9 +43,9 @@ export class MfMSection extends MfMElement<'Section', AnyBlock, Section, Section
 
 	override get options(): ElementOptions {
 		if(this.content.length > 0) {
-			//if(this.content[0].type==='Heading') {
+			if(this.content[0].type==='Heading') {
 				return this.content[0].options
-			//}
+			}
 		}
 		return EMPTY_OPTIONS
 	}

@@ -124,12 +124,11 @@ describe('SectionParser', () => {
 			expect(section.options.get('key1')).toEqual('val1')
 			expect(section.options.get('key2')).toEqual('val2')
 		})
-		it.skip('does not have options when it was not started with a starting element', () => {
-			//TODO: Cannot be implemented yet, the only block element that
-			//      supports options right now is a heading... And that's
-			//      a starting element of a section.
-			//      Implement when there is something like a fenced code
-			//      block or a general-purpose block.
+		it('does not have options when it was not started with a starting element', () => {
+			const section = parseAll('Section', '{ key1=val1; key2=val2 }first paragraph\nfirst paragraph\n\n') as Section
+
+			expect(section?.level).toEqual(1)
+			expect(section.options).toHaveProperty('keys', [])
 		})
 	})
 })

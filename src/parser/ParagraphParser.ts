@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 import { ElementOptions } from "../element/Element";
-import { MfMElement } from "../element/MfMElement";
+import { EMPTY_OPTIONS, MfMElement } from "../element/MfMElement";
 import { AnyInline, Paragraph } from "../element/MfMElements";
 import { TextLocation } from "../mbuffer/TextLocation";
 import { PersistentRange, TextRange, } from "../mbuffer/TextRange";
@@ -38,11 +38,28 @@ export class MfMParagraph extends MfMElement<'Paragraph', AnyInline, Paragraph, 
 			.map(c => c.asText)
 			.join('')
 	}
+
+	override get options(): ElementOptions {
+		if(this.content.length>0 && this.content[0].type==='Options') {
+			return this.content[0]
+		}
+		return EMPTY_OPTIONS
+	}
+
 }
 export class ParagraphParser extends MfMParser<'Paragraph', AnyInline, Paragraph> {
 	readonly type = 'Paragraph'
 
 	parse(start: TextLocation, end: TextLocation): Paragraph | null {
+		const content: AnyInline[] = []
+		if(start.accessor().get() === '{') {
+			const options = this.parsers.Options.parse(start, end)
+			if(options != null) {
+				content.push(options)
+				start = options.parsedRange.end.accessor()
+			}
+		}
+
 		let nextNewline = start.findNextNewline(end)
 		while(nextNewline != null) {
 			//Try to parse a blank line here, and also end the paragraph on
@@ -51,10 +68,10 @@ export class ParagraphParser extends MfMParser<'Paragraph', AnyInline, Paragraph
 			
 			if(this.lineStartsNewBlock(nextParseLocation, end)) {
 				const completeContent = this.parsers.parseInlines(start, nextNewline!.end, nextNewline!.end)
-				return new MfMParagraph(this.idGenerator.nextId(), start.persistentRangeUntil(nextNewline.end), this, completeContent)
+				content.push(...completeContent)
+				return new MfMParagraph(this.idGenerator.nextId(), start.persistentRangeUntil(nextNewline.end), this, content)
 			}
 
-			const content: AnyInline[] = []
 			const blankLinesEnd = this.addBlankLinesTo(content, nextParseLocation, end, () => {
 				const completeContent = this.parsers.parseInlines(start, nextNewline!.end, nextNewline!.end)
 				content.push(...completeContent)
@@ -67,6 +84,7 @@ export class ParagraphParser extends MfMParser<'Paragraph', AnyInline, Paragraph
 		}
 
 		const completeContent = this.parsers.parseInlines(start, end, end)
-		return new MfMParagraph(this.idGenerator.nextId(), start.persistentRangeUntil(end), this, completeContent)
+		content.push(...completeContent)
+		return new MfMParagraph(this.idGenerator.nextId(), start.persistentRangeUntil(end), this, content)
 	}
 }
