@@ -14,22 +14,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { AnyInline, BlankLine, ElementOptions, Heading, HeadingContent, UpdateCheckResult } from "../element"
-import { MfMElement } from "../element/MfMElement"
+import { AnyInline, BlankLine, ElementOptions, Heading, HeadingContent, Options, UpdateCheckResult } from "../element"
+import { EMPTY_OPTIONS, MfMElement } from "../element/MfMElement"
 import { UpdateInfo } from "../mbuffer"
 import { TextLocation } from "../mbuffer/TextLocation"
 import { PersistentRange } from "../mbuffer/TextRange"
 import { finiteLoop } from "../utilities/finiteLoop"
 import { MfMParser } from "./MfMParser"
 
-export class MfMHeading extends MfMElement<'Heading', HeadingContent | BlankLine, Heading, HeadingParser> {
+export class MfMHeading extends MfMElement<'Heading', HeadingContent | BlankLine | Options, Heading, HeadingParser> {
 	public readonly type = 'Heading'
 
 	constructor(
 		id: string,
 		parsedRange: PersistentRange,
 		parsedWith: HeadingParser,
-		public readonly content: (HeadingContent | BlankLine)[],
+		public readonly content: (HeadingContent | BlankLine | Options)[],
 		private headingIdentifier: string,
 		private headingSpacing: string,
 	) {
@@ -41,13 +41,26 @@ export class MfMHeading extends MfMElement<'Heading', HeadingContent | BlankLine
 	}
 
 	get asText(): string {
+		if(this.content.length>0 && this.content[0].type==='Options') {
+			return this.headingIdentifier + this.content[0].asText + this.headingSpacing + this.content
+				.filter((_, i) => i>0)
+				.map(c => c.asText)
+				.join('')
+		}
 		return this.headingIdentifier + this.headingSpacing + this.content
 			.map(c => c.asText)
 			.join('')
 	}
+
+	override get options(): ElementOptions {
+		if(this.content.length>0 && this.content[0].type==='Options') {
+			return this.content[0]
+		}
+		return EMPTY_OPTIONS
+	}
 }
 
-export class HeadingParser extends MfMParser<'Heading', HeadingContent | BlankLine, Heading> {
+export class HeadingParser extends MfMParser<'Heading', HeadingContent | BlankLine | Options, Heading> {
 	readonly type = 'Heading'
 
 	parse(start: TextLocation, textEnd: TextLocation): Heading | null {
@@ -64,6 +77,16 @@ export class HeadingParser extends MfMParser<'Heading', HeadingContent | BlankLi
 		}
 		if(headingIdentifier.length === 0 || headingIdentifier.length > 6) { return null }
 
+		const headingContent: (HeadingContent | BlankLine | Options)[] = []
+		let hasCurlyBracket = cur.isBefore(end) && cur.get() === '{'
+		if(hasCurlyBracket) {
+			const options = this.parsers.Options.parse(cur, end)
+			if(options != null) {
+				headingContent.push(options)
+				cur = options.parsedRange.end.accessor()
+			}
+		}
+
 		let headingSpacing = ''
 		while(cur.isBefore(end) && cur.isWhitespace()) {
 			loop.ensure()
@@ -76,7 +99,9 @@ export class HeadingParser extends MfMParser<'Heading', HeadingContent | BlankLi
 				break;
 			}
 		}
-		if(headingSpacing.length === 0) {
+		//If there is a curly bracket after the heading identifier, we don't
+		//necessarily need whitespace here.
+		if(!hasCurlyBracket && headingSpacing.length === 0) {
 			//Empty headings without a space are an important legacy feature:
 			//In older versions of marmota.app, this was the only way to
 			//reliably insert a section break, so that might be used in
@@ -87,8 +112,6 @@ export class HeadingParser extends MfMParser<'Heading', HeadingContent | BlankLi
 				return null
 			}
 		}
-
-		const headingContent: (HeadingContent | BlankLine)[] = []
 
 		if(cur.isBefore(end)) {
 			const content = this.parsers['HeadingContent'].parse(cur, end)

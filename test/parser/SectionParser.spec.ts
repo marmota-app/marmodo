@@ -114,4 +114,22 @@ describe('SectionParser', () => {
 			{ text: '', rangeOffset: '# heading\nline 1\nline 2\n\n#'.length, rangeLength: 1}
 		).cannotBeParsed('Updates section level of second section, removing it from the first')
 	})
+
+	describe('Section options', () => {
+		it('returns options of the opening element (heading)', () => {
+			const section = parseAll('Section', '#{ key1=val1; key2=val2 } Heading\n\nfirst paragraph\nfirst paragraph\n\n') as Section
+
+			expect(section?.level).toEqual(1)
+			expect(section.options).toHaveProperty('keys', [ 'key1', 'key2' ])
+			expect(section.options.get('key1')).toEqual('val1')
+			expect(section.options.get('key2')).toEqual('val2')
+		})
+		it.skip('does not have options when it was not started with a starting element', () => {
+			//TODO: Cannot be implemented yet, the only block element that
+			//      supports options right now is a heading... And that's
+			//      a starting element of a section.
+			//      Implement when there is something like a fenced code
+			//      block or a general-purpose block.
+		})
+	})
 })
