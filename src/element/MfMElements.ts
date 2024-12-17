@@ -29,8 +29,9 @@ export interface LeafInline<
 }
 export interface ContainerInline<
 	TYPE extends string,
-	THIS extends ContainerInline<TYPE, THIS>,
-> extends InlineElement<TYPE, AnyInline, THIS> {
+	THIS extends ContainerInline<TYPE, THIS, CONTENT>,
+	CONTENT extends Element<any, any, any> = AnyInline,
+> extends InlineElement<TYPE, CONTENT, THIS> {
 }
 
 export interface ContainerElement<
@@ -40,13 +41,15 @@ export interface ContainerElement<
 > extends Element<TYPE, CONTENT, THIS> {}
 export interface LeafContainer<
 	TYPE extends string,
-	THIS extends LeafContainer<TYPE, THIS>,
-> extends ContainerElement<TYPE, AnyInline, THIS> {
+	THIS extends LeafContainer<TYPE, THIS, CONTENT>,
+	CONTENT extends Element<any, any, any> = AnyInline,
+> extends ContainerElement<TYPE, CONTENT, THIS> {
 }
 export interface BlockContainer<
 	TYPE extends string,
-	THIS extends BlockContainer<TYPE, THIS>,
-> extends ContainerElement<TYPE, AnyBlock, THIS> {
+	THIS extends BlockContainer<TYPE, THIS, CONTENT>,
+	CONTENT extends Element<any, any, any> = AnyBlock,
+> extends ContainerElement<TYPE, CONTENT, THIS> {
 }
 
 export type AnyInline = InlineTypes[keyof InlineTypes]
@@ -66,6 +69,7 @@ export type ContainerTypes = {
 
 	'Heading': Heading,
 	'Paragraph': Paragraph,
+	'Table': Table,
 }
 
 export interface Container extends BlockContainer<'Container', Container> {}
@@ -77,10 +81,14 @@ export interface Heading extends ContainerElement<'Heading', HeadingContent | Bl
 	level: number,
 }
 export interface Paragraph extends LeafContainer<'Paragraph', Paragraph> {}
+export interface TableRow extends LeafContainer<'TableRow', TableRow> {}
+export interface TableDelimiterRow extends LeafContainer<'TableDelimiterRow', TableDelimiterRow, TableDelimiterColumn> {}
+export interface Table extends LeafContainer<'Table', Table, TableRow | TableDelimiterRow> {}
 
 export interface HeadingContent extends ContainerInline<'HeadingContent', HeadingContent> {}
 export interface Text extends LeafInline<'Text', Text> {}
 export interface BlankLine extends LeafInline<'BlankLine', BlankLine> {}
+export interface TableDelimiterColumn extends ContainerInline<'TableDelimiterColumn', TableDelimiterColumn, Options> {}
 
 export interface Options extends ContainerInline<'Options', Options> {
 	keys: string[],
@@ -89,6 +97,7 @@ export interface Options extends ContainerInline<'Options', Options> {
 export interface Option extends ContainerInline<'Option', Option> {
 	key: string,
 	value: string | null | undefined,
+	valid: boolean,
 }
 
 export interface StrongEmphasis extends ContainerInline<'StrongEmphasis', StrongEmphasis> {}

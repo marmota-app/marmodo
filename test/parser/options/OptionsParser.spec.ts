@@ -53,8 +53,8 @@ describe('Options', () =>  {
 			expect(result?.get('key2')).toEqual('val2')
 		})
 		it('cannot parse default option after the first option', () => {
-			const result = parseAll('Options', '{ key1=val1; key2=val2; val0 }more text') as unknown as MfMOptions
-			expect(result).toBeNull()
+			const result = parseAll('Options', '{ key1=val1; key2=val2; val0; key3=val3 }more text') as unknown as MfMOptions
+			expect(result).toHaveProperty('keys', [ 'key1', 'key2', 'key3' ])
 		})
 	})
 

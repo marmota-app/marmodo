@@ -273,10 +273,7 @@ describe('parseMarkdown: Options with curly braces', () => {
 		expect(inlineCode.content[1]).toHaveProperty('textContent', 'inner text')
 	})
 
-	//Intentionally incompatible, at least for now: Options are not parsed
-	//at all when there is an invalid option. This might be annoying when
-	//updating the text, but right now, we're tryint to live with it.
-	it.skip('does not parse default option after first entry', () => {
+	it('does not parse default option after first entry', () => {
 		const markdown = '_{ foo=bar; def }code content_'
 
 		const result = parseMarkdown(markdown)
@@ -286,14 +283,14 @@ describe('parseMarkdown: Options with curly braces', () => {
 		assume((result.content[0] as Paragraph).content[0]).toHaveProperty('type', 'Emphasis')
 
 		const inlineCode = (((result.content[0] as Paragraph).content[0] as InlineCodeTextContent))
-		const options = inlineCode.options
+		const options = inlineCode.options as unknown as Options
 		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		expect(options).not.toHaveProperty('default')
-		expect(options).not.toHaveProperty('def')
-		expect(options).toHaveProperty('foo', 'bar')
-		expect(inlineCode.content).toHaveLength(1)
-		expect(inlineCode.content[0]).toHaveProperty('type', 'Text')
-		expect(inlineCode.content[0]).toHaveProperty('content', 'code content')
+		expect(options.get('default')).toBeUndefined()
+		expect(options.get('def')).toBeUndefined()
+		expect(options.get('foo')).toEqual('bar')
+		expect(inlineCode.content).toHaveLength(2)
+		expect(inlineCode.content[1]).toHaveProperty('type', 'Text')
+		expect(inlineCode.content[1]).toHaveProperty('textContent', 'code content')
 	})
 
 	describe.skip('slide options', () => {

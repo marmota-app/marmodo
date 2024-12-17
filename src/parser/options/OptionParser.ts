@@ -17,12 +17,22 @@ limitations under the License.
 import { AnyInline, Option } from "../../element"
 import { MfMElement } from "../../element/MfMElement"
 import { TextLocation } from "../../mbuffer/TextLocation"
+import { PersistentRange } from "../../mbuffer/TextRange"
 import { MfMParser } from "../MfMParser"
 import { IdGenerator, Parsers } from "../Parsers"
 
 export class MfMOption extends MfMElement<'Option', AnyInline, Option, OptionParser> implements Option {
 	public readonly type = 'Option'
 	readonly content: AnyInline[] = []
+
+	constructor(
+		id: string,
+		parsedRange: PersistentRange,
+		parsedWith: OptionParser,
+		public readonly valid: boolean,
+	) {
+		super(id, parsedRange, parsedWith)
+	}
 
 	get key() {
 		if(this.content.length===2) {
@@ -63,14 +73,13 @@ export class OptionParser extends MfMParser<'Option', AnyInline, Option> {
 		const foundEquals = cur.findNext('=', optionEnd)
 		const equalsPosition = foundEquals?.start
 
-		if(!this.supportsDefault && equalsPosition==null) {
-			return null
-		}
+		const isValidOption = this.supportsDefault || equalsPosition!=null
 
 		const option = new MfMOption(
 			this.idGenerator.nextId(),
 			start.persistentRangeUntil(rangeEnd),
-			this
+			this,
+			isValidOption,
 		)
 
 		if(equalsPosition) {
