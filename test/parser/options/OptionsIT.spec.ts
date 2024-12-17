@@ -26,15 +26,16 @@ describe('Options Integration Tests', () => {
 		{ element: 'StrongEmphasis', before: '**', after: 'some content**'},
 		{ element: 'Heading', before: '#', after: ' some content' },
 		{ element: 'Heading', before: '###', after: ' some content' },
+		{ element: 'Paragraph', before: '', after: 'some content' },
 	].forEach(testCase => {
 		describe(`Element "${testCase.element}" (${testCase.before}{options...}${testCase.after})`, () => {
 			it('can parse options block on the element', () => {
 				const text = `${testCase.before}{ val0; key1  = val1;\tkey2=val2   }${testCase.after}`
 				const result = parseAll(testCase.element, text)
-	
+
 				expect(result).not.toBeNull()
 				expect(result).toHaveProperty('asText', text)
-	
+
 				expect(result!.options).toHaveProperty('keys', [ 'default', 'key1', 'key2' ])
 				expect(result!.options.get('default')).toEqual('val0')
 				expect(result!.options.get('key1')).toEqual('val1')
