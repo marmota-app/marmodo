@@ -58,6 +58,10 @@ describe('TableDelimiterColumn', () => {
 		const result = parseAll('TableDelimiterColumn', '| :: | ---')
 		expect(result).toBeNull()
 	});
+	it('cannot parse a delimiter consisting only of whitespace', () => {
+		const result = parseAll('TableDelimiterColumn', '| \t | ---')
+		expect(result).toBeNull()
+	});
 
 	[
 		['---', 'left'],
@@ -70,4 +74,56 @@ describe('TableDelimiterColumn', () => {
 	}))
 })
 
-describe('TableDelimiterRow', () => {})
+describe('TableDelimiterRow', () => {
+	it('parses a delimter row that ends without a |', () => {
+		const result = parseAll('TableDelimiterRow', ':--: | ---')
+
+		expect(result).toHaveProperty('asText', ':--: | ---')
+		expect(result?.content).toHaveLength(2)
+		expect(result?.content[0]).toHaveProperty('asText', ':--: ')
+		expect(result?.content[1]).toHaveProperty('asText', '| ---')
+	})
+	it('ends parsing at a newline', () => {
+		const result = parseAll('TableDelimiterRow', ':--: | ---\nmore content')
+
+		expect(result).toHaveProperty('asText', ':--: | ---\n')
+		expect(result?.content).toHaveLength(2)
+		expect(result?.content[0]).toHaveProperty('asText', ':--: ')
+		expect(result?.content[1]).toHaveProperty('asText', '| ---')
+	})
+	it('parses a delimter row that ends in a |', () => {
+		const result = parseAll('TableDelimiterRow', '| :--: | --- |  \t\nmore content')
+
+		expect(result).toHaveProperty('asText', '| :--: | --- |  \t\n')
+		expect(result?.content).toHaveLength(2)
+		expect(result?.content[0]).toHaveProperty('asText', '| :--: ')
+		expect(result?.content[1]).toHaveProperty('asText', '| --- ')
+	})
+	it('parses a delimter row that ends in a | with options', () => {
+		const result = parseAll('TableDelimiterRow', '| :--: | --- |{ val0; key1=val1}  \t\nmore content')
+
+		expect(result?.content).toHaveLength(3)
+		expect(result?.content[2]).toHaveProperty('type', 'Options')
+		expect(result?.content[2]).toHaveProperty('keys', [ 'default', 'key1' ])
+	})
+	it('parses a delimter row that ends in a | with incomplete options', () => {
+		const result = parseAll('TableDelimiterRow', '| :--: | --- |{ val0; key1=val1\nmore content')
+
+		expect(result?.content).toHaveLength(3)
+		expect(result?.content[2]).toHaveProperty('type', 'Text')
+		expect(result?.content[2]).toHaveProperty('textContent', '{ val0; key1=val1')
+	})
+
+	it('does not parse a delimiter row that contains non-delimiter characters', () => {
+		const result = parseAll('TableDelimiterRow', '| :-a-: | --- |  \t\nmore content')
+		expect(result).toBeNull()
+	})
+	it('does not parse a delimiter row that ends in non-whitespace characters after the last |', () => {
+		const result = parseAll('TableDelimiterRow', '| :--: | --- |  \ta\nmore content')
+		expect(result).toBeNull()
+	})
+	it('does not parse a delimiter row that ends in non-whitespace characters after the table options', () => {
+		const result = parseAll('TableDelimiterRow', '| :--: | --- |{ val0; key1=val1}  \ta\nmore content')
+		expect(result).toBeNull()
+	})
+})

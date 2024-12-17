@@ -15,11 +15,12 @@ limitations under the License.
 */
 
 
-import { AnyInline, ElementOptions, Options, TableDelimiterColumn, TableDelimiterRow } from "../../../src/element"
+import { AnyInline, ElementOptions, Options, TableDelimiterColumn, TableDelimiterRow, Text } from "../../../src/element"
 import { EMPTY_OPTIONS, MfMElement } from "../../../src/element/MfMElement"
 import { TextLocation } from "../../../src/mbuffer/TextLocation"
 import { PersistentRange } from "../../../src/mbuffer/TextRange"
 import { MfMParser } from "../../../src/parser/MfMParser"
+import { finiteLoop } from "../../utilities/finiteLoop"
 
 export class MfMTableDelimiterColumn extends MfMElement<'TableDelimiterColumn', Options, TableDelimiterColumn, TableDelimiterColumnParser> implements TableDelimiterColumn {
 	public readonly type = 'TableDelimiterColumn'
@@ -102,32 +103,33 @@ export class TableDelimiterColumnParser extends MfMParser<'TableDelimiterColumn'
 			delimiterEnd.advance()
 		}
 
-		const result = new MfMTableDelimiterColumn(
-			this.idGenerator.nextId(),
-			start.persistentRangeUntil(delimiterEnd),
-			this,
-			alignment ?? 'left',
-		)
-		return result
+		if(parseState === 'hyphens' || parseState==='right' || parseState==='end') {
+			const result = new MfMTableDelimiterColumn(
+				this.idGenerator.nextId(),
+				start.persistentRangeUntil(delimiterEnd),
+				this,
+				alignment ?? 'left',
+			)
+			return result
+		}
+		return null
 	}
 }
 
-export class MfMTableDelimiterRow extends MfMElement<'TableDelimiterRow', TableDelimiterColumn, TableDelimiterRow, TableDelimiterRowParser> implements TableDelimiterRow {
+export class MfMTableDelimiterRow extends MfMElement<'TableDelimiterRow', TableDelimiterColumn | Options | Text, TableDelimiterRow, TableDelimiterRowParser> implements TableDelimiterRow {
 	public readonly type = 'TableDelimiterRow'
 
 	constructor(
 		id: string,
 		parsedRange: PersistentRange,
 		parsedWith: TableDelimiterRowParser,
-		public readonly content: TableDelimiterColumn[],
+		public readonly content: (TableDelimiterColumn | Options | Text)[],
 	) {
 		super(id, parsedRange, parsedWith)
 	}
 
 	get asText(): string {
-		return this.content
-			.map(c => c.asText)
-			.join('')
+		return this.parsedRange.asString()
 	}
 
 	override get options(): ElementOptions {
@@ -135,10 +137,55 @@ export class MfMTableDelimiterRow extends MfMElement<'TableDelimiterRow', TableD
 	}
 
 }
-export class TableDelimiterRowParser extends MfMParser<'TableDelimiterRow', TableDelimiterColumn, TableDelimiterRow> {
+export class TableDelimiterRowParser extends MfMParser<'TableDelimiterRow', TableDelimiterColumn | Options | Text, TableDelimiterRow> {
 	readonly type = 'TableDelimiterRow'
 
 	parse(start: TextLocation, end: TextLocation): TableDelimiterRow | null {
-		return null
+		let cur = start
+		const content: (TableDelimiterColumn | Options | Text)[] = []
+
+		const nextNewline = start.findNextNewline(end)
+		const contentEnd = nextNewline?.start ?? end
+		const rowEnd = nextNewline?.end ?? end
+
+		const loop = finiteLoop(() => [ cur.info(), ])
+		while(cur.isBefore(contentEnd)) {
+			loop.ensure()
+			const col = this.parsers.TableDelimiterColumn.parse(cur, contentEnd)
+			if(col != null) {
+				content.push(col)
+				cur = col.parsedRange.end
+			} else {
+				break
+			}
+		}
+
+		let current = cur.accessor()
+		if(current.isBefore(contentEnd)) {
+			if(current.get() !== '|') { return null }
+			current.advance()
+			if(current.get() === '{') {
+				const options = this.parsers.Options.parse(current, contentEnd)
+				if(options) {
+					content.push(options)
+					current = options.parsedRange.end.accessor()
+				} else {
+					const text = this.parsers.Text.parse(current, contentEnd)
+					content.push(text!)
+					current = contentEnd.accessor()
+				}
+			}
+			while(current.isBefore(contentEnd) && current.isWhitespace()) {
+				current.advance()
+			}
+			if(!current.isEqualTo(contentEnd)) { return null }
+		}
+
+		return new MfMTableDelimiterRow(
+			this.idGenerator.nextId(),
+			start.persistentRangeUntil(rowEnd),
+			this,
+			content,
+		)
 	}
 }

@@ -82,7 +82,7 @@ export interface Heading extends ContainerElement<'Heading', HeadingContent | Bl
 }
 export interface Paragraph extends LeafContainer<'Paragraph', Paragraph> {}
 export interface TableRow extends LeafContainer<'TableRow', TableRow> {}
-export interface TableDelimiterRow extends LeafContainer<'TableDelimiterRow', TableDelimiterRow, TableDelimiterColumn> {}
+export interface TableDelimiterRow extends LeafContainer<'TableDelimiterRow', TableDelimiterRow, TableDelimiterColumn | Options | Text> {}
 export interface Table extends LeafContainer<'Table', Table, TableRow | TableDelimiterRow> {}
 
 export interface HeadingContent extends ContainerInline<'HeadingContent', HeadingContent> {}
