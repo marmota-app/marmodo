@@ -73,7 +73,7 @@ export interface Section extends BlockContainer<'Section', Section> {
 	level: number,
 }
 
-export interface Heading extends ContainerElement<'Heading', HeadingContent | BlankLine, Heading> {
+export interface Heading extends ContainerElement<'Heading', HeadingContent | BlankLine | Options, Heading> {
 	level: number,
 }
 export interface Paragraph extends LeafContainer<'Paragraph', Paragraph> {}

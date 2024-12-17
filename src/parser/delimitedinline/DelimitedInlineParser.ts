@@ -1,5 +1,5 @@
 import { AnyInline, ContainerInline, ElementOptions } from "../../element"
-import { MfMElement } from "../../element/MfMElement"
+import { EMPTY_OPTIONS, MfMElement } from "../../element/MfMElement"
 import { TextLocation } from "../../mbuffer/TextLocation"
 import { PersistentRange } from "../../mbuffer/TextRange"
 import { MfMInlineParser, MfMParser } from "../MfMParser"
@@ -30,6 +30,13 @@ export abstract class DelimitedMfMElement<
 		return {
 			...super.referenceMap,
 		}
+	}
+
+	override get options(): ElementOptions {
+		if(this.content.length > 0 && this.content[0].type==='Options') {
+			return this.content[0]
+		}
+		return EMPTY_OPTIONS
 	}
 }
 
@@ -81,7 +88,18 @@ export abstract class DelimitedInlineParser<
 				//parsed content. And the real delimiter end is then delimiterLength
 				//after that (this is guaranteed to be within the ending
 				//delimiter run).
-				const content = this.parsers.parseInlines(contentStart, contentEnd, maxDelimiterEnd)
+				const content: AnyInline[] = []
+				let innerContentStart = contentStart
+				if(contentStart.get() === '{') {
+					const options = this.parsers.Options.parse(contentStart, contentEnd)
+					if(options != null) {
+						content.push(options)
+						innerContentStart = options.parsedRange.end.accessor()
+					}
+				}
+				const innerContent = this.parsers.parseInlines(innerContentStart, contentEnd, maxDelimiterEnd)
+				content.push(...innerContent)
+
 				const parsedContentEnd = content[content.length-1].parsedRange.end
 				const parsedDelimiterEnd = parsedContentEnd.accessor()
 				for(let i=0; i<this.delimiterLength; i++) { parsedDelimiterEnd.advance() }

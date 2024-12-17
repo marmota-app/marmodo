@@ -14,8 +14,52 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-describe('Options Integration Tests', () =>  {
-	it.skip('does something', () => {
-		expect(true).toEqual(false)
+import { Parser } from "../../../src/element"
+import { Parsers } from "../../../src/parser/Parsers"
+import { parseAll } from "../../parse"
+
+describe('Options Integration Tests', () => {
+	[
+		{ element: 'Emphasis', before: '_', after: 'some content_'},
+		{ element: 'Emphasis', before: '*', after: 'some content*'},
+		{ element: 'StrongEmphasis', before: '__', after: 'some content__'},
+		{ element: 'StrongEmphasis', before: '**', after: 'some content**'},
+		{ element: 'Heading', before: '#', after: ' some content' },
+		{ element: 'Heading', before: '###', after: ' some content' },
+	].forEach(testCase => {
+		describe(`Element "${testCase.element}" (${testCase.before}{options...}${testCase.after})`, () => {
+			it('can parse options block on the element', () => {
+				const text = `${testCase.before}{ val0; key1  = val1;\tkey2=val2   }${testCase.after}`
+				const result = parseAll(testCase.element, text)
+	
+				expect(result).not.toBeNull()
+				expect(result).toHaveProperty('asText', text)
+	
+				expect(result!.options).toHaveProperty('keys', [ 'default', 'key1', 'key2' ])
+				expect(result!.options.get('default')).toEqual('val0')
+				expect(result!.options.get('key1')).toEqual('val1')
+				expect(result!.options.get('key2')).toEqual('val2')
+			})
+			it('cannot parse unclosed options', () => {
+				const text = `${testCase.before}{ val0; key1  = val1;\tkey2=val2   ${testCase.after}`
+				const result = parseAll(testCase.element, text)
+	
+				expect(result).not.toBeNull()
+				expect(result).toHaveProperty('asText', text)
+	
+				expect(result!.options).toHaveProperty('keys', [])
+			})
+			it('cannot parse options that are not at the correct place', () => {
+				const text = `${testCase.before}content{ val0; key1  = val1;\tkey2=val2   }${testCase.after}`
+				const result = parseAll(testCase.element, text)
+	
+				if(result != null) {
+					//Yep, I know, if in tests... But in this case, we really
+					//don't know whether this text can be parsed at all.
+					expect(result).toHaveProperty('asText', text)
+					expect(result!.options).toHaveProperty('keys', [])
+				}
+			})
+		})
 	})
 })

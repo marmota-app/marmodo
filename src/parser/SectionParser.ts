@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 import { ElementOptions } from "../element/Element";
-import { MfMElement } from "../element/MfMElement";
+import { EMPTY_OPTIONS, MfMElement } from "../element/MfMElement";
 import { AnyBlock, Heading, Section } from "../element/MfMElements";
 import { TextLocation } from "../mbuffer/TextLocation";
 import { PersistentRange, TextRange, } from "../mbuffer/TextRange";
@@ -39,6 +39,15 @@ export class MfMSection extends MfMElement<'Section', AnyBlock, Section, Section
 		return this.content
 			.map(c => c.asText)
 			.join('')
+	}
+
+	override get options(): ElementOptions {
+		if(this.content.length > 0) {
+			//if(this.content[0].type==='Heading') {
+				return this.content[0].options
+			//}
+		}
+		return EMPTY_OPTIONS
 	}
 }
 

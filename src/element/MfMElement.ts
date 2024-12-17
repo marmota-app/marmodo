@@ -35,7 +35,7 @@ export abstract class MfMElement<
 	abstract readonly type: TYPE
 	abstract readonly asText: string
 	abstract readonly content: CONTENT[]
-	public readonly options: ElementOptions = EMPTY_OPTIONS
+	public get options(): ElementOptions { return  EMPTY_OPTIONS }
 	
 	private updateCallbacks: { [key: string]: ElementUpdateCallback<TYPE, CONTENT, THIS>} = {}
 
