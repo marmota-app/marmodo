@@ -12,6 +12,7 @@ function block(b: AnyBlock): string {
 		case 'Section': return undecorated(b)
 		case 'Paragraph': return paragraph(b)
 		case 'Heading': return heading(b)
+		case 'Table': return 'not yet supported: table'
 		default: throw unreachable(`Unsupported block element: ${(b as any).type}`, b)
 	}
 }
