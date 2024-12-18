@@ -25,6 +25,7 @@ describe('Option', () => {
 			const result = parseAll('FirstOption', 'val')
 	
 			expect(result).toHaveProperty('asText', 'val')
+			expect(result).toHaveProperty('valid', true)
 			expect(result).toHaveProperty('key', 'default')
 			expect(result).toHaveProperty('value', 'val')
 		})
@@ -89,7 +90,7 @@ describe('Option', () => {
 		it('cannot parse a default option when it is not the first option', () => {
 			const result = parseAll('Option', 'val')
 	
-			expect(result).toBeNull()
+			expect(result).toHaveProperty('valid', false)
 		})
 	})
 

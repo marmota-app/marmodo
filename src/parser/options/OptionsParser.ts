@@ -35,9 +35,9 @@ export class MfMOptions extends MfMElement<'Options', AnyInline, Options, Option
 	}
 
 	get(key: string) {
-		return this.content.find(c => c.key===key)?.value
+		return this.content.find(c => (c.valid && c.key===key))?.value
 	}
-	get keys(): string[] { return this.content.map(c => c.key) }
+	get keys(): string[] { return this.content.filter(c => c.valid).map(c => c.key) }
 
 	get asText(): string {
 		return this.parsedRange.asString()
