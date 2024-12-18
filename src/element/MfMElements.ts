@@ -88,7 +88,9 @@ export interface Table extends LeafContainer<'Table', Table, TableRow | TableDel
 export interface HeadingContent extends ContainerInline<'HeadingContent', HeadingContent> {}
 export interface Text extends LeafInline<'Text', Text> {}
 export interface BlankLine extends LeafInline<'BlankLine', BlankLine> {}
-export interface TableDelimiterColumn extends ContainerInline<'TableDelimiterColumn', TableDelimiterColumn, Options> {}
+export interface TableDelimiterColumn extends ContainerInline<'TableDelimiterColumn', TableDelimiterColumn, Options> {
+	alignment: 'left' | 'center' | 'right'
+}
 
 export interface Options extends ContainerInline<'Options', Options> {
 	keys: string[],

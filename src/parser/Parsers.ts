@@ -29,6 +29,7 @@ import { EmphasisParser } from './delimitedinline/EmphasisParser'
 import { StrongEmphasisParser } from './delimitedinline/StrongEmphasisParser'
 import { OptionParser } from './options/OptionParser'
 import { OptionsParser } from './options/OptionsParser'
+import { TableDelimiterColumnParser, TableDelimiterRowParser } from './table/DelimiterRowParser'
 
 interface ParseLocation {
 	parser: Parser<any, any, any>,
@@ -44,6 +45,9 @@ export class Parsers {
 	get Heading(): HeadingParser { return this.getParser('Heading', () => new HeadingParser(this.idGenerator, this)) }
 	get Paragraph(): ParagraphParser { return this.getParser('Paragraph', () => new ParagraphParser(this.idGenerator, this)) }
 
+	get TableDelimiterColumn(): TableDelimiterColumnParser { return this.getParser('TableDelimiterColumn', () => new TableDelimiterColumnParser(this.idGenerator, this)) }
+	get TableDelimiterRow(): TableDelimiterRowParser { return this.getParser('TableDelimiterRow', () => new TableDelimiterRowParser(this.idGenerator, this)) }
+	
 	get HeadingContent(): HeadingContentParser { return this.getParser('HeadingContent', () => new HeadingContentParser(this.idGenerator, this)) }
 	get Text(): TextParser { return this.getParser('Text', () => new TextParser(this.idGenerator, this)) }
 	get BlankLine(): BlankLineParser { return this.getParser('BlankLine', () => new BlankLineParser(this.idGenerator, this)) }
