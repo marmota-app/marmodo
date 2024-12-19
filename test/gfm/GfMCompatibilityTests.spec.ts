@@ -49,6 +49,7 @@ const NYI = {
 			closing_sequences: 'Missing feature: Closing sequences of "#" and " " after a heading',
 		},
 		horizontal_rule: 'Element still missing: Horizontal rule',
+		blockquote: 'Element still missing: Block quote',
 
 		line_breaks: 'Element still missing: Line break',
 
@@ -60,7 +61,8 @@ const INCOMPATIBLE = {
 	removing_trailing_spaces: 'Trailing spaces are not removed',
 	html_elements: 'HTML Elements are not supported',
 	shortest_delimited_span: 'Finding the shortest delimited span (for em, strong, ...) and other delimtier-run edge-cases are not supported',
-	delimited_elements_precedence: 'Precedence of delimited elements with longer delimiter runs is different than in GfM (and should be avoided anyway)'
+	delimited_elements_precedence: 'Precedence of delimited elements with longer delimiter runs is different than in GfM (and should be avoided anyway)',
+	table_header_length: 'Table header length does NOT have to match delimiter length in MfM (otherwise, update parsing would be extremely annoying, switching between table and paragraph all the time)',
 }
 
 const implementedSections: ImplementedSection[] = [
@@ -91,6 +93,16 @@ const implementedSections: ImplementedSection[] = [
 			{ name: 'Example 196', reason: NYI.elements.line_breaks },
 		],
 		incompatible: [],
+	},
+	{
+		chapter: '4.10', name: 'Tables (extension)',
+		notYetImplemented: [
+			{ name: 'Example 200', reason: NYI.escaping },
+			{ name: 'Example 201', reason: NYI.elements.blockquote },
+		],
+		incompatible: [
+			{ name: 'Example 203', reason: INCOMPATIBLE.table_header_length },
+		],
 	},
 	{ chapter: '6.4', name: 'Emphasis and strong emphasis',
 		notYetImplemented: [
