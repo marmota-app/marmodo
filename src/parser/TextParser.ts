@@ -78,7 +78,9 @@ export class TextParser extends MfMParser<'Text', never, Text> {
 		for(let i=0; i<update.newText.length; i++) {
 			const ch = update.newText.charAt(i)
 			switch(ch) {
-				case '=': case '*': case '_': case '[': case ']': case '!': case '~': case '`': case '{': case '}': case ';':
+				case '=': case '*': case '_': case '[': case ']':
+				case '!': case '~': case '`': case '{': case '}':
+				case ';': case '|':
 					return { canUpdate: false, and: andFalse, }
 			}
 		}

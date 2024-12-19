@@ -81,16 +81,18 @@ export interface Heading extends ContainerElement<'Heading', HeadingContent | Bl
 	level: number,
 }
 export interface Paragraph extends LeafContainer<'Paragraph', Paragraph> {}
-export interface TableRow extends LeafContainer<'TableRow', TableRow> {}
+export interface TableRow extends LeafContainer<'TableRow', TableRow, TableColumn | Options | Text> {}
 export interface TableDelimiterRow extends LeafContainer<'TableDelimiterRow', TableDelimiterRow, TableDelimiterColumn | Options | Text> {}
 export interface Table extends LeafContainer<'Table', Table, TableRow | TableDelimiterRow> {}
 
 export interface HeadingContent extends ContainerInline<'HeadingContent', HeadingContent> {}
 export interface Text extends LeafInline<'Text', Text> {}
 export interface BlankLine extends LeafInline<'BlankLine', BlankLine> {}
+
 export interface TableDelimiterColumn extends ContainerInline<'TableDelimiterColumn', TableDelimiterColumn, Options> {
 	alignment: 'left' | 'center' | 'right'
 }
+export interface TableColumn extends ContainerInline<'TableColumn', TableColumn> {}
 
 export interface Options extends ContainerInline<'Options', Options> {
 	keys: string[],
