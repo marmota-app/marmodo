@@ -174,7 +174,7 @@ export class TableDelimiterRowParser extends MfMParser<'TableDelimiterRow', Tabl
 		if(current.isBefore(contentEnd)) {
 			if(current.get() !== '|') { return null }
 			current.advance()
-			if(current.get() === '{') {
+			if(current.isBefore(end) && current.get() === '{') {
 				const options = this.parsers.Options.parse(current, contentEnd)
 				if(options) {
 					content.push(options)
