@@ -273,6 +273,13 @@ export class TemporaryLocation extends TextLocation {
 	is(other: string | string[]): boolean {
 		return isCharacter(other, this._buffer.at(this._index))
 	}
+	isOnlyWhitespaceUntil(end: TextLocation): boolean {
+		const cur = this.accessor()
+		while(cur.isBefore(end)) {
+			if(!cur.isWhitespace()) { return false }
+		}
+		return true
+	}
 
 	advance(): void {
 		this.ensureValid('Cannot advance index of invalid location')

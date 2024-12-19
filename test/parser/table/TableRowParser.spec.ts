@@ -107,7 +107,7 @@ describe('TableRowParser', () => {
 	it('stops parsing at a newline', () => {
 		const result = parseAll('TableRow', 'some text\nmore text')
 
-		expect(result).toHaveProperty('asText', 'some text')
+		expect(result).toHaveProperty('asText', 'some text\n')
 		expect(result?.content).toHaveLength(1)
 		expect(result?.content[0]).toHaveProperty('type', 'TableColumn')
 	})

@@ -81,9 +81,20 @@ export interface Heading extends ContainerElement<'Heading', HeadingContent | Bl
 	level: number,
 }
 export interface Paragraph extends LeafContainer<'Paragraph', Paragraph> {}
-export interface TableRow extends LeafContainer<'TableRow', TableRow, TableColumn | Options | Text> {}
-export interface TableDelimiterRow extends LeafContainer<'TableDelimiterRow', TableDelimiterRow, TableDelimiterColumn | Options | Text> {}
-export interface Table extends LeafContainer<'Table', Table, TableRow | TableDelimiterRow> {}
+export interface TableRow extends LeafContainer<'TableRow', TableRow, TableColumn | Options | Text> {
+	columns: TableColumn[]
+}
+export interface TableDelimiterRow extends LeafContainer<'TableDelimiterRow', TableDelimiterRow, TableDelimiterColumn | Options | Text> {
+	columns: TableDelimiterColumn[],
+}
+export interface Table extends LeafContainer<'Table', Table, TableRow | TableDelimiterRow | BlankLine> {
+	rows: number,
+	columns: number,
+
+	headers: TableRow | null,
+	delimiters: TableDelimiterRow,
+	tableRows: TableRow[],
+}
 
 export interface HeadingContent extends ContainerInline<'HeadingContent', HeadingContent> {}
 export interface Text extends LeafInline<'Text', Text> {}

@@ -87,6 +87,9 @@ export class MfMTableRow extends MfMElement<'TableRow', TableColumn | Options | 
 	override get options(): ElementOptions {
 		return EMPTY_OPTIONS
 	}
+	get columns(): TableColumn[] {
+		return this.content.filter(c => c.type==='TableColumn')
+	}
 
 	get textContent(): string {
 		return this.asText
@@ -101,6 +104,7 @@ export class TableRowParser extends MfMParser<'TableRow', TableColumn | Options 
 
 		const nextNewline = start.findNextNewline(end)
 		const contentEnd = nextNewline?.start ?? end
+		const lineEnd = nextNewline?.end ?? end
 
 		let lastPipe: TextLocation | null = null
 		let nextPipe = cur.findNext('|', contentEnd)
@@ -148,11 +152,16 @@ export class TableRowParser extends MfMParser<'TableRow', TableColumn | Options 
 			content.push(text)
 		}
 
-		return new MfMTableRow(
+		const result = new MfMTableRow(
 			this.idGenerator.nextId(),
-			start.persistentRangeUntil(contentEnd),
+			start.persistentRangeUntil(lineEnd),
 			this,
 			content,
 		)
+		
+		if(result.columns.length === 0) {
+			return null
+		}
+		return result
 	}
 }
