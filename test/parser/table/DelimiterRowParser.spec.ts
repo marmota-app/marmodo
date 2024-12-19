@@ -193,6 +193,10 @@ describe('TableDelimiterRow', () => {
 			const result = parseAll('TableDelimiterRow', '| :--: | --- |{ val0; key1=val1}  \ta\nmore content')
 			expect(result).toBeNull()
 		})
+		it('does not parse delimiter row with no columns', () => {
+			const result = parseAll('TableDelimiterRow', '\nmore content')
+			expect(result).toBeNull()
+		})
 	})
 
 	describe('parsing updates', () => {

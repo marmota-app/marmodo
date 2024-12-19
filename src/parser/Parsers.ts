@@ -30,6 +30,7 @@ import { StrongEmphasisParser } from './delimitedinline/StrongEmphasisParser'
 import { OptionParser } from './options/OptionParser'
 import { OptionsParser } from './options/OptionsParser'
 import { TableDelimiterColumnParser, TableDelimiterRowParser } from './table/DelimiterRowParser'
+import { TableParser } from './table/TableParser'
 import { TableColumnParser, TableRowParser } from './table/TableRowParser'
 
 interface ParseLocation {
@@ -50,6 +51,7 @@ export class Parsers {
 	get TableDelimiterRow(): TableDelimiterRowParser { return this.getParser('TableDelimiterRow', () => new TableDelimiterRowParser(this.idGenerator, this)) }
 	get TableColumn(): TableColumnParser { return this.getParser('TableColumn', () => new TableColumnParser(this.idGenerator, this)) }
 	get TableRow(): TableRowParser { return this.getParser('TableRow', () => new TableRowParser(this.idGenerator, this)) }
+	get Table(): TableParser { return this.getParser('Table', () => new TableParser(this.idGenerator, this)) }
 
 	get HeadingContent(): HeadingContentParser { return this.getParser('HeadingContent', () => new HeadingContentParser(this.idGenerator, this)) }
 	get Text(): TextParser { return this.getParser('Text', () => new TextParser(this.idGenerator, this)) }
@@ -66,6 +68,7 @@ export class Parsers {
 		return [
 			this.Heading,
 
+			this.Table,
 			this.Paragraph,
 		]
 	}

@@ -29,7 +29,7 @@ class FL {
 			}
 			currentVars.forEach((v, i) => {
 				if(v === lastVars[i]) {
-					throw new Error(`Loop may be infinite: Variable ${i} has not changed`)
+					throw new Error(`Loop may be infinite: Variable ${i} has not changed ("${v}" === "${lastVars[i]}")`)
 				}
 			})
 		}

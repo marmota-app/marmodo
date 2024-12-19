@@ -137,9 +137,15 @@ export class MfMTableDelimiterRow extends MfMElement<'TableDelimiterRow', TableD
 	}
 
 	override get options(): ElementOptions {
+		if(this.content[this.content.length-1].type === 'Options') {
+			return this.content[this.content.length-1] as ElementOptions
+		}
 		return EMPTY_OPTIONS
 	}
 
+	get columns(): TableDelimiterColumn[] {
+		return this.content.filter(c => c.type==='TableDelimiterColumn')
+	}
 }
 export class TableDelimiterRowParser extends MfMParser<'TableDelimiterRow', TableDelimiterColumn | Options | Text, TableDelimiterRow> {
 	readonly type = 'TableDelimiterRow'
@@ -185,11 +191,13 @@ export class TableDelimiterRowParser extends MfMParser<'TableDelimiterRow', Tabl
 			if(!current.isEqualTo(contentEnd)) { return null }
 		}
 
-		return new MfMTableDelimiterRow(
+		const result = new MfMTableDelimiterRow(
 			this.idGenerator.nextId(),
 			start.persistentRangeUntil(rowEnd),
 			this,
 			content,
 		)
+		if(result.columns.length === 0) { return null }
+		return result
 	}
 }
