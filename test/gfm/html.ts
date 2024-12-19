@@ -1,4 +1,4 @@
-import { AnyBlock, AnyInline, BlankLine, Container, Heading, Paragraph, Section, Text } from "../../src/element/MfMElements";
+import { AnyBlock, AnyInline, BlankLine, Container, Heading, Paragraph, Section, Table, TableColumn, TableDelimiterColumn, TableRow, Text } from "../../src/element/MfMElements";
 import { MfMDocument } from "../../src/MfMDocument";
 import { unreachable } from "../../src/utilities/unreachable";
 
@@ -12,9 +12,32 @@ function block(b: AnyBlock): string {
 		case 'Section': return undecorated(b)
 		case 'Paragraph': return paragraph(b)
 		case 'Heading': return heading(b)
-		case 'Table': return 'not yet supported: table'
+		case 'Table': return table(b)
 		default: throw unreachable(`Unsupported block element: ${(b as any).type}`, b)
 	}
+}
+
+function table(b: Table) {
+	return `<table>\n${b.headers? tableHeaders(b)+'\n' : ''}${tableRows(b)}\n</table>\n`
+}
+function tableHeaders(table: Table) {
+	return `<thead>\n<tr>\n${table.headers?.columns.map((c, i) => tableCell(c, table.delimiters.columns[i], 'th')).join('\n')}\n</tr>\n</thead>`
+}
+function tableRows(table: Table) {
+	if(table.tableRows.length === 0) {
+		return ''
+	}
+	return `<tbody>\n${table.tableRows.map(r => tableRow(table, r)).join('\n')}\n</tbody>`
+}
+function tableRow(table: Table, tableRow: TableRow) {
+	return `<tr>\n${table.delimiters.columns.map((d, i) => tableCell(tableRow.columns[i], table.delimiters.columns[i], 'td')).join('\n')}\n</tr>`
+}
+function tableCell(col: TableColumn | undefined, del: TableDelimiterColumn | undefined, type: string) {
+	if(col == null) {
+		return `<${type}></${type}>`
+	}
+	const alignment = del?.alignment ?? 'left'
+	return `<${type}${alignment!=='left'? ` align="${alignment}"` : ''}>${col.content.map(i => inline(i, false).trim()).join('')}</${type}>`
 }
 
 function undecorated(c: Container | Section): string {
