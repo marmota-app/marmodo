@@ -114,6 +114,10 @@ export class TableDelimiterColumnParser extends MfMParser<'TableDelimiterColumn'
 		}
 		return null
 	}
+
+	override acceptUpdate(original: TableDelimiterColumn, updated: TableDelimiterColumn): boolean {
+		return original.alignment === updated.alignment
+	}
 }
 
 export class MfMTableDelimiterRow extends MfMElement<'TableDelimiterRow', TableDelimiterColumn | Options | Text, TableDelimiterRow, TableDelimiterRowParser> implements TableDelimiterRow {
