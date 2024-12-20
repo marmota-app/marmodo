@@ -35,6 +35,11 @@ describe('TableDelimiterColumn', () => {
 	
 			expect(result).toHaveProperty('asText', '| :-: ')
 		});
+		it('stops parsing at the next newline', () => {
+			const result = parseAll('TableDelimiterColumn', '| :-: \n ---')
+	
+			expect(result).toHaveProperty('asText', '| :-: ')
+		});
 	
 		['a', '{', '#', '+'].forEach(ic => it(`does not parse delimiter row that contains illegal character "${ic}"`, () => {
 			const result = parseAll('TableDelimiterColumn', `| \t:-${ic}-: | ---`)

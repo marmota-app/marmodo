@@ -44,11 +44,23 @@ export class UpdateParser {
 		const updateStart = update.range.start
 		const updateEnd = update.range.end
 
+		//Allow updates to append to an existing element! This is done by
+		//accepting updates to an element that are 1 char beyond the element's
+		//range.
+		let elementRangeEnd: TextLocation = currentElement.parsedRange.end
+		if(elementRangeEnd.isValid) {
+			if(elementRangeEnd.isBefore(documentEnd)) {
+				const a = elementRangeEnd.accessor()
+				a.advance()
+				elementRangeEnd = a
+			}
+		}
+
 		const isInsideCurrentElement =
 			currentElement.parsedRange.start.isValid &&
 			currentElement.parsedRange.end.isValid &&
 			updateStart.isAtLeast(currentElement.parsedRange.start) &&
-			updateEnd.isAtMost(currentElement.parsedRange.end)
+			updateEnd.isAtMost(elementRangeEnd)
 
 		if(isInsideCurrentElement) {
 			//drill down if possible
@@ -79,7 +91,8 @@ export class UpdateParser {
 			if(updated != null) {
 				const updateInomplete = !this.#isCompleteUpdate(updated, currentElement)
 				const updateRejected = !parser.acceptUpdate(currentElement, updated)
-				if(updateInomplete || updateRejected) {
+				const incompletelyParsedUpdateRange = !updated.parsedRange.end.isAtLeast(updateEnd)
+				if(updateInomplete || updateRejected || incompletelyParsedUpdateRange) {
 					return { updated: null, isFirstUpdate: true, }
 				}
 			}

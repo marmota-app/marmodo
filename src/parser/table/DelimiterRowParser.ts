@@ -55,6 +55,8 @@ export class TableDelimiterColumnParser extends MfMParser<'TableDelimiterColumn'
 		let delimiterEnd = start.accessor()
 		if(delimiterEnd.is('|')) { delimiterEnd.advance() }
 
+		const lineEnd = delimiterEnd.findNextNewline(end)?.start ?? end
+
 		let parseState: 'start' | 'left' | 'hyphens' | 'right' | 'end' = 'start'
 		const nextState: { [key in 'start' | 'left' | 'hyphens' | 'right' | 'end']: {
 			[key in ' ' | '\t' | '-' | ':' ]: 'start' | 'left' | 'hyphens' | 'right' | 'end' | '-illegal-'
@@ -91,7 +93,7 @@ export class TableDelimiterColumnParser extends MfMParser<'TableDelimiterColumn'
 			},
 		}
 		let alignment: 'left' | 'center' | 'right' | undefined = undefined
-		while(delimiterEnd.isBefore(end) && !delimiterEnd.is('|')) {
+		while(delimiterEnd.isBefore(lineEnd) && !delimiterEnd.is('|')) {
 			const currentChar = delimiterEnd.get() as ' ' | '\t' | ':' | '-'
 			const next: 'start' | 'left' | 'hyphens' | 'right' | 'end' | '-illegal-' = nextState[parseState][currentChar]
 
