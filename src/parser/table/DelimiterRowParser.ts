@@ -25,6 +25,7 @@ import { finiteLoop } from "../../utilities/finiteLoop"
 export class MfMTableDelimiterColumn extends MfMElement<'TableDelimiterColumn', Options, TableDelimiterColumn, TableDelimiterColumnParser> implements TableDelimiterColumn {
 	public readonly type = 'TableDelimiterColumn'
 	public readonly content: Options[] = []
+	public readonly plainContent: string = ''
 
 	constructor(
 		id: string,

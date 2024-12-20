@@ -1,4 +1,4 @@
-import { AnyInline, ContainerInline, ElementOptions } from "../../element"
+import { AnyInline, ContainerInline, Element, ElementOptions } from "../../element"
 import { EMPTY_OPTIONS, MfMElement } from "../../element/MfMElement"
 import { TextLocation } from "../../mbuffer/TextLocation"
 import { PersistentRange } from "../../mbuffer/TextRange"
@@ -26,10 +26,8 @@ export abstract class DelimitedMfMElement<
 			this.delimiter
 	}
 
-	override get referenceMap(): { [key: string]: string; } {
-		return {
-			...super.referenceMap,
-		}
+	get plainContent() {
+		return this.content.map(c => c.plainContent).join('')
 	}
 
 	override get options(): ElementOptions {

@@ -24,6 +24,7 @@ import { IdGenerator, Parsers } from "../Parsers"
 export class MfMOption extends MfMElement<'Option', AnyInline, Option, OptionParser> implements Option {
 	public readonly type = 'Option'
 	readonly content: AnyInline[] = []
+	readonly plainContent: string = ''
 
 	constructor(
 		id: string,

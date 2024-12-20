@@ -10,7 +10,7 @@
     "test": "jest ./test",
     "test:watch": "jest --watch ./test",
     "doc": "jsdoc src --tutorials docs -r -c .jsdoc.conf.json --readme README.md",
-    "build": "rm -rf dist && tsc --declaration --outDir dist --project tsconfig.build.json"
+    "build": "tsc --declaration --outDir dist --project tsconfig.build.json"
   },
   "author": "David Tanzer (business@davidtanzer.net)",
   "license": "Apache-2.0",

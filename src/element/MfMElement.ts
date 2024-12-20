@@ -54,8 +54,24 @@ export abstract class MfMElement<
 		this.updateCallbacks[id] = cb
 
 		return {
-			id: id,
+			id,
 			unsubscribe: () => { delete this.updateCallbacks[id] }
+		}
+	}
+
+	onSubtreeUpdate(cb: ElementUpdateCallback<TYPE, CONTENT, THIS>): ElementUpdateRegistration {
+		const myRegistration = this.onUpdate(cb)
+		const otherRegistrations: ElementUpdateRegistration[] = []
+		this.content.forEach(c => otherRegistrations.push(c.onUpdate(cb)))
+
+		const id = elementIdGenerator.nextTaggedId('subtree-update-callback')
+
+		return {
+			id,
+			unsubscribe: () => {
+				otherRegistrations.forEach(r => r.unsubscribe())
+				myRegistration.unsubscribe()
+			}
 		}
 	}
 
@@ -68,7 +84,9 @@ export abstract class MfMElement<
 		this.updateCallbacks = {}
 	}
 
-	get referenceMap(): { [key: string]: string; } {
-		return {}
+	get referenceMap(): { [key: string]: string | Element<any, any, any> | Element<any, any, any>[] | null } {
+		return {
+			'element.content': this.content,
+		}
 	}
 }

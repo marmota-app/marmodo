@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { BlankLine, ElementOptions, Table, TableDelimiterRow, TableRow } from "../../element"
+import { BlankLine, Element, ElementOptions, Table, TableDelimiterRow, TableRow } from "../../element"
 import { EMPTY_OPTIONS, MfMElement } from "../../element/MfMElement"
 import { TextLocation } from "../../mbuffer/TextLocation"
 import { PersistentRange } from "../../mbuffer/TextRange"
@@ -68,6 +68,15 @@ export class MfMTable extends MfMElement<'Table', TableRow | TableDelimiterRow |
 	get rows(): number {
 		return this.tableRows.length
 	}
+
+	override get referenceMap(): { [key: string]: string | Element<any, any, any> | Element<any, any, any>[] | null } {
+		return {
+			...super.referenceMap,
+			'element.headers': this.headers,
+			'element.columnDefinitions': this.delimiters,
+			'element.rows': this.tableRows,
+		}
+	}
 }
 export class TableParser extends MfMParser<'Table', TableRow | TableDelimiterRow | BlankLine, Table> {
 	readonly type = 'Table'
@@ -120,7 +129,7 @@ export class TableParser extends MfMParser<'Table', TableRow | TableDelimiterRow
 			const possibleDelimitersEnd = possibleDelimitersNewline?.end ?? end
 			let delimiters = this.parsers.TableDelimiterRow.parse(nextNewline.end, possibleDelimitersEnd)
 			if(delimiters) {
-				const headers = this.parsers.TableRow.parse(start, nextNewline.start)
+				const headers = this.parsers.TableHeaderRow.parse(start, nextNewline.start)
 
 				if(headers == null || headers.columns.length===0) {
 					return [

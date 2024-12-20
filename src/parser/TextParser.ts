@@ -14,12 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { ElementOptions, UpdateCheckResult } from "../element/Element";
+import { UpdateCheckResult } from "../element/Element";
 import { MfMElement } from "../element/MfMElement";
 import { allBlockStarts, Text } from "../element/MfMElements";
 import { UpdateInfo } from "../mbuffer/TextContent";
 import { TextLocation } from "../mbuffer/TextLocation";
-import { PersistentRange, TextRange, } from "../mbuffer/TextRange";
 import { andFalse, andOther, MfMParser } from "./MfMParser";
 
 export class MfMText extends MfMElement<'Text', never, Text, TextParser> implements Text {
@@ -36,6 +35,10 @@ export class MfMText extends MfMElement<'Text', never, Text, TextParser> impleme
 		return this.parsedRange.asString()
 	}
 
+	get plainContent(): string {
+		return this.textContent
+	}
+	
 	override get referenceMap(): { [key: string]: string; } {
 		return {
 			...super.referenceMap,

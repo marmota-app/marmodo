@@ -20,14 +20,14 @@ import { TextLocation } from "../../mbuffer/TextLocation"
 import { PersistentRange } from "../../mbuffer/TextRange"
 import { finiteLoop } from "../../utilities/finiteLoop"
 import { MfMParser } from "../MfMParser"
+import { IdGenerator, Parsers } from "../Parsers"
 
-export class MfMTableColumn extends MfMElement<'TableColumn', AnyInline, TableColumn, TableColumnParser> implements TableColumn {
-	public readonly type = 'TableColumn'
-
+export class MfMTableColumn extends MfMElement<'TableColumn' | 'HeaderColumn', AnyInline, TableColumn, TableColumnParser> implements TableColumn {
 	constructor(
 		id: string,
 		parsedRange: PersistentRange,
 		parsedWith: TableColumnParser,
+		public readonly type: 'TableColumn' | 'HeaderColumn',
 		public readonly content: AnyInline[],
 	) {
 		super(id, parsedRange, parsedWith)
@@ -44,9 +44,16 @@ export class MfMTableColumn extends MfMElement<'TableColumn', AnyInline, TableCo
 	get textContent(): string {
 		return this.asText
 	}
+	get plainContent(): string {
+		return this.content.map(c => c.plainContent).join('')
+	}
 }
-export class TableColumnParser extends MfMParser<'TableColumn', AnyInline, TableColumn> {
+export class TableColumnParser extends MfMParser<'TableColumn' | 'HeaderColumn', AnyInline, TableColumn> {
 	readonly type = 'TableColumn'
+
+	constructor(idGenerator: IdGenerator, parsers: Parsers, private readonly isHeaderColumn = false) {
+		super(idGenerator, parsers)
+	}
 
 	parse(start: TextLocation, end: TextLocation): TableColumn | null {
 		const content: AnyInline[] = []
@@ -63,6 +70,7 @@ export class TableColumnParser extends MfMParser<'TableColumn', AnyInline, Table
 			this.idGenerator.nextId(),
 			start.persistentRangeUntil(contentEnd),
 			this,
+			this.isHeaderColumn? 'HeaderColumn' : 'TableColumn',
 			content,
 		)
 	}
@@ -88,7 +96,7 @@ export class MfMTableRow extends MfMElement<'TableRow', TableColumn | Options | 
 		return EMPTY_OPTIONS
 	}
 	get columns(): TableColumn[] {
-		return this.content.filter(c => c.type==='TableColumn')
+		return this.content.filter(c => c.type==='TableColumn' || c.type==='HeaderColumn') as TableColumn[]
 	}
 
 	get textContent(): string {
@@ -97,6 +105,10 @@ export class MfMTableRow extends MfMElement<'TableRow', TableColumn | Options | 
 }
 export class TableRowParser extends MfMParser<'TableRow', TableColumn | Options | Text, TableRow> {
 	readonly type = 'TableRow'
+
+	constructor(idGenerator: IdGenerator, parsers: Parsers, private readonly isHeaderRow = false) {
+		super(idGenerator, parsers)
+	}
 
 	parse(start: TextLocation, end: TextLocation): TableRow | null {
 		const content: (TableColumn | Options | Text)[] = []
@@ -134,10 +146,11 @@ export class TableRowParser extends MfMParser<'TableRow', TableColumn | Options 
 			}
 		}
 
+		const colParser = this.isHeaderRow? this.parsers.HeaderColumn : this.parsers.TableColumn
 		const loop2 = finiteLoop(() => [ cur.info() ])
 		while(cur.isBefore(columnsEnd)) {
 			loop2.ensure()
-			const column = this.parsers.TableColumn.parse(cur, columnsEnd)
+			const column = colParser.parse(cur, columnsEnd)
 			if(column != null) {
 				content.push(column)
 				cur = column.parsedRange.end.accessor()

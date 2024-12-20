@@ -24,6 +24,7 @@ import { OptionParser } from "./OptionParser"
 
 export class MfMOptions extends MfMElement<'Options', AnyInline, Options, OptionsParser> implements Options {
 	public readonly type = 'Options'
+	readonly plainContent: string = ''
 
 	constructor(
 		id: string,

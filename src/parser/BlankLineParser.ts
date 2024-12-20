@@ -21,9 +21,10 @@ import { UpdateInfo } from "../mbuffer/TextContent";
 import { TextLocation } from "../mbuffer/TextLocation";
 import { andFalse, MfMParser } from "./MfMParser";
 
-export class MfMBlankLine extends MfMElement<'BlankLine', never, BlankLine, BlankLineParser> {
+export class MfMBlankLine extends MfMElement<'BlankLine', never, BlankLine, BlankLineParser> implements BlankLine {
 	public readonly type = 'BlankLine'
 	readonly content: never[] = []
+	readonly plainContent: string = ''
 
 	get textContent() {
 		//This function does not cache the string yet - an optimization

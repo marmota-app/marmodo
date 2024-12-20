@@ -20,7 +20,9 @@ export interface InlineElement<
 	TYPE extends string,
 	CONTENT extends Element<any, any, any>,
 	THIS extends InlineElement<TYPE, CONTENT, THIS>,
-> extends Element<TYPE, CONTENT, THIS> {}
+> extends Element<TYPE, CONTENT, THIS> {
+	readonly plainContent: string,
+}
 export interface LeafInline<
 	TYPE extends string,
 	THIS extends LeafInline<TYPE, THIS>,
@@ -103,7 +105,7 @@ export interface BlankLine extends LeafInline<'BlankLine', BlankLine> {}
 export interface TableDelimiterColumn extends ContainerInline<'TableDelimiterColumn', TableDelimiterColumn, Options> {
 	alignment: 'left' | 'center' | 'right'
 }
-export interface TableColumn extends ContainerInline<'TableColumn', TableColumn> {}
+export interface TableColumn extends ContainerInline<'TableColumn' | 'HeaderColumn', TableColumn> {}
 
 export interface Options extends ContainerInline<'Options', Options> {
 	keys: string[],

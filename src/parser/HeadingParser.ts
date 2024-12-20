@@ -141,7 +141,7 @@ export class HeadingParser extends MfMParser<'Heading', HeadingContent | BlankLi
 	}
 }
 
-export class MfMHeadingContent extends MfMElement<'HeadingContent', AnyInline, HeadingContent, HeadingContentParser> {
+export class MfMHeadingContent extends MfMElement<'HeadingContent', AnyInline, HeadingContent, HeadingContentParser> implements HeadingContent {
 	public readonly type = 'HeadingContent'
 
 	constructor(
@@ -157,6 +157,10 @@ export class MfMHeadingContent extends MfMElement<'HeadingContent', AnyInline, H
 		return this.content
 			.map(c => c.asText)
 			.join('')
+	}
+
+	get plainContent() {
+		return this.content.map(c => c.plainContent).join('')
 	}
 }
 export class HeadingContentParser extends MfMParser<'HeadingContent', AnyInline, HeadingContent> {
