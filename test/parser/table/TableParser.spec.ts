@@ -102,7 +102,18 @@ describe('TableParser', () => {
 				{ text: '\n', rangeOffset: 'a | b\n-|-\nc | d'.length, rangeLength: 0 },
 				{ text: 'e', rangeOffset: 'a | b\n-|-\nc | d\n'.length, rangeLength: 0 },
 			]
-		).canBeParsed('adding a new line to the table, at the end of the content', table => {
+		).canBeParsed('adding new table line, starting with "e"', table => {
+			expect(table.rows).toEqual(2)
+			expect(table.tableRows).toHaveLength(2)
+		})
+		expectUpdates(
+			parser,
+			'a | b\n-|-\nc | d', [
+				{ text: '\n', rangeOffset: 'a | b\n-|-\nc | d'.length, rangeLength: 0 },
+				{ text: '|', rangeOffset: 'a | b\n-|-\nc | d\n'.length, rangeLength: 0 },
+				{ text: 'e', rangeOffset: 'a | b\n-|-\nc | d\n|'.length, rangeLength: 0 },
+			]
+		).canBeParsed('adding new table line, starting with pipe', table => {
 			expect(table.rows).toEqual(2)
 			expect(table.tableRows).toHaveLength(2)
 		})

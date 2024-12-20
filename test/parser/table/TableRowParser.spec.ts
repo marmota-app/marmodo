@@ -161,4 +161,13 @@ describe('TableRowParser', () => {
 		expect(result?.content[3]).toHaveProperty('type', 'Text')
 		expect(result?.content[3]).toHaveProperty('textContent', '{ val0; key1=val1  \t ')
 	})
+
+	it('does not return a table row with no columns and no other content', () => {
+		const result = parseAll('TableRow', '\n')
+		expect(result).toBeNull()
+	})
+	it('returns a table row that only contains a row ending', () => {
+		const result = parseAll('TableRow', '|\n')
+		expect(result).not.toBeNull()
+	})
 })

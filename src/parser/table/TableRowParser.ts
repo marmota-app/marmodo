@@ -177,7 +177,7 @@ export class TableRowParser extends MfMParser<'TableRow', TableColumn<any> | Opt
 			content,
 		)
 		
-		if(result.columns.length === 0) {
+		if(result.columns.length === 0 && lastPipe == null) {
 			return null
 		}
 		return result

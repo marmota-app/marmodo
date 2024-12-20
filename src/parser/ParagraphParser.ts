@@ -14,12 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { ElementOptions } from "../element/Element";
+import { ElementOptions, UpdateCheckResult } from "../element/Element";
 import { EMPTY_OPTIONS, MfMElement } from "../element/MfMElement";
 import { AnyInline, Paragraph } from "../element/MfMElements";
+import { UpdateInfo } from "../mbuffer";
 import { TextLocation } from "../mbuffer/TextLocation";
 import { PersistentRange, TextRange, } from "../mbuffer/TextRange";
-import { MfMParser } from "./MfMParser";
+import { andFalse, MfMParser } from "./MfMParser";
 
 export class MfMParagraph extends MfMElement<'Paragraph', AnyInline, Paragraph, ParagraphParser> implements Paragraph {
 	public readonly type = 'Paragraph'
