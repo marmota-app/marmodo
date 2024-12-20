@@ -22,12 +22,14 @@ import { finiteLoop } from "../../utilities/finiteLoop"
 import { MfMParser } from "../MfMParser"
 import { IdGenerator, Parsers } from "../Parsers"
 
-export class MfMTableColumn extends MfMElement<'TableColumn' | 'HeaderColumn', AnyInline, TableColumn, TableColumnParser> implements TableColumn {
+export class MfMTableColumn<
+	COL_TYPE extends 'TableColumn' | 'HeaderColumn'
+> extends MfMElement<COL_TYPE, AnyInline, TableColumn<COL_TYPE>, TableColumnParser<COL_TYPE>> implements TableColumn<COL_TYPE> {
 	constructor(
 		id: string,
 		parsedRange: PersistentRange,
-		parsedWith: TableColumnParser,
-		public readonly type: 'TableColumn' | 'HeaderColumn',
+		parsedWith: TableColumnParser<COL_TYPE>,
+		public readonly type: COL_TYPE,
 		public readonly content: AnyInline[],
 	) {
 		super(id, parsedRange, parsedWith)
@@ -48,14 +50,14 @@ export class MfMTableColumn extends MfMElement<'TableColumn' | 'HeaderColumn', A
 		return this.content.map(c => c.plainContent).join('')
 	}
 }
-export class TableColumnParser extends MfMParser<'TableColumn' | 'HeaderColumn', AnyInline, TableColumn> {
-	readonly type = 'TableColumn'
-
-	constructor(idGenerator: IdGenerator, parsers: Parsers, private readonly isHeaderColumn = false) {
+export class TableColumnParser<
+	COL_TYPE extends 'TableColumn' | 'HeaderColumn'
+> extends MfMParser<COL_TYPE, AnyInline, TableColumn<COL_TYPE>> {
+	constructor(idGenerator: IdGenerator, parsers: Parsers, public readonly type: COL_TYPE) {
 		super(idGenerator, parsers)
 	}
 
-	parse(start: TextLocation, end: TextLocation): TableColumn | null {
+	parse(start: TextLocation, end: TextLocation): TableColumn<COL_TYPE> | null {
 		const content: AnyInline[] = []
 		const contentStart = start.accessor()
 		if(contentStart.is('|')) { contentStart.advance() }
@@ -70,20 +72,20 @@ export class TableColumnParser extends MfMParser<'TableColumn' | 'HeaderColumn',
 			this.idGenerator.nextId(),
 			start.persistentRangeUntil(contentEnd),
 			this,
-			this.isHeaderColumn? 'HeaderColumn' : 'TableColumn',
+			this.type,
 			content,
 		)
 	}
 }
 
-export class MfMTableRow extends MfMElement<'TableRow', TableColumn | Options | Text, TableRow, TableRowParser> implements TableRow {
+export class MfMTableRow extends MfMElement<'TableRow', TableColumn<any> | Options | Text, TableRow, TableRowParser> implements TableRow {
 	public readonly type = 'TableRow'
 
 	constructor(
 		id: string,
 		parsedRange: PersistentRange,
 		parsedWith: TableRowParser,
-		public readonly content: (TableColumn | Options | Text)[],
+		public readonly content: (TableColumn<any> | Options | Text)[],
 	) {
 		super(id, parsedRange, parsedWith)
 	}
@@ -95,15 +97,15 @@ export class MfMTableRow extends MfMElement<'TableRow', TableColumn | Options | 
 	override get options(): ElementOptions {
 		return EMPTY_OPTIONS
 	}
-	get columns(): TableColumn[] {
-		return this.content.filter(c => c.type==='TableColumn' || c.type==='HeaderColumn') as TableColumn[]
+	get columns(): TableColumn<any>[] {
+		return this.content.filter(c => c.type==='TableColumn' || c.type==='HeaderColumn') as TableColumn<any>[]
 	}
 
 	get textContent(): string {
 		return this.asText
 	}
 }
-export class TableRowParser extends MfMParser<'TableRow', TableColumn | Options | Text, TableRow> {
+export class TableRowParser extends MfMParser<'TableRow', TableColumn<any> | Options | Text, TableRow> {
 	readonly type = 'TableRow'
 
 	constructor(idGenerator: IdGenerator, parsers: Parsers, private readonly isHeaderRow = false) {
@@ -111,7 +113,7 @@ export class TableRowParser extends MfMParser<'TableRow', TableColumn | Options 
 	}
 
 	parse(start: TextLocation, end: TextLocation): TableRow | null {
-		const content: (TableColumn | Options | Text)[] = []
+		const content: (TableColumn<any> | Options | Text)[] = []
 		let cur = start.accessor()
 
 		const nextNewline = start.findNextNewline(end)

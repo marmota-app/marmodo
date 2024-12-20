@@ -83,8 +83,8 @@ export interface Heading extends ContainerElement<'Heading', HeadingContent | Bl
 	level: number,
 }
 export interface Paragraph extends LeafContainer<'Paragraph', Paragraph> {}
-export interface TableRow extends LeafContainer<'TableRow', TableRow, TableColumn | Options | Text> {
-	columns: TableColumn[]
+export interface TableRow extends LeafContainer<'TableRow', TableRow, TableColumn<any> | Options | Text> {
+	columns: TableColumn<any>[]
 }
 export interface TableDelimiterRow extends LeafContainer<'TableDelimiterRow', TableDelimiterRow, TableDelimiterColumn | Options | Text> {
 	columns: TableDelimiterColumn[],
@@ -105,7 +105,9 @@ export interface BlankLine extends LeafInline<'BlankLine', BlankLine> {}
 export interface TableDelimiterColumn extends ContainerInline<'TableDelimiterColumn', TableDelimiterColumn, Options> {
 	alignment: 'left' | 'center' | 'right'
 }
-export interface TableColumn extends ContainerInline<'TableColumn' | 'HeaderColumn', TableColumn> {}
+export interface TableColumn<
+	COL_TYPE extends 'TableColumn' | 'HeaderColumn'
+> extends ContainerInline<COL_TYPE, TableColumn<COL_TYPE>> {}
 
 export interface Options extends ContainerInline<'Options', Options> {
 	keys: string[],
@@ -120,4 +122,4 @@ export interface Option extends ContainerInline<'Option', Option> {
 export interface StrongEmphasis extends ContainerInline<'StrongEmphasis', StrongEmphasis> {}
 export interface Emphasis extends ContainerInline<'Emphasis', Emphasis> {}
 
-export const allBlockStarts: string[] = [ '#' ]
+export const allBlockStarts: string[] = [ '#', '|' ]

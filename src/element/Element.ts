@@ -39,6 +39,7 @@ export interface Parser<
 	parse: (start: TextLocation, end: TextLocation) => ELEMENT | null,
 	checkUpdate: (element: ELEMENT, update: UpdateInfo, documentEnd: TextLocation) => UpdateCheckResult,
 	acceptUpdate: (original: ELEMENT, updated: ELEMENT) => boolean,
+	startsBlockAtStartOfRange: (start: TextLocation, end: TextLocation) => boolean,
 }
 
 export interface ElementOptions {

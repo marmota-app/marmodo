@@ -85,18 +85,21 @@ export abstract class MfMParser<
 	}
 
 	protected lineStartsNewBlock(start: TextLocation, end: TextLocation): boolean {
-		if(start.startsWith(allBlockStarts, end)) {
-			for(const parser of this.parsers.allBlocks) {
-				//Paragraphs cannot interrupt other block-level elements.
-				//But should we delegate this to the parser? Maybe...
-				const canInterruptElement = parser.type !== 'Paragraph'
-				if(canInterruptElement) {
-					const element = parser.parse(start, end)
-					if(element != null) { return true }
-				}
+		for(const parser of this.parsers.allBlocks) {
+			//Paragraphs cannot interrupt other block-level elements.
+			//But should we delegate this to the parser? Maybe...
+			const canInterruptElement = parser.type !== 'Paragraph'
+			if(canInterruptElement) {
+				if(parser.startsBlockAtStartOfRange(start, end)) { return true }
 			}
 		}
 		return false
+	}
+
+	startsBlockAtStartOfRange(start: TextLocation, end: TextLocation) {
+		//That's the only general implementation, but it's also very slow,
+		//so concrete block parsers should override this!
+		return this.parse(start, end) != null
 	}
 }
 
@@ -106,4 +109,7 @@ export abstract class MfMInlineParser<
 	ELEMENT extends Element<TYPE, CONTENT, ELEMENT>,
 > extends MfMParser<TYPE, CONTENT, ELEMENT> {
 	abstract nextPossibleStart(start: TextLocation, end: TextLocation): TextLocation | null
+	override startsBlockAtStartOfRange(start: TextLocation, end: TextLocation): boolean {
+		return false
+	}
 }

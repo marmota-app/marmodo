@@ -49,8 +49,8 @@ export class Parsers {
 
 	get TableDelimiterColumn(): TableDelimiterColumnParser { return this.getParser('TableDelimiterColumn', () => new TableDelimiterColumnParser(this.idGenerator, this)) }
 	get TableDelimiterRow(): TableDelimiterRowParser { return this.getParser('TableDelimiterRow', () => new TableDelimiterRowParser(this.idGenerator, this)) }
-	get TableColumn(): TableColumnParser { return this.getParser('TableColumn', () => new TableColumnParser(this.idGenerator, this)) }
-	get HeaderColumn(): TableColumnParser { return this.getParser('HeaderColumn', () => new TableColumnParser(this.idGenerator, this, true)) }
+	get TableColumn(): TableColumnParser<'TableColumn'> { return this.getParser('TableColumn', () => new TableColumnParser(this.idGenerator, this, 'TableColumn')) }
+	get HeaderColumn(): TableColumnParser<'HeaderColumn'> { return this.getParser('HeaderColumn', () => new TableColumnParser(this.idGenerator, this, 'HeaderColumn')) }
 	get TableRow(): TableRowParser { return this.getParser('TableRow', () => new TableRowParser(this.idGenerator, this)) }
 	get TableHeaderRow(): TableRowParser { return this.getParser('TableHeaderRow', () => new TableRowParser(this.idGenerator, this, true)) }
 	get Table(): TableParser { return this.getParser('Table', () => new TableParser(this.idGenerator, this)) }

@@ -76,6 +76,19 @@ describe('ParagraphParser', () => {
 				{ type: 'Text', textContent: `some text\nsome text\nsome text\n` },
 			])
 		})
+		it('ends the current paragraph at the next heading, even if it is in the first line', () => {
+			const paragraph = parseAll('Paragraph', `# heading`)
+	
+			expect(paragraph).toBeNull()
+		})
+		it('ends the paragraph on a line that starts a new table', () => {
+			const paragraph = parseAll('Paragraph', `some text\nsome text\nsome text\nth1 | th2 | th3\n|---|---|---|`)
+	
+			expect(paragraph?.parsedRange.asString()).toEqual(`some text\nsome text\nsome text\n`)
+			expect(paragraph).toHaveChildren([
+				{ type: 'Text', textContent: `some text\nsome text\nsome text\n` },
+			])
+		})
 
 		it('parses strong emphasis inside paragraph (until end of input)', () => {
 			const paragraph = parseAll('Paragraph', `some **bold** text`)

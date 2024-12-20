@@ -32,7 +32,7 @@ function tableRows(table: Table) {
 function tableRow(table: Table, tableRow: TableRow) {
 	return `<tr>\n${table.delimiters.columns.map((d, i) => tableCell(tableRow.columns[i], table.delimiters.columns[i], 'td')).join('\n')}\n</tr>`
 }
-function tableCell(col: TableColumn | undefined, del: TableDelimiterColumn | undefined, type: string) {
+function tableCell(col: TableColumn<any> | undefined, del: TableDelimiterColumn | undefined, type: string) {
 	if(col == null) {
 		return `<${type}></${type}>`
 	}

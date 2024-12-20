@@ -139,6 +139,13 @@ export class HeadingParser extends MfMParser<'Heading', HeadingContent | BlankLi
 	override acceptUpdate(original: Heading, updated: Heading): boolean {
 		return updated.level === original.level
 	}
+
+	override startsBlockAtStartOfRange(start: TextLocation, end: TextLocation): boolean {
+		if(start.startsWith('#', end)) {
+			return this.parse(start, end) != null
+		}
+		return false
+	}
 }
 
 export class MfMHeadingContent extends MfMElement<'HeadingContent', AnyInline, HeadingContent, HeadingContentParser> implements HeadingContent {

@@ -122,6 +122,17 @@ export class TableParser extends MfMParser<'Table', TableRow | TableDelimiterRow
 		)
 	}
 
+	override startsBlockAtStartOfRange(start: TextLocation, end: TextLocation): boolean {
+		const firstNewline = start.findNextNewline(end)
+		if(firstNewline) {
+			const secondLineEnd = firstNewline.end.findNextNewline(end)?.start ?? end
+			if(firstNewline.end.findNext(['|', '-'], secondLineEnd) != null) {
+				return this.parse(start, end) != null
+			}
+		}
+		return false
+	}
+
 	#readDelimitersAndHeaders(start: TextLocation, end: TextLocation): [TableDelimiterRow | null, TableRow | null] {
 		const nextNewline = start.findNextNewline(end)
 		if(nextNewline) {

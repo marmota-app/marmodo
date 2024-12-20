@@ -60,6 +60,15 @@ export class ParagraphParser extends MfMParser<'Paragraph', AnyInline, Paragraph
 			}
 		}
 
+		if(this.lineStartsNewBlock(start, end)) {
+			//This cannot be a paragraph when the first line already starts
+			//a new block!
+			//Also, a situation like this can only occur when parsing an
+			//update, where the user changes the first line of the paragraph
+			//so that it starts a new block.
+			return null
+		}
+
 		let nextNewline = start.findNextNewline(end)
 		while(nextNewline != null) {
 			//Try to parse a blank line here, and also end the paragraph on
