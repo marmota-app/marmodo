@@ -55,6 +55,14 @@ describe('TableColumnParser', () => {
 			expect(result?.content[0]).toHaveProperty('type', 'Text')
 			expect(result?.content[0]).toHaveProperty('textContent', ' \tsome text  \t ')
 		})
+		it('stops parsing at an ending newline', () => {
+			const result = parseAll('TableColumn', ' \tsome text  \t \nmore text')
+	
+			expect(result).toHaveProperty('asText', ' \tsome text  \t ')
+			expect(result?.content).toHaveLength(1)
+			expect(result?.content[0]).toHaveProperty('type', 'Text')
+			expect(result?.content[0]).toHaveProperty('textContent', ' \tsome text  \t ')
+		})
 		it('includes an opening |', () => {
 			const result = parseAll('TableColumn', '| \tsome text  \t |more text')
 	

@@ -62,8 +62,11 @@ export class TableColumnParser<
 		const contentStart = start.accessor()
 		if(contentStart.is('|')) { contentStart.advance() }
 
-		const pipePosition = contentStart.findNext('|', end)
-		const contentEnd = pipePosition?.start ?? end
+		const nextNewline = contentStart.findNextNewline(end)
+		const lineEnd = nextNewline?.start ?? end
+
+		const pipePosition = contentStart.findNext('|', lineEnd)
+		const contentEnd = pipePosition?.start ?? lineEnd
 
 		const innerContent = this.parsers.parseInlines(contentStart, contentEnd, contentEnd)
 		content.push(...innerContent)

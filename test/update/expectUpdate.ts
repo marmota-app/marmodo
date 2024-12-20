@@ -65,7 +65,7 @@ export function expectUpdates<
 	ELEMENT extends Element<TYPE, CONTENT, ELEMENT>,
 >(parser: Parser<TYPE, CONTENT, ELEMENT>, originalText: string, updates: ContentUpdate[]) {
 	return {
-		canBeParsed(reason = '') {
+		canBeParsed(reason = '', assertions: (updated: ELEMENT) => unknown = ()=>{}) {
 			it(`can parse update [${updates.map(u => `"${u.text}", ${u.rangeOffset}+${u.rangeLength}`).join(', ')}] to content "${replaceWhitespace(originalText)}"${reason.length>0? ' - '+reason : ''}`, () => {
 				const [text, original] = parse(parser, originalText)
 				const updated = updates.reduce((prev: ELEMENT | null, update) => {
@@ -81,6 +81,8 @@ export function expectUpdates<
 
 				expect(updated).not.toBeNull()
 				expect(updated!.parsedRange.asString()).toEqual(expectedElement?.parsedRange.asString())
+
+				assertions(updated!)
 			})
 		},
 		cannotBeParsed(reason = '') {

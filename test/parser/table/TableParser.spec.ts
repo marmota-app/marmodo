@@ -15,61 +15,96 @@ limitations under the License.
 */
 
 import { Table } from "../../../src/element"
+import { Parsers } from "../../../src/parser/Parsers"
 import { parseAll } from "../../parse"
+import { expectUpdate, expectUpdates } from "../../update/expectUpdate"
 
 describe('TableParser', () => {
-	it('parses a table that only consists of a delimiter row', () => {
-		const result = parseAll('Table', '---|:--:|--:|---')
-
-		expect(result).toHaveProperty('asText', '---|:--:|--:|---')
-		expect(result).toHaveProperty('columns', 4)
-		expect(result).toHaveProperty('rows', 0)
-		expect(result).toHaveProperty('delimiters')
+	describe('parsing the content', () => {
+		it('parses a table that only consists of a delimiter row', () => {
+			const result = parseAll('Table', '---|:--:|--:|---')
+	
+			expect(result).toHaveProperty('asText', '---|:--:|--:|---')
+			expect(result).toHaveProperty('columns', 4)
+			expect(result).toHaveProperty('rows', 0)
+			expect(result).toHaveProperty('delimiters')
+		})
+	
+		it('parses a table that with header row and delimiter row', () => {
+			const result = parseAll('Table', 'a | b | c | d\n---|:--:|--:|---') as Table
+	
+			expect(result).toHaveProperty('asText', 'a | b | c | d\n---|:--:|--:|---')
+			expect(result).toHaveProperty('columns', 4)
+			expect(result).toHaveProperty('rows', 0)
+			expect(result).toHaveProperty('delimiters')
+			expect(result.delimiters).toHaveProperty('type', 'TableDelimiterRow')
+	
+			expect(result).toHaveProperty('headers')
+			expect(result?.headers?.columns).toHaveLength(4)
+			expect(result?.headers?.columns[1]).toHaveProperty('asText', '| b ')
+		})
+		it('does not parse a table when the have length 0', () => {
+			const result = parseAll('Table', '\n---|:--:|--:|---') as Table
+			expect(result).toBeNull()
+		})
+	
+		it('parses a table with multiple rows', () => {
+			const result = parseAll('Table', '---|:--:|--:|---\na | b | c\n|a | b | c | d |\na | b | c | d | e') as Table
+	
+			expect(result).toHaveProperty('asText', '---|:--:|--:|---\na | b | c\n|a | b | c | d |\na | b | c | d | e')
+			expect(result).toHaveProperty('columns', 4)
+			expect(result).toHaveProperty('rows', 3)
+			expect(result?.tableRows[0]).toHaveProperty('type', 'TableRow')
+			expect(result?.tableRows[1]).toHaveProperty('type', 'TableRow')
+			expect(result?.tableRows[2]).toHaveProperty('type', 'TableRow')
+		})
+		it('stops parsing a table with multiple rows at empty lines', () => {
+			const result = parseAll('Table', '---|:--:|--:|---\na | b | c\n|a | b | c | d |\na | b | c | d | e\n\n   \n\t\n|a | b | c | d |') as Table
+	
+			expect(result).toHaveProperty('asText', '---|:--:|--:|---\na | b | c\n|a | b | c | d |\na | b | c | d | e\n\n   \n\t\n')
+			expect(result).toHaveProperty('columns', 4)
+			expect(result).toHaveProperty('rows', 3)
+			expect(result?.tableRows[0]).toHaveProperty('type', 'TableRow')
+			expect(result?.tableRows[1]).toHaveProperty('type', 'TableRow')
+			expect(result?.tableRows[2]).toHaveProperty('type', 'TableRow')
+		})
+	
+		it('uses the options from the delimiter row as table options', () => {
+			const result = parseAll('Table', 'a | b | c | d|\n---|:--:|--:|---|{ val0; key1=val1; key2=val2 }  \na | b | c') as Table
+	
+			expect(result).toHaveProperty('asText', 'a | b | c | d|\n---|:--:|--:|---|{ val0; key1=val1; key2=val2 }  \na | b | c')
+			expect(result.options).toHaveProperty('keys', [ 'default', 'key1', 'key2' ])
+		})
 	})
 
-	it('parses a table that with header row and delimiter row', () => {
-		const result = parseAll('Table', 'a | b | c | d\n---|:--:|--:|---') as Table
+	describe('parsing updates', () => {
+		const parser = new Parsers().Table
 
-		expect(result).toHaveProperty('asText', 'a | b | c | d\n---|:--:|--:|---')
-		expect(result).toHaveProperty('columns', 4)
-		expect(result).toHaveProperty('rows', 0)
-		expect(result).toHaveProperty('delimiters')
-		expect(result.delimiters).toHaveProperty('type', 'TableDelimiterRow')
-
-		expect(result).toHaveProperty('headers')
-		expect(result?.headers?.columns).toHaveLength(4)
-		expect(result?.headers?.columns[1]).toHaveProperty('asText', '| b ')
-	})
-	it('does not parse a table when the have length 0', () => {
-		const result = parseAll('Table', '\n---|:--:|--:|---') as Table
-		expect(result).toBeNull()
-	})
-
-	it('parses a table with multiple rows', () => {
-		const result = parseAll('Table', '---|:--:|--:|---\na | b | c\n|a | b | c | d |\na | b | c | d | e') as Table
-
-		expect(result).toHaveProperty('asText', '---|:--:|--:|---\na | b | c\n|a | b | c | d |\na | b | c | d | e')
-		expect(result).toHaveProperty('columns', 4)
-		expect(result).toHaveProperty('rows', 3)
-		expect(result?.tableRows[0]).toHaveProperty('type', 'TableRow')
-		expect(result?.tableRows[1]).toHaveProperty('type', 'TableRow')
-		expect(result?.tableRows[2]).toHaveProperty('type', 'TableRow')
-	})
-	it('stops parsing a table with multiple rows at empty lines', () => {
-		const result = parseAll('Table', '---|:--:|--:|---\na | b | c\n|a | b | c | d |\na | b | c | d | e\n\n   \n\t\n|a | b | c | d |') as Table
-
-		expect(result).toHaveProperty('asText', '---|:--:|--:|---\na | b | c\n|a | b | c | d |\na | b | c | d | e\n\n   \n\t\n')
-		expect(result).toHaveProperty('columns', 4)
-		expect(result).toHaveProperty('rows', 3)
-		expect(result?.tableRows[0]).toHaveProperty('type', 'TableRow')
-		expect(result?.tableRows[1]).toHaveProperty('type', 'TableRow')
-		expect(result?.tableRows[2]).toHaveProperty('type', 'TableRow')
-	})
-
-	it('uses the options from the delimiter row as table options', () => {
-		const result = parseAll('Table', 'a | b | c | d|\n---|:--:|--:|---|{ val0; key1=val1; key2=val2 }  \na | b | c') as Table
-
-		expect(result).toHaveProperty('asText', 'a | b | c | d|\n---|:--:|--:|---|{ val0; key1=val1; key2=val2 }  \na | b | c')
-		expect(result.options).toHaveProperty('keys', [ 'default', 'key1', 'key2' ])
+		expectUpdate(
+			parser,
+			'a | b\n-|-\nc | d\n\nmore text',
+			{ text: 'e | f\n', rangeOffset: 'a | b\n-|-\nc | d\n'.length, rangeLength: 0 }
+		).canBeParsed('adding a new line to the table', table => {
+			expect(table.rows).toEqual(2)
+			expect(table.tableRows).toHaveLength(2)
+		})
+		expectUpdate(
+			parser,
+			'a | b\n-|-\nc | d\n',
+			{ text: 'e | f\n', rangeOffset: 'a | b\n-|-\nc | d\n'.length, rangeLength: 0 }
+		).canBeParsed('adding a new line to the table, at the end of the content', table => {
+			expect(table.rows).toEqual(2)
+			expect(table.tableRows).toHaveLength(2)
+		})
+		expectUpdates(
+			parser,
+			'a | b\n-|-\nc | d', [
+				{ text: '\n', rangeOffset: 'a | b\n-|-\nc | d'.length, rangeLength: 0 },
+				{ text: 'e', rangeOffset: 'a | b\n-|-\nc | d\n'.length, rangeLength: 0 },
+			]
+		).canBeParsed('adding a new line to the table, at the end of the content', table => {
+			expect(table.rows).toEqual(2)
+			expect(table.tableRows).toHaveLength(2)
+		})
 	})
 })
