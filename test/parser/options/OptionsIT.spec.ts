@@ -27,6 +27,7 @@ describe('Options Integration Tests', () => {
 		{ element: 'Heading', before: '#', after: ' some content' },
 		{ element: 'Heading', before: '###', after: ' some content' },
 		{ element: 'Paragraph', before: '', after: 'some content' },
+		{ element: 'CustomInline', before: '{{ some content }}', after: '' },
 	].forEach(testCase => {
 		describe(`Element "${testCase.element}" (${testCase.before}{options...}${testCase.after})`, () => {
 			it('can parse options block on the element', () => {
@@ -46,7 +47,7 @@ describe('Options Integration Tests', () => {
 				const result = parseAll(testCase.element, text)
 	
 				expect(result).not.toBeNull()
-				expect(result).toHaveProperty('asText', text)
+				if(testCase.after.length > 0) { expect(result).toHaveProperty('asText', text) }
 	
 				expect(result!.options).toHaveProperty('keys', [])
 			})
@@ -57,7 +58,7 @@ describe('Options Integration Tests', () => {
 				if(result != null) {
 					//Yep, I know, if in tests... But in this case, we really
 					//don't know whether this text can be parsed at all.
-					expect(result).toHaveProperty('asText', text)
+					if(testCase.after.length > 0) { expect(result).toHaveProperty('asText', text) }
 					expect(result!.options).toHaveProperty('keys', [])
 				}
 			})

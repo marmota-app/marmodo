@@ -20,6 +20,7 @@ import { TextLocation } from '../mbuffer/TextLocation'
 import { finiteLoop } from '../utilities/finiteLoop'
 import { BlankLineParser } from './BlankLineParser'
 import { ContainerParser } from './ContainerParser'
+import { CustomInlineParser } from './CustomInlineParser'
 import { HeadingContentParser, HeadingParser } from './HeadingParser'
 import { MfMInlineParser } from './MfMParser'
 import { ParagraphParser } from './ParagraphParser'
@@ -56,6 +57,7 @@ export class Parsers {
 	get Table(): TableParser { return this.getParser('Table', () => new TableParser(this.idGenerator, this)) }
 
 	get HeadingContent(): HeadingContentParser { return this.getParser('HeadingContent', () => new HeadingContentParser(this.idGenerator, this)) }
+	get CustomInline(): CustomInlineParser { return this.getParser('CustomInline', () => new CustomInlineParser(this.idGenerator, this)) }
 	get Text(): TextParser { return this.getParser('Text', () => new TextParser(this.idGenerator, this)) }
 	get BlankLine(): BlankLineParser { return this.getParser('BlankLine', () => new BlankLineParser(this.idGenerator, this)) }
 
@@ -79,6 +81,8 @@ export class Parsers {
 		return [
 			this.StrongEmphasis,
 			this.Emphasis,
+			
+			this.CustomInline,
 		]
 	}
 
