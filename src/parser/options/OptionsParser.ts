@@ -52,6 +52,7 @@ export class OptionsParser extends MfMParser<'Options', AnyInline, Options> {
 		let cur = start.accessor()
 		if(cur.get() !== '{') { return null }
 		cur.advance()
+		if(cur.get() === '{') { return null }
 
 		const content: Option[] = []
 		let previousOption: Option | null = null

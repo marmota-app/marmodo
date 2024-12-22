@@ -84,12 +84,14 @@ export class CustomInlineParser extends MfMInlineParser<'CustomInline', Text | O
 				}
 			}
 
-			return new MfMCustomInline(
+			const result = new MfMCustomInline(
 				this.idGenerator.nextId(),
 				start.persistentRangeUntil(contentEnd),
 				this,
 				content
 			)
+			this.parsers.elementChanged('CustomInline', result)
+			return result
 		}
 
 		return null

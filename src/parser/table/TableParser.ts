@@ -114,12 +114,14 @@ export class TableParser extends MfMParser<'Table', TableRow | TableDelimiterRow
 
 		tableEnd = this.addBlankLinesTo(content, cur, end).accessor()
 
-		return new MfMTable(
+		const result = new MfMTable(
 			this.idGenerator.nextId(),
 			start.persistentRangeUntil(tableEnd),
 			this,
 			content
 		)
+		this.parsers.elementChanged('Table', result)
+		return result
 	}
 
 	override startsBlockAtStartOfRange(start: TextLocation, end: TextLocation): boolean {

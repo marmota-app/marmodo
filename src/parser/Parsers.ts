@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 import { AnyInline } from '../element'
-import { Parser } from '../element/Element'
+import { Element, ElementUpdateRegistration, Parser } from '../element/Element'
 import { TextLocation } from '../mbuffer/TextLocation'
 import { finiteLoop } from '../utilities/finiteLoop'
 import { BlankLineParser } from './BlankLineParser'
@@ -39,6 +39,8 @@ interface ParseLocation {
 	start: TextLocation,
 }
 export class Parsers {
+	#changedListeners: { [key: string]: { [key: string]: (e: Element<any, any, any>)=>unknown}} = {}
+
 	private knownParsers: { [key: string]: Parser<any, any, any> } = {}
 	private idGenerator = new IdGenerator()
 
@@ -86,6 +88,26 @@ export class Parsers {
 		]
 	}
 
+	onElementChanged(type: string, callback: (e: Element<any, any, any>)=>unknown): ElementUpdateRegistration {
+		const id = this.idGenerator.nextTaggedId('element-created')
+		if(this.#changedListeners[type] == null) {
+			this.#changedListeners[type] = {}
+		}
+		this.#changedListeners[type][id] = callback
+
+		return {
+			id,
+			unsubscribe: () => {
+				delete this.#changedListeners[type][id]
+			}
+		}
+	}
+	elementChanged(type: string, element: Element<any, any, any>) {
+		if(this.#changedListeners[type] != null) {
+			Object.keys(this.#changedListeners[type]).forEach(k => this.#changedListeners[type][k](element))
+		}
+	}
+	
 	parseInlines(start: TextLocation, end: TextLocation, delimiterEnd: TextLocation): AnyInline[] {
 		let parseLocation = start.accessor()
 		let lastElementLocation = parseLocation

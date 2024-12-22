@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import { Element, ElementUpdateRegistration } from "./element";
 import { Container } from "./element/MfMElements";
 import { ContentUpdate } from "./mbuffer/ContentUpdate";
 import { TextContent, UpdateInfo } from "./mbuffer/TextContent";
@@ -22,10 +23,19 @@ import { UpdateParser } from "./update/UpdateParser";
 
 let documentIdGenerator: IdGenerator
 let updateCounter = 0
+
+export class MfMDocumentContext {
+	constructor(private readonly parsers: Parsers) {}
+
+	onElementChanged(type: string, callback: (e: Element<any, any, any>)=>unknown): ElementUpdateRegistration {
+		return this.parsers.onElementChanged(type, callback)
+	}
+}
 export interface MfMDocumentOptions {
 	parsers: Parsers,
 	updateParser: UpdateParser,
 	development: boolean,
+	onContextCreated: (context: MfMDocumentContext) => unknown,
 }
 export interface DocumentUpdateRegistration {
 	id: string,
@@ -39,6 +49,7 @@ export class MfMDocument {
 
 	#parsers: Parsers
 	#updateParser: UpdateParser
+	#context: MfMDocumentContext
 	#textContent: TextContent
 	#content: Container
 
@@ -51,6 +62,7 @@ export class MfMDocument {
 			parsers: new Parsers(),
 			updateParser: new UpdateParser(),
 			development: true,
+			onContextCreated: () => {},
 		}
 		const allOptions: MfMDocumentOptions = {
 			...defaultOptions,
@@ -63,6 +75,9 @@ export class MfMDocument {
 		}
 		this.#parsers = allOptions.parsers
 		this.#updateParser = allOptions.updateParser
+
+		this.#context = new MfMDocumentContext(allOptions.parsers)
+		allOptions.onContextCreated(this.#context)
 
 		this.#textContent = new TextContent('')
 		this.#content = this.#parseCompleteText(initialText)

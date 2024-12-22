@@ -31,6 +31,11 @@ describe('Options', () =>  {
 	
 			expect(result).toBeNull()
 		})
+		it('cannot parse options that start with two {', () => {
+			const result = parseAll('Options', '{{val0}}')
+	
+			expect(result).toBeNull()
+		})
 		it('parses options until the closing }', () => {
 			const result = parseAll('Options', '{}more text') as unknown as MfMOptions
 	
