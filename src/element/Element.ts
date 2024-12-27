@@ -72,6 +72,7 @@ export interface Element<
 
 	readonly asText: string,
 	readonly content: CONTENT[],
+	readonly context: { get: (key: string) => any, set: (key: string, value: any) => void, },
 
 	onUpdate: (cb: ElementUpdateCallback<TYPE, CONTENT, THIS>) => ElementUpdateRegistration,
 	onSubtreeUpdate: (cb: ElementUpdateCallback<TYPE, CONTENT, THIS>) => ElementUpdateRegistration,

@@ -26,6 +26,28 @@ export const EMPTY_OPTIONS: ElementOptions = {
 	get(k: string) { return undefined },
 }
 
+class MfMElementContext {
+	private readonly values: { [key: string]: any } = {}
+	constructor(private readonly element: MfMElement<any, any, any, any>) {}
+
+	get(key: string): any {
+		if(this.element.parent == null && this.element.type !== 'Container') {
+			throw new Error('Accessing context of an element that is not correctly part of a tree: '+JSON.stringify(this.element))
+		}
+
+		if(this.values[key] != null) { return this.values[key] }
+		if(this.element.parent != null) { return this.element.parent.context.get(key) }
+		return null
+	}
+	set(key: string, value: any) {
+		if(this.element.parent == null && this.element.type !== 'Container') {
+			throw new Error('Accessing context of an element that is not correctly part of a tree: '+JSON.stringify(this.element))
+		}
+
+		this.values[key] = value
+	}
+}
+
 export abstract class MfMElement<
 	TYPE extends string,
 	CONTENT extends Element<any, any, any>,
@@ -35,6 +57,7 @@ export abstract class MfMElement<
 	abstract readonly type: TYPE
 	abstract readonly asText: string
 
+	readonly context = new MfMElementContext(this)
 	protected _parent: Element<any, any, any> | null = null
 	private updateCallbacks: { [key: string]: ElementUpdateCallback<TYPE, CONTENT, THIS>} = {}
 
