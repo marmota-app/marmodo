@@ -43,7 +43,7 @@ export function findNextDelimiterRun(delimiters: string[], start: TextLocation, 
 	let startIndex = 0
 
 	const outerLoop = finiteLoop(() => [ delimiterStart.info() ])
-	while(!delimiterStart.isEqualTo(end)) {
+	while(delimiterStart.isBefore(end)) {
 		outerLoop.ensure()
 		if(startIndex > options.maxStartIndex) { return null }
 
@@ -55,7 +55,7 @@ export function findNextDelimiterRun(delimiters: string[], start: TextLocation, 
 			let delimiterLength = 0
 
 			const innerLoop = finiteLoop(() => [ delimiterEnd.info() ])
-			while(!delimiterEnd.isEqualTo(end) && delimiterEnd.get() === delimiter) {
+			while(delimiterEnd.isBefore(end) && delimiterEnd.get() === delimiter) {
 				innerLoop.ensure()
 				delimiterEnd.advance()
 

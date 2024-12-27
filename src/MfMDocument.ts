@@ -143,6 +143,7 @@ ${textFromUpdated}`
 			}
 
 			//TODO compare the trees
+			newlyParsed?.removeFromTree()
 		}
 		//-------- DEVELOPMENT --------
 

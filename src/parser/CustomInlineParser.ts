@@ -22,6 +22,8 @@ import { MfMInlineParser, MfMParser } from "./MfMParser"
 
 export class MfMCustomInline extends MfMElement<'CustomInline', Text | Options, CustomInline, CustomInlineParser> implements CustomInline {
 	readonly type = 'CustomInline'
+	public customContent: string = ''
+	public contentType: 'value' | 'error' = 'error'
 
 	constructor(
 		id: string,
@@ -49,6 +51,8 @@ export class MfMCustomInline extends MfMElement<'CustomInline', Text | Options, 
 		return {
 			...super.referenceMap,
 			'element.textContent': this.plainContent,
+			'element.customContent': this.customContent,
+			'element.contentType': this.contentType,
 		}
 	}
 

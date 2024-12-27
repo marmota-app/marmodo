@@ -17,15 +17,21 @@ limitations under the License.
 import { replaceWhitespace } from "../../test/replaceWhitespace"
 import { PersistentLocation, TemporaryLocation } from "./TextLocation"
 
+let nextId = 1
+
 export class MBuffer {
 	private locations: PersistentLocation[] = []
 	private previous?: MBuffer
 	private next?: MBuffer
+	private id: string
 
 	constructor(
 		private buffered: string, private _start = 0, private _length = buffered.length,
 		private hasSharedBuffer = false
-	) {}
+	) {
+		this.id=`buffer-${nextId}`
+		nextId++
+	}
 
 	get start() { return this._start }
 	get length() { return this._length }
@@ -124,7 +130,7 @@ export class MBuffer {
 	}
 
 	info(): string {
-		return `"${this.buffered}" [${this._start}, ${this._length}]`
+		return `${this.id} "${this.buffered}" [${this._start}, ${this._length}]`
 	}
 
 	get nextBuffer(): MBuffer | undefined {
