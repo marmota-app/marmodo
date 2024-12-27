@@ -29,11 +29,11 @@ export class MfMHeading extends MfMElement<'Heading', HeadingContent | BlankLine
 		id: string,
 		parsedRange: PersistentRange,
 		parsedWith: HeadingParser,
-		public readonly content: (HeadingContent | BlankLine | Options)[],
+		content: (HeadingContent | BlankLine | Options)[],
 		private headingIdentifier: string,
 		private headingSpacing: string,
 	) {
-		super(id, parsedRange, parsedWith)
+		super(id, parsedRange, parsedWith, content)
 	}
 
 	get level(): number {
@@ -150,15 +150,6 @@ export class HeadingParser extends MfMParser<'Heading', HeadingContent | BlankLi
 
 export class MfMHeadingContent extends MfMElement<'HeadingContent', AnyInline, HeadingContent, HeadingContentParser> implements HeadingContent {
 	public readonly type = 'HeadingContent'
-
-	constructor(
-		id: string,
-		parsedRange: PersistentRange,
-		parsedWith: HeadingContentParser,
-		public readonly content: AnyInline[],
-	) {
-		super(id, parsedRange, parsedWith)
-	}
 
 	get asText(): string {
 		return this.content

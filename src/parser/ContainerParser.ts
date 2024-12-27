@@ -24,15 +24,6 @@ import { MfMParser } from "./MfMParser"
 export class MfMContainer extends MfMElement<'Container', AnyBlock, Container, ContainerParser> {
 	public readonly type = 'Container'
 
-	constructor(
-		id: string,
-		parsedRange: PersistentRange,
-		parsedWith: ContainerParser,
-		public readonly content: AnyBlock[],
-	) {
-		super(id, parsedRange, parsedWith)
-	}
-
 	get asText(): string {
 		return this.content
 			.map(c => c.asText)

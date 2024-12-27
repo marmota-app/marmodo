@@ -113,7 +113,7 @@ export interface TableColumn<
 	COL_TYPE extends 'TableColumn' | 'HeaderColumn'
 > extends ContainerInline<COL_TYPE, TableColumn<COL_TYPE>> {}
 
-export interface Options extends ContainerInline<'Options', Options> {
+export interface Options extends ContainerInline<'Options', Options, Option> {
 	keys: string[],
 	get(key: string): string | null | undefined,
 }

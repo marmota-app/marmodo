@@ -15,9 +15,9 @@ export abstract class DelimitedMfMElement<
 		parsedRange: PersistentRange,
 		parsedWith: PARSER,
 		public readonly delimiter: string,
-		public readonly content: AnyInline[],
+		content: AnyInline[],
 	) {
-		super(id, parsedRange, parsedWith)
+		super(id, parsedRange, parsedWith, content)
 	}
 
 	get asText(): string {

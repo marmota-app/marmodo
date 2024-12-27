@@ -23,7 +23,6 @@ import { andFalse, MfMParser } from "./MfMParser";
 
 export class MfMBlankLine extends MfMElement<'BlankLine', never, BlankLine, BlankLineParser> implements BlankLine {
 	public readonly type = 'BlankLine'
-	readonly content: never[] = []
 	readonly plainContent: string = ''
 
 	get textContent() {
@@ -52,11 +51,11 @@ export class BlankLineParser extends MfMParser<'BlankLine', never, BlankLine> {
 			if(current.isInRange(end) && current.is('\n')) {
 				current.advance()
 			}
-			return new MfMBlankLine(this.idGenerator.nextId(), start.persistentRangeUntil(current), this)
+			return new MfMBlankLine(this.idGenerator.nextId(), start.persistentRangeUntil(current), this, [])
 		}
 		if(current.isInRange(end) && current.is('\n')) {
 			current.advance()
-			return new MfMBlankLine(this.idGenerator.nextId(), start.persistentRangeUntil(current), this)
+			return new MfMBlankLine(this.idGenerator.nextId(), start.persistentRangeUntil(current), this, [])
 		}
 
 		return null

@@ -24,15 +24,6 @@ import { MfMParser } from "../MfMParser"
 export class MfMTable extends MfMElement<'Table', TableRow | TableDelimiterRow | BlankLine, Table, TableParser> implements Table {
 	public readonly type = 'Table'
 
-	constructor(
-		id: string,
-		parsedRange: PersistentRange,
-		parsedWith: TableParser,
-		public readonly content: (TableRow | TableDelimiterRow | BlankLine)[],
-	) {
-		super(id, parsedRange, parsedWith)
-	}
-
 	get asText(): string {
 		return this.parsedRange.asString()
 	}

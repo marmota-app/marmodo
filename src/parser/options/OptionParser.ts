@@ -23,7 +23,6 @@ import { IdGenerator, Parsers } from "../Parsers"
 
 export class MfMOption extends MfMElement<'Option', AnyInline, Option, OptionParser> implements Option {
 	public readonly type = 'Option'
-	readonly content: AnyInline[] = []
 	readonly plainContent: string = ''
 
 	constructor(
@@ -32,7 +31,7 @@ export class MfMOption extends MfMElement<'Option', AnyInline, Option, OptionPar
 		parsedWith: OptionParser,
 		public readonly valid: boolean,
 	) {
-		super(id, parsedRange, parsedWith)
+		super(id, parsedRange, parsedWith, [])
 	}
 
 	get key() {

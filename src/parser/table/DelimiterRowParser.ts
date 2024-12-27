@@ -24,16 +24,16 @@ import { finiteLoop } from "../../utilities/finiteLoop"
 
 export class MfMTableDelimiterColumn extends MfMElement<'TableDelimiterColumn', Options, TableDelimiterColumn, TableDelimiterColumnParser> implements TableDelimiterColumn {
 	public readonly type = 'TableDelimiterColumn'
-	public readonly content: Options[] = []
 	public readonly plainContent: string = ''
 
 	constructor(
 		id: string,
 		parsedRange: PersistentRange,
 		parsedWith: TableDelimiterColumnParser,
+		content: Options[],
 		public readonly alignment: 'left' | 'center' | 'right',
 	) {
-		super(id, parsedRange, parsedWith)
+		super(id, parsedRange, parsedWith, content)
 	}
 
 	get asText(): string {
@@ -111,6 +111,7 @@ export class TableDelimiterColumnParser extends MfMParser<'TableDelimiterColumn'
 				this.idGenerator.nextId(),
 				start.persistentRangeUntil(delimiterEnd),
 				this,
+				[],
 				alignment ?? 'left',
 			)
 			return result
@@ -125,15 +126,6 @@ export class TableDelimiterColumnParser extends MfMParser<'TableDelimiterColumn'
 
 export class MfMTableDelimiterRow extends MfMElement<'TableDelimiterRow', TableDelimiterColumn | Options | Text, TableDelimiterRow, TableDelimiterRowParser> implements TableDelimiterRow {
 	public readonly type = 'TableDelimiterRow'
-
-	constructor(
-		id: string,
-		parsedRange: PersistentRange,
-		parsedWith: TableDelimiterRowParser,
-		public readonly content: (TableDelimiterColumn | Options | Text)[],
-	) {
-		super(id, parsedRange, parsedWith)
-	}
 
 	get asText(): string {
 		return this.parsedRange.asString()

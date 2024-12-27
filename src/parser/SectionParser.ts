@@ -30,9 +30,9 @@ export class MfMSection extends MfMElement<'Section', AnyBlock, Section, Section
 		parsedRange: PersistentRange,
 		parsedWith: SectionParser,
 		public readonly level: number,
-		public readonly content: AnyBlock[],
+		content: AnyBlock[],
 	) {
-		super(id, parsedRange, parsedWith)
+		super(id, parsedRange, parsedWith, content)
 	}
 
 	get asText(): string {

@@ -23,7 +23,6 @@ import { andFalse, andOther, MfMParser } from "./MfMParser";
 
 export class MfMText extends MfMElement<'Text', never, Text, TextParser> implements Text {
 	readonly type = 'Text'
-	readonly content: never[] = []
 
 	get textContent() {
 		//This function does not cache the string yet - an optimization
@@ -50,7 +49,7 @@ export class TextParser extends MfMParser<'Text', never, Text> {
 	readonly type = 'Text'
 	
 	parse(start: TextLocation, end: TextLocation): Text | null {
-		return new MfMText(this.idGenerator.nextId(), start.persistentRangeUntil(end), this)
+		return new MfMText(this.idGenerator.nextId(), start.persistentRangeUntil(end), this, [])
 	}
 	checkUpdate(element: Text, update: UpdateInfo): UpdateCheckResult {
 		return this.checkUpdateDoesNotChangeNewlines(element, update).and(this.#checkUpdateDoesNotAddPunctuation(element, update))

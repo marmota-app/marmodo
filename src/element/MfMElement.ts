@@ -16,7 +16,7 @@ limitations under the License.
 
 import { PersistentRange } from "../mbuffer/TextRange";
 import { IdGenerator } from "../parser/Parsers";
-import { jsonTransient } from "../utilities/jsonTransient";
+import { jsonTransient, jsonTransientPrivate } from "../utilities/jsonTransient";
 import { Element, ElementOptions, ElementUpdateCallback, ElementUpdateRegistration, Parser } from "./Element";
 
 let elementIdGenerator: IdGenerator
@@ -34,19 +34,27 @@ export abstract class MfMElement<
 > implements Element<TYPE, CONTENT, THIS> {
 	abstract readonly type: TYPE
 	abstract readonly asText: string
-	abstract readonly content: CONTENT[]
-	public get options(): ElementOptions { return  EMPTY_OPTIONS }
-	
+
+	protected _parent: Element<any, any, any> | null = null
 	private updateCallbacks: { [key: string]: ElementUpdateCallback<TYPE, CONTENT, THIS>} = {}
 
 	constructor(
 		public readonly id: string,
 		public readonly parsedRange: PersistentRange,
 		public readonly parsedWith: PARSER,
+		public readonly content: CONTENT[],
 	) {
 		jsonTransient(this, 'parsedWith')
+		jsonTransientPrivate(this, '_parent')
+
+		content.forEach(c => {
+			(c as unknown as MfMElement<any, any, any, any>)._parent = this
+		})
 	}
 
+	public get options(): ElementOptions { return  EMPTY_OPTIONS }
+	public get parent(): Element<any, any, any> | null { return this._parent }
+	
 	onUpdate(cb: ElementUpdateCallback<TYPE, CONTENT, THIS>): ElementUpdateRegistration {
 		if(elementIdGenerator == null) { elementIdGenerator = new IdGenerator() }
 
@@ -81,6 +89,7 @@ export abstract class MfMElement<
 
 	removeFromTree(): void {
 		this.content.forEach(c => c.removeFromTree())
+		this._parent = null
 		this.updateCallbacks = {}
 	}
 

@@ -25,15 +25,6 @@ import { andFalse, MfMParser } from "./MfMParser";
 export class MfMParagraph extends MfMElement<'Paragraph', AnyInline, Paragraph, ParagraphParser> implements Paragraph {
 	public readonly type = 'Paragraph'
 
-	constructor(
-		id: string,
-		parsedRange: PersistentRange,
-		parsedWith: ParagraphParser,
-		public readonly content: AnyInline[],
-	) {
-		super(id, parsedRange, parsedWith)
-	}
-
 	get asText(): string {
 		return this.content
 			.map(c => c.asText)

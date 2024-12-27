@@ -25,15 +25,6 @@ export class MfMCustomInline extends MfMElement<'CustomInline', Text | Options, 
 	public customContent: string = ''
 	public contentType: 'value' | 'error' = 'error'
 
-	constructor(
-		id: string,
-		parsedRange: PersistentRange,
-		parsedWith: CustomInlineParser,
-		readonly content: (Text | Options)[]
-	) {
-		super(id, parsedRange, parsedWith)
-	}
-
 	get asText(): string {
 		if(this.content.length === 0) { return '' }
 		

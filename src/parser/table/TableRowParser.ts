@@ -30,9 +30,9 @@ export class MfMTableColumn<
 		parsedRange: PersistentRange,
 		parsedWith: TableColumnParser<COL_TYPE>,
 		public readonly type: COL_TYPE,
-		public readonly content: AnyInline[],
+		content: AnyInline[],
 	) {
-		super(id, parsedRange, parsedWith)
+		super(id, parsedRange, parsedWith, content)
 	}
 
 	get asText(): string {
@@ -83,15 +83,6 @@ export class TableColumnParser<
 
 export class MfMTableRow extends MfMElement<'TableRow', TableColumn<any> | Options | Text, TableRow, TableRowParser> implements TableRow {
 	public readonly type = 'TableRow'
-
-	constructor(
-		id: string,
-		parsedRange: PersistentRange,
-		parsedWith: TableRowParser,
-		public readonly content: (TableColumn<any> | Options | Text)[],
-	) {
-		super(id, parsedRange, parsedWith)
-	}
 
 	get asText(): string {
 		return this.parsedRange.asString()
