@@ -13,7 +13,7 @@
     "build": "tsc --declaration --outDir dist --project tsconfig.build.json"
   },
   "author": "David Tanzer (business@davidtanzer.net)",
-  "license": "Apache-2.0",
+  "license": "AGPL-3.0-or-later",
   "devDependencies": {
     "@types/jest": "^29.5.13",
     "@types/jsdom": "^21.1.7",
