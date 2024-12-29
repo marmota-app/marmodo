@@ -42,6 +42,7 @@ interface ParseLocation {
 }
 export class Parsers {
 	#changedListeners: { [key: string]: { [key: string]: (e: Element<any, any, any>)=>unknown}} = {}
+	#changeEventsEnabled = true
 
 	private knownParsers: { [key: string]: Parser<any, any, any> } = {}
 	private idGenerator = new IdGenerator()
@@ -105,9 +106,17 @@ export class Parsers {
 		}
 	}
 	elementChanged(type: string, element: Element<any, any, any>) {
+		if(!this.#changeEventsEnabled) { return }
+
 		if(this.#changedListeners[type] != null) {
 			Object.keys(this.#changedListeners[type]).forEach(k => this.#changedListeners[type][k](element))
 		}
+	}
+	withSuppressedChangedEvents<T>(runnable: () => T): T {
+		this.#changeEventsEnabled = false
+		const result = runnable()
+		this.#changeEventsEnabled = true
+		return result
 	}
 	
 	parseInlines(start: TextLocation, end: TextLocation, delimiterEnd: TextLocation): AnyInline[] {

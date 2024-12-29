@@ -128,7 +128,9 @@ ${reconstructedText}`
 
 		//-------- DEVELOPMENT --------
 		if(this.#development && updated != null) {
-			const newlyParsed = this.#parsers.Container.parse(this.#textContent.start(), this.#textContent.end())
+			const newlyParsed = this.#parsers.withSuppressedChangedEvents(
+				() => this.#parsers.Container.parse(this.#textContent.start(), this.#textContent.end())
+			)
 
 			const textFromUpdated = updated.asText
 			const textFromNew = newlyParsed!.asText

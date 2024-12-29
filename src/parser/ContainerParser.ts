@@ -19,7 +19,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { MfMElement } from "../element/MfMElement"
 import { AnyBlock, Container } from "../element/MfMElements"
 import { TextLocation } from "../mbuffer/TextLocation"
-import { PersistentRange } from "../mbuffer/TextRange"
 import { finiteLoop } from "../utilities/finiteLoop"
 import { MfMParser } from "./MfMParser"
 
@@ -50,6 +49,8 @@ export class ContainerParser extends MfMParser<'Container', AnyBlock, Container>
 			nextParseLocation = section.parsedRange.end
 		}
 		
-		return new MfMContainer(this.idGenerator.nextId(), start.persistentRangeUntil(end), this, content)
+		const result = new MfMContainer(this.idGenerator.nextId(), start.persistentRangeUntil(end), this, content)
+		this.parsers.elementChanged('Container', result)
+		return result
 	}
 }

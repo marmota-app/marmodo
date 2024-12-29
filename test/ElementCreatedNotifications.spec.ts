@@ -43,6 +43,7 @@ describe('Element update notifications', () => {
 	[
 		['CustomInline', 'blah {{custom}}'],
 		['Table', '|---|---|\n|a|b|'],
+		['Container', 'some text'],
 	].forEach(([type, text]) => it(`notifies about created element: ${type}`, () => {
 		let created: Element<any, any, any> | undefined
 		const onContextCreated = (context: MfMDocumentContext) => {
