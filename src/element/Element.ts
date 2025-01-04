@@ -65,7 +65,7 @@ export interface Element<
 	THIS extends Element<TYPE, CONTENT, THIS>,
 > {
 	readonly id: string,
-	readonly parent: Element<any, any, any> | null,
+	parent: Element<any, any, any> | null,
 	readonly type: TYPE,
 	readonly options: ElementOptions,
 

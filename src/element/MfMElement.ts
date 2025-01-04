@@ -30,7 +30,9 @@ export const EMPTY_OPTIONS: ElementOptions = {
 
 class MfMElementContext {
 	private readonly values: { [key: string]: any } = {}
-	constructor(private readonly element: MfMElement<any, any, any, any>) {}
+	constructor(private readonly element: MfMElement<any, any, any, any>) {
+		jsonTransientPrivate(this, 'element')
+	}
 
 	get(key: string): any {
 		if(this.element.parent == null && this.element.type !== 'Container') {
@@ -42,10 +44,11 @@ class MfMElementContext {
 		return null
 	}
 	set(key: string, value: any) {
-		if(this.element.parent == null && this.element.type !== 'Container') {
-			throw new Error('Accessing context of an element that is not correctly part of a tree: '+JSON.stringify(this.element))
-		}
-
+		//Setting value must be possible while the element is not YET part
+		//of a tree, so no check here. It should not be possible anymore
+		//when it is not part of a tree anymore after removal, but that
+		//check is hard to implement and setting a value after removal has
+		//not really any bad consequences.
 		this.values[key] = value
 	}
 }
@@ -60,7 +63,7 @@ export abstract class MfMElement<
 	abstract readonly asText: string
 
 	readonly context = new MfMElementContext(this)
-	protected _parent: Element<any, any, any> | null = null
+	public parent: Element<any, any, any> | null = null
 	private updateCallbacks: { [key: string]: ElementUpdateCallback<TYPE, CONTENT, THIS>} = {}
 
 	constructor(
@@ -70,15 +73,14 @@ export abstract class MfMElement<
 		public readonly content: CONTENT[],
 	) {
 		jsonTransient(this, 'parsedWith')
-		jsonTransientPrivate(this, '_parent')
+		jsonTransient(this, 'parent')
 
 		content.forEach(c => {
-			(c as unknown as MfMElement<any, any, any, any>)._parent = this
+			(c as unknown as MfMElement<any, any, any, any>).parent = this
 		})
 	}
 
 	public get options(): ElementOptions { return  EMPTY_OPTIONS }
-	public get parent(): Element<any, any, any> | null { return this._parent }
 	
 	onUpdate(cb: ElementUpdateCallback<TYPE, CONTENT, THIS>): ElementUpdateRegistration {
 		if(elementIdGenerator == null) { elementIdGenerator = new IdGenerator() }
@@ -114,7 +116,7 @@ export abstract class MfMElement<
 
 	removeFromTree(): void {
 		this.content.forEach(c => c.removeFromTree())
-		this._parent = null
+		this.parent = null
 		this.updateCallbacks = {}
 	}
 

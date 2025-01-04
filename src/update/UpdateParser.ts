@@ -17,7 +17,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { Element } from "../element/Element";
-import { Container } from "../element/MfMElements";
 import { UpdateInfo } from "../mbuffer/TextContent";
 import { TextLocation } from "../mbuffer/TextLocation";
 
@@ -74,6 +73,7 @@ export class UpdateParser {
 						//it and schedule a callback.
 						currentElement.content[i].removeFromTree()
 						currentElement.content[i] = result.updated
+						result.updated.parent = currentElement
 						this.#scheduleUpdatedCallback(currentElement)
 					}
 					return {
