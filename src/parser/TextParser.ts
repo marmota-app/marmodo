@@ -25,6 +25,10 @@ import { andFalse, andOther, MfMParser } from "./MfMParser";
 
 export class MfMText extends MfMElement<'Text', never, Text, TextParser> implements Text {
 	readonly type = 'Text'
+	//allowsUpdate is used for options updates:
+	//Options updates must be parsed at the element level, otherwise elements will
+	//not be re-rendered correctly after an options update!
+	public allowsUpdate = true
 
 	get textContent() {
 		//This function does not cache the string yet - an optimization
@@ -39,7 +43,7 @@ export class MfMText extends MfMElement<'Text', never, Text, TextParser> impleme
 	get plainContent(): string {
 		return this.textContent
 	}
-	
+
 	override get referenceMap(): { [key: string]: string; } {
 		return {
 			...super.referenceMap,
@@ -49,7 +53,7 @@ export class MfMText extends MfMElement<'Text', never, Text, TextParser> impleme
 }
 export class TextParser extends MfMParser<'Text', never, Text> {
 	readonly type = 'Text'
-	
+
 	parse(start: TextLocation, end: TextLocation): Text | null {
 		return new MfMText(this.idGenerator.nextId(), start.persistentRangeUntil(end), this, [])
 	}
@@ -79,6 +83,8 @@ export class TextParser extends MfMParser<'Text', never, Text> {
 		return false
 	}
 	#checkUpdateDoesNotAddPunctuation(element: Text, update: UpdateInfo): UpdateCheckResult {
+		if(!(element as MfMText).allowsUpdate) { return { canUpdate: false, and: andFalse, } }
+
 		for(let i=0; i<update.newText.length; i++) {
 			const ch = update.newText.charAt(i)
 			switch(ch) {

@@ -29,7 +29,7 @@ export class MfMCustomInline extends MfMElement<'CustomInline', Text | Options, 
 
 	get asText(): string {
 		if(this.content.length === 0) { return '' }
-		
+
 		return '{{' + this.content[0].asText + '}}' + (this.content.length === 2? this.content[1].asText : '')
 	}
 
@@ -39,7 +39,7 @@ export class MfMCustomInline extends MfMElement<'CustomInline', Text | Options, 
 		}
 		return ''
 	}
-	
+
 	override get referenceMap(): { [key: string]: string; } {
 		return {
 			...super.referenceMap,
@@ -58,7 +58,7 @@ export class MfMCustomInline extends MfMElement<'CustomInline', Text | Options, 
 }
 export class CustomInlineParser extends MfMInlineParser<'CustomInline', Text | Options, CustomInline> {
 	readonly type = 'CustomInline'
-	
+
 	parse(start: TextLocation, end: TextLocation): CustomInline | null {
 		if(start.startsWith('{{', end)) {
 			const startingDelimiter = start.findNext('{{', end)

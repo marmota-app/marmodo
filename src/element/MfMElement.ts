@@ -81,7 +81,7 @@ export abstract class MfMElement<
 	}
 
 	public get options(): ElementOptions { return  EMPTY_OPTIONS }
-	
+
 	onUpdate(cb: ElementUpdateCallback<TYPE, CONTENT, THIS>): ElementUpdateRegistration {
 		if(elementIdGenerator == null) { elementIdGenerator = new IdGenerator() }
 

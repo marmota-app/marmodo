@@ -83,4 +83,3 @@ export interface Element<
 
 	readonly referenceMap: { [key: string]: string | Element<any, any, any> | Element<any, any, any>[] | null },
 }
-

@@ -16,12 +16,14 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { AnyInline, Option } from "../../element"
+import { UpdateInfo } from "src/mbuffer"
+import { AnyInline, Option, UpdateCheckResult } from "../../element"
 import { MfMElement } from "../../element/MfMElement"
 import { TextLocation } from "../../mbuffer/TextLocation"
 import { PersistentRange } from "../../mbuffer/TextRange"
-import { MfMParser } from "../MfMParser"
+import { andFalse, MfMParser } from "../MfMParser"
 import { IdGenerator, Parsers } from "../Parsers"
+import { MfMText } from "../TextParser"
 
 export class MfMOption extends MfMElement<'Option', AnyInline, Option, OptionParser> implements Option {
 	public readonly type = 'Option'
@@ -63,7 +65,7 @@ export class OptionParser extends MfMParser<'Option', AnyInline, Option> {
 	constructor(idGenerator: IdGenerator, parsers: Parsers, private readonly supportsDefault: boolean = false) {
 		super(idGenerator, parsers)
 	}
-	
+
 	parse(start: TextLocation, end: TextLocation): Option | null {
 		const cur = start.accessor()
 
@@ -95,21 +97,34 @@ export class OptionParser extends MfMParser<'Option', AnyInline, Option> {
 
 			const firstText = this.parsers.Text.parse(start, equalsPosition)
 			if(firstText != null) {
+				(firstText as MfMText).allowsUpdate = false
 				option.content.push(firstText)
 			}
 			const secondText = this.parsers.Text.parse(secondTextStart, optionEnd)
 			if(secondText) {
+				(secondText as MfMText).allowsUpdate = false
 				option.content.push(secondText)
 			}
 		} else {
 			if(optionEnd.isEqualTo(start)) { return null }
-			
+
 			const firstText = this.parsers.Text.parse(start, optionEnd)
 			if(firstText != null) {
+				(firstText as MfMText).allowsUpdate = false
 				option.content.push(firstText)
 			}
 		}
 
 		return option
 	}
+
+	checkUpdate(element: Option, update: UpdateInfo, documentEnd: TextLocation): UpdateCheckResult {
+		//Options updates must be parsed at the element level, otherwise elements will
+		//not be re-rendered correctly after an options update!
+		return {
+			canUpdate: false,
+			and: andFalse,
+		}
+	}
+
 }

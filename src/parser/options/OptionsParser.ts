@@ -16,12 +16,13 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { AnyInline, Option, Options } from "../../element"
+import { UpdateInfo } from "src/mbuffer"
+import { AnyInline, Option, Options, UpdateCheckResult } from "../../element"
 import { MfMElement } from "../../element/MfMElement"
 import { TextLocation } from "../../mbuffer/TextLocation"
 import { PersistentRange } from "../../mbuffer/TextRange"
 import { finiteLoop } from "../../utilities/finiteLoop"
-import { MfMParser } from "../MfMParser"
+import { andFalse, MfMParser } from "../MfMParser"
 import { OptionParser } from "./OptionParser"
 
 export class MfMOptions extends MfMElement<'Options', Option, Options, OptionsParser> implements Options {
@@ -40,7 +41,7 @@ export class MfMOptions extends MfMElement<'Options', Option, Options, OptionsPa
 
 export class OptionsParser extends MfMParser<'Options', AnyInline, Options> {
 	readonly type = 'Options'
-	
+
 	parse(start: TextLocation, end: TextLocation): Options | null {
 		let cur = start.accessor()
 		if(cur.get() !== '{') { return null }
@@ -68,9 +69,18 @@ export class OptionsParser extends MfMParser<'Options', AnyInline, Options> {
 				this,
 				content,
 			)
-	
+
 			return result
 		}
 		return null
+	}
+
+	checkUpdate(element: Options, update: UpdateInfo, documentEnd: TextLocation): UpdateCheckResult {
+		//Options updates must be parsed at the element level, otherwise elements will
+		//not be re-rendered correctly after an options update!
+		return {
+			canUpdate: false,
+			and: andFalse,
+		}
 	}
 }
