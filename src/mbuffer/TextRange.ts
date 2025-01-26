@@ -1,6 +1,6 @@
 /*
 marmodo - A typescript library to parse marmota-flavored-markdown
-Copyright (C) 2020-2024  David Tanzer - @dtanzer@social.devteams.at
+Copyright (C) 2020-2025  David Tanzer - @dtanzer@social.devteams.at
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
