@@ -112,7 +112,7 @@ export interface TableDelimiterColumn extends ContainerInline<'TableDelimiterCol
 	alignment: 'left' | 'center' | 'right'
 }
 export interface TableColumn<
-	COL_TYPE extends 'TableColumn' | 'HeaderColumn'
+	COL_TYPE extends 'TableColumn' | 'HeaderColumn' | 'CustomTableColumn'
 > extends ContainerInline<COL_TYPE, TableColumn<COL_TYPE>> {}
 
 export interface Options extends ContainerInline<'Options', Options, Option> {

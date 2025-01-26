@@ -172,4 +172,32 @@ describe('TableRowParser', () => {
 		const result = parseAll('TableRow', '|\n')
 		expect(result).not.toBeNull()
 	})
+
+	it('parses two custom table columns', () => {
+		const result = parseAll('TableRow', '|{{1}}|{{2}}|')
+
+		expect(result).toHaveProperty('asText', '|{{1}}|{{2}}|')
+		expect(result?.content).toHaveLength(2)
+
+		expect(result?.content[0]).toHaveProperty('type', 'CustomTableColumn')
+		expect(result?.content[1]).toHaveProperty('type', 'CustomTableColumn')
+	})
+	it('parses a custom table column and a normal column', () => {
+		const result = parseAll('TableRow', '|{{1}}| some text ')
+
+		expect(result).toHaveProperty('asText', '|{{1}}| some text ')
+		expect(result?.content).toHaveLength(2)
+
+		expect(result?.content[0]).toHaveProperty('type', 'CustomTableColumn')
+		expect(result?.content[1]).toHaveProperty('type', 'TableColumn')
+	})
+	it('parses a normal table column and a custom table column', () => {
+		const result = parseAll('TableRow', 'some text |{{2}}|')
+
+		expect(result).toHaveProperty('asText', 'some text |{{2}}|')
+		expect(result?.content).toHaveLength(2)
+
+		expect(result?.content[0]).toHaveProperty('type', 'TableColumn')
+		expect(result?.content[1]).toHaveProperty('type', 'CustomTableColumn')
+	})
 })

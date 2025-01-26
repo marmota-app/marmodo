@@ -24,65 +24,6 @@ import { finiteLoop } from "../../utilities/finiteLoop"
 import { MfMParser } from "../MfMParser"
 import { IdGenerator, Parsers } from "../Parsers"
 
-export class MfMTableColumn<
-	COL_TYPE extends 'TableColumn' | 'HeaderColumn'
-> extends MfMElement<COL_TYPE, AnyInline, TableColumn<COL_TYPE>, TableColumnParser<COL_TYPE>> implements TableColumn<COL_TYPE> {
-	constructor(
-		id: string,
-		parsedRange: PersistentRange,
-		parsedWith: TableColumnParser<COL_TYPE>,
-		public readonly type: COL_TYPE,
-		content: AnyInline[],
-	) {
-		super(id, parsedRange, parsedWith, content)
-	}
-
-	get asText(): string {
-		return this.parsedRange.asString()
-	}
-
-	override get options(): ElementOptions {
-		return EMPTY_OPTIONS
-	}
-
-	get textContent(): string {
-		return this.asText
-	}
-	get plainContent(): string {
-		return this.content.map(c => c.plainContent).join('')
-	}
-}
-export class TableColumnParser<
-	COL_TYPE extends 'TableColumn' | 'HeaderColumn'
-> extends MfMParser<COL_TYPE, AnyInline, TableColumn<COL_TYPE>> {
-	constructor(idGenerator: IdGenerator, parsers: Parsers, public readonly type: COL_TYPE) {
-		super(idGenerator, parsers)
-	}
-
-	parse(start: TextLocation, end: TextLocation): TableColumn<COL_TYPE> | null {
-		const content: AnyInline[] = []
-		const contentStart = start.accessor()
-		if(contentStart.is('|')) { contentStart.advance() }
-
-		const nextNewline = contentStart.findNextNewline(end)
-		const lineEnd = nextNewline?.start ?? end
-
-		const pipePosition = contentStart.findNext('|', lineEnd)
-		const contentEnd = pipePosition?.start ?? lineEnd
-
-		const innerContent = this.parsers.parseInlines(contentStart, contentEnd, contentEnd)
-		content.push(...innerContent)
-
-		return new MfMTableColumn(
-			this.idGenerator.nextId(),
-			start.persistentRangeUntil(contentEnd),
-			this,
-			this.type,
-			content,
-		)
-	}
-}
-
 export class MfMTableRow extends MfMElement<'TableRow', TableColumn<any> | Options | Text, TableRow, TableRowParser> implements TableRow {
 	public readonly type = 'TableRow'
 
@@ -148,12 +89,18 @@ export class TableRowParser extends MfMParser<'TableRow', TableColumn<any> | Opt
 		const loop2 = finiteLoop(() => [ cur.info() ])
 		while(cur.isBefore(columnsEnd)) {
 			loop2.ensure()
-			const column = colParser.parse(cur, columnsEnd)
-			if(column != null) {
-				content.push(column)
-				cur = column.parsedRange.end.accessor()
-			} else {
-				break
+			const customCol = this.parsers.CustomTableColumn.parse(cur, columnsEnd)
+			if(customCol != null) {
+				content.push(customCol)
+				cur = customCol.parsedRange.end.accessor()
+		} else {
+				const column = colParser.parse(cur, columnsEnd)
+				if(column != null) {
+					content.push(column)
+					cur = column.parsedRange.end.accessor()
+				} else {
+					break
+				}	
 			}
 		}
 

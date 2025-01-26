@@ -16,10 +16,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { AnyInline, CustomInline, ElementOptions, Options, Text } from "../element"
+import { CustomInline, ElementOptions, Options, Text } from "../element"
 import { EMPTY_OPTIONS, MfMElement } from "../element/MfMElement"
 import { TextLocation } from "../mbuffer/TextLocation"
-import { PersistentRange, TextRange } from "../mbuffer/TextRange"
 import { MfMInlineParser, MfMParser } from "./MfMParser"
 
 export class MfMCustomInline extends MfMElement<'CustomInline', Text | Options, CustomInline, CustomInlineParser> implements CustomInline {

@@ -32,9 +32,11 @@ import { EmphasisParser } from './delimitedinline/EmphasisParser'
 import { StrongEmphasisParser } from './delimitedinline/StrongEmphasisParser'
 import { OptionParser } from './options/OptionParser'
 import { OptionsParser } from './options/OptionsParser'
+import { CustomTableColumnParser } from './table/CustomTableColumnParser'
 import { TableDelimiterColumnParser, TableDelimiterRowParser } from './table/DelimiterRowParser'
+import { TableColumnParser } from './table/TableColumnParser'
 import { TableParser } from './table/TableParser'
-import { TableColumnParser, TableRowParser } from './table/TableRowParser'
+import { TableRowParser } from './table/TableRowParser'
 
 interface ParseLocation {
 	parser: Parser<any, any, any>,
@@ -57,6 +59,7 @@ export class Parsers {
 	get TableDelimiterRow(): TableDelimiterRowParser { return this.getParser('TableDelimiterRow', () => new TableDelimiterRowParser(this.idGenerator, this)) }
 	get TableColumn(): TableColumnParser<'TableColumn'> { return this.getParser('TableColumn', () => new TableColumnParser(this.idGenerator, this, 'TableColumn')) }
 	get HeaderColumn(): TableColumnParser<'HeaderColumn'> { return this.getParser('HeaderColumn', () => new TableColumnParser(this.idGenerator, this, 'HeaderColumn')) }
+	get CustomTableColumn(): CustomTableColumnParser { return this.getParser('CustomTableColumn', () => new CustomTableColumnParser(this.idGenerator, this)) }
 	get TableRow(): TableRowParser { return this.getParser('TableRow', () => new TableRowParser(this.idGenerator, this)) }
 	get TableHeaderRow(): TableRowParser { return this.getParser('TableHeaderRow', () => new TableRowParser(this.idGenerator, this, true)) }
 	get Table(): TableParser { return this.getParser('Table', () => new TableParser(this.idGenerator, this)) }
