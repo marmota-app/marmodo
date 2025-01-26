@@ -79,6 +79,7 @@ export interface Element<
 	onUpdate: (cb: ElementUpdateCallback<TYPE, CONTENT, THIS>) => ElementUpdateRegistration,
 	onSubtreeUpdate: (cb: ElementUpdateCallback<TYPE, CONTENT, THIS>) => ElementUpdateRegistration,
 	updateParsed: () => void,
+	subtreeUpdateParsed: () => void,
 	removeFromTree: () => void,
 
 	readonly referenceMap: { [key: string]: string | Element<any, any, any> | Element<any, any, any>[] | null },

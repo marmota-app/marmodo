@@ -97,12 +97,10 @@ export class OptionParser extends MfMParser<'Option', AnyInline, Option> {
 
 			const firstText = this.parsers.Text.parse(start, equalsPosition)
 			if(firstText != null) {
-				(firstText as MfMText).allowsUpdate = false
 				option.content.push(firstText)
 			}
 			const secondText = this.parsers.Text.parse(secondTextStart, optionEnd)
 			if(secondText) {
-				(secondText as MfMText).allowsUpdate = false
 				option.content.push(secondText)
 			}
 		} else {
@@ -110,21 +108,10 @@ export class OptionParser extends MfMParser<'Option', AnyInline, Option> {
 
 			const firstText = this.parsers.Text.parse(start, optionEnd)
 			if(firstText != null) {
-				(firstText as MfMText).allowsUpdate = false
 				option.content.push(firstText)
 			}
 		}
 
 		return option
 	}
-
-	checkUpdate(element: Option, update: UpdateInfo, documentEnd: TextLocation): UpdateCheckResult {
-		//Options updates must be parsed at the element level, otherwise elements will
-		//not be re-rendered correctly after an options update!
-		return {
-			canUpdate: false,
-			and: andFalse,
-		}
-	}
-
 }

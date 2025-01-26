@@ -25,10 +25,6 @@ import { andFalse, andOther, MfMParser } from "./MfMParser";
 
 export class MfMText extends MfMElement<'Text', never, Text, TextParser> implements Text {
 	readonly type = 'Text'
-	//allowsUpdate is used for options updates:
-	//Options updates must be parsed at the element level, otherwise elements will
-	//not be re-rendered correctly after an options update!
-	public allowsUpdate = true
 
 	get textContent() {
 		//This function does not cache the string yet - an optimization
@@ -83,8 +79,6 @@ export class TextParser extends MfMParser<'Text', never, Text> {
 		return false
 	}
 	#checkUpdateDoesNotAddPunctuation(element: Text, update: UpdateInfo): UpdateCheckResult {
-		if(!(element as MfMText).allowsUpdate) { return { canUpdate: false, and: andFalse, } }
-
 		for(let i=0; i<update.newText.length; i++) {
 			const ch = update.newText.charAt(i)
 			switch(ch) {

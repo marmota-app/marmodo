@@ -65,6 +65,7 @@ export abstract class MfMElement<
 	readonly context = new MfMElementContext(this)
 	public parent: Element<any, any, any> | null = null
 	private updateCallbacks: { [key: string]: ElementUpdateCallback<TYPE, CONTENT, THIS>} = {}
+	private subtreeUpdateCallbacks: { [key: string]: ElementUpdateCallback<TYPE, CONTENT, THIS>} = {}
 
 	constructor(
 		public readonly id: string,
@@ -95,29 +96,29 @@ export abstract class MfMElement<
 	}
 
 	onSubtreeUpdate(cb: ElementUpdateCallback<TYPE, CONTENT, THIS>): ElementUpdateRegistration {
-		const myRegistration = this.onUpdate(cb)
-		const otherRegistrations: ElementUpdateRegistration[] = []
-		this.content.forEach(c => otherRegistrations.push(c.onUpdate(cb)))
-
-		const id = elementIdGenerator.nextTaggedId('subtree-update-callback')
+		if(elementIdGenerator == null) { elementIdGenerator = new IdGenerator() }
+		
+		const id = elementIdGenerator.nextTaggedId('update-callback')
+		this.subtreeUpdateCallbacks[id] = cb
 
 		return {
 			id,
-			unsubscribe: () => {
-				otherRegistrations.forEach(r => r.unsubscribe())
-				myRegistration.unsubscribe()
-			}
+			unsubscribe: () => { delete this.subtreeUpdateCallbacks[id] }
 		}
 	}
 
 	updateParsed(): void {
 		Object.keys(this.updateCallbacks).forEach(k => this.updateCallbacks[k](this))
 	}
+	subtreeUpdateParsed(): void {
+		Object.keys(this.subtreeUpdateCallbacks).forEach(k => this.subtreeUpdateCallbacks[k](this))
+	}
 
 	removeFromTree(): void {
 		this.content.forEach(c => c.removeFromTree())
 		this.parent = null
 		this.updateCallbacks = {}
+		this.subtreeUpdateCallbacks = {}
 	}
 
 	get referenceMap(): { [key: string]: string | Element<any, any, any> | Element<any, any, any>[] | null } {

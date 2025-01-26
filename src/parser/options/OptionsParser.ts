@@ -74,13 +74,4 @@ export class OptionsParser extends MfMParser<'Options', AnyInline, Options> {
 		}
 		return null
 	}
-
-	checkUpdate(element: Options, update: UpdateInfo, documentEnd: TextLocation): UpdateCheckResult {
-		//Options updates must be parsed at the element level, otherwise elements will
-		//not be re-rendered correctly after an options update!
-		return {
-			canUpdate: false,
-			and: andFalse,
-		}
-	}
 }

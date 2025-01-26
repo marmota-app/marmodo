@@ -76,6 +76,7 @@ export class UpdateParser {
 						result.updated.parent = currentElement
 						this.#scheduleUpdatedCallback(currentElement)
 					}
+					this.#scheduleSubtreeUpdatedCallback(currentElement)
 					return {
 						updated: currentElement,
 						isFirstUpdate: false,
@@ -121,5 +122,8 @@ export class UpdateParser {
 
 	#scheduleUpdatedCallback(element: Element<any, any, any>) {
 		element.updateParsed()
+	}
+	#scheduleSubtreeUpdatedCallback(element: Element<any, any, any>) {
+		element.subtreeUpdateParsed()
 	}
 }

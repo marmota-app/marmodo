@@ -76,6 +76,33 @@ describe('UpdateParser', () => {
 
 		expect(notified).toEqual(true)
 	})
+	it('sends subtree update notifications to updated elements and parents', () => {
+		let notified = 0
+
+		const parsers = new Parsers()
+		const updateParser = new UpdateParser()
+		
+		const originalText = 'the quick brown fox jumps\n\nover the lazy dog'
+		const tc = new TextContent(originalText)
+		const container = parsers.Container.parse(tc.start(), tc.end())
+		if(container == null) {
+			throw new Error('container cannot be parsed!')
+		}
+
+		container.content[0].content[0].onSubtreeUpdate(() => notified++)
+		container.content[0].onSubtreeUpdate(() => notified++)
+		container.onSubtreeUpdate(() => notified++)
+
+		const contentUpdate = { text: ' ', rangeOffset: 'the quick brown fox'.length, rangeLength: 0 }
+		const updateInfo = tc.update(contentUpdate)
+		const updated = updateParser.parseUpdate(
+			updateInfo,
+			container,
+			tc.end(),
+		)
+
+		expect(notified).toEqual(3)
+	})
 	it('does not send update notifications to unsubscribed listener', () => {
 		let notified = false
 
