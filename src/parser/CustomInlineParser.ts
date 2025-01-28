@@ -16,12 +16,12 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { CustomInline, ElementOptions, Options, Text } from "../element"
+import { CustomElement, CustomInline, ElementOptions, Options, Text } from "../element"
 import { EMPTY_OPTIONS, MfMElement } from "../element/MfMElement"
 import { TextLocation } from "../mbuffer/TextLocation"
 import { MfMInlineParser, MfMParser } from "./MfMParser"
 
-export class MfMCustomInline extends MfMElement<'CustomInline', Text | Options, CustomInline, CustomInlineParser> implements CustomInline {
+export class MfMCustomInline extends MfMElement<'CustomInline', Text | Options, CustomInline, CustomInlineParser> implements CustomInline, CustomElement {
 	readonly type = 'CustomInline'
 	public customContent: string = ''
 	public contentType: 'value' | 'error' = 'error'

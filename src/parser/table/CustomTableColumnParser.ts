@@ -16,15 +16,17 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { AnyInline, ElementOptions, TableColumn } from "../../element"
+import { AnyInline, CustomElement, ElementOptions, TableColumn } from "../../element"
 import { EMPTY_OPTIONS, MfMElement } from "../../element/MfMElement"
 import { TextLocation } from "../../mbuffer/TextLocation"
 import { PersistentRange } from "../../mbuffer/TextRange"
 import { MfMParser } from "../MfMParser"
 import { IdGenerator, Parsers } from "../Parsers"
 
-export class MfMCustomTableColumn extends MfMElement<'CustomTableColumn', AnyInline, TableColumn<'CustomTableColumn'>, CustomTableColumnParser> implements TableColumn<'CustomTableColumn'> {
+export class MfMCustomTableColumn extends MfMElement<'CustomTableColumn', AnyInline, TableColumn<'CustomTableColumn'>, CustomTableColumnParser> implements TableColumn<'CustomTableColumn'>, CustomElement {
 	public readonly type = 'CustomTableColumn'
+	public customContent: string = ''
+	public contentType: 'value' | 'error' = 'error'
 
 	constructor(
 		id: string,
@@ -48,6 +50,15 @@ export class MfMCustomTableColumn extends MfMElement<'CustomTableColumn', AnyInl
 	}
 	get plainContent(): string {
 		return this.content.map(c => c.plainContent).join('')
+	}
+
+	override get referenceMap(): { [key: string]: string; } {
+		return {
+			...super.referenceMap,
+			'element.textContent': this.plainContent,
+			'element.customContent': this.customContent,
+			'element.contentType': this.contentType,
+		}
 	}
 }
 export class CustomTableColumnParser extends MfMParser<'CustomTableColumn', AnyInline, TableColumn<'CustomTableColumn'>> {

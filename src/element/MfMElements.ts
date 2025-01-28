@@ -101,10 +101,7 @@ export interface Table extends LeafContainer<'Table', Table, TableRow | TableDel
 }
 
 export interface HeadingContent extends ContainerInline<'HeadingContent', HeadingContent> {}
-export interface CustomInline extends ContainerInline<'CustomInline', CustomInline, Text | Options> {
-	customContent: string,
-	contentType: 'value' | 'error',
-}
+export interface CustomInline extends ContainerInline<'CustomInline', CustomInline, Text | Options> {}
 export interface Text extends LeafInline<'Text', Text> {}
 export interface BlankLine extends LeafInline<'BlankLine', BlankLine> {}
 
@@ -129,3 +126,10 @@ export interface StrongEmphasis extends ContainerInline<'StrongEmphasis', Strong
 export interface Emphasis extends ContainerInline<'Emphasis', Emphasis> {}
 
 export const allBlockStarts: string[] = [ '#', '|' ]
+
+//An element that can contain custom content
+export interface CustomElement {
+	customContent: string,
+	contentType: 'value' | 'error',
+	readonly plainContent: string,
+}
