@@ -21,9 +21,12 @@ import { MfMElement } from "../../element/MfMElement"
 import { TextLocation } from "../../mbuffer/TextLocation"
 import { finiteLoop } from "../../utilities/finiteLoop"
 import { MfMParser } from "../MfMParser"
+import { MfMTableRow } from "./TableRowParser"
 
 export class MfMTable extends MfMElement<'Table', TableRow | TableDelimiterRow | BlankLine, Table, TableParser> implements Table {
 	public readonly type = 'Table'
+	public lastRow = 0
+	public lastColumn = 0
 
 	get asText(): string {
 		return this.parsedRange.asString()
@@ -61,12 +64,14 @@ export class MfMTable extends MfMElement<'Table', TableRow | TableDelimiterRow |
 		return this.tableRows.length
 	}
 
-	override get referenceMap(): { [key: string]: string | Element<any, any, any> | Element<any, any, any>[] | null } {
+	override get referenceMap(): { [key: string]: string | number | boolean | Element<any, any, any> | Element<any, any, any>[] | null } {
 		return {
 			...super.referenceMap,
 			'element.headers': this.headers,
 			'element.columnDefinitions': this.delimiters,
 			'element.rows': this.tableRows,
+			'lastRow': this.lastRow,
+			'lastColumn': this.lastColumn,
 		}
 	}
 }
@@ -89,6 +94,8 @@ export class TableParser extends MfMParser<'Table', TableRow | TableDelimiterRow
 		let cur = delimiters.parsedRange.end.accessor()
 		const loop = finiteLoop(() => [ cur.info() ])
 		let tableEnd = cur
+		let tableRow = 0
+
 		while(cur.isBefore(end)) {
 			loop.ensure()
 			const nextNewline = cur.findNextNewline(end)
@@ -96,6 +103,8 @@ export class TableParser extends MfMParser<'Table', TableRow | TableDelimiterRow
 
 			const row = this.parsers.TableRow.parse(cur, lineEnd)
 			if(row != null) {
+				(row as MfMTableRow).tableRow = tableRow
+				tableRow++
 				content.push(row)
 				cur = row.parsedRange.end.accessor()
 				tableEnd = cur
@@ -112,6 +121,9 @@ export class TableParser extends MfMParser<'Table', TableRow | TableDelimiterRow
 			this,
 			content
 		)
+		result.lastRow = result.rows-1
+		result.lastColumn = result.columns-1
+
 		this.parsers.elementChanged('Table', result)
 		return result
 	}

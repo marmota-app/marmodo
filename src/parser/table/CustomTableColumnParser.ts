@@ -27,6 +27,7 @@ export class MfMCustomTableColumn extends MfMElement<'CustomTableColumn', AnyInl
 	public readonly type = 'CustomTableColumn'
 	public customContent: string = ''
 	public contentType: 'value' | 'error' = 'error'
+	public tableColumn: number = 0
 
 	constructor(
 		id: string,
@@ -52,12 +53,13 @@ export class MfMCustomTableColumn extends MfMElement<'CustomTableColumn', AnyInl
 		return this.content.map(c => c.plainContent).join('')
 	}
 
-	override get referenceMap(): { [key: string]: string; } {
+	override get referenceMap() {
 		return {
 			...super.referenceMap,
 			'element.textContent': this.plainContent,
 			'element.customContent': this.customContent,
 			'element.contentType': this.contentType,
+			tableColumn: this.tableColumn,
 		}
 	}
 }

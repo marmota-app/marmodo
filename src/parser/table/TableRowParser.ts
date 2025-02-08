@@ -23,9 +23,21 @@ import { PersistentRange } from "../../mbuffer/TextRange"
 import { finiteLoop } from "../../utilities/finiteLoop"
 import { MfMParser } from "../MfMParser"
 import { IdGenerator, Parsers } from "../Parsers"
+import { MfMCustomTableColumn } from "./CustomTableColumnParser"
+import { MfMTableColumn } from "./TableColumnParser"
 
 export class MfMTableRow extends MfMElement<'TableRow', TableColumn<any> | Options | Text, TableRow, TableRowParser> implements TableRow {
 	public readonly type = 'TableRow'
+	public tableRow: number = 0
+
+	constructor(
+		public readonly id: string,
+		public readonly parsedRange: PersistentRange,
+		public readonly parsedWith: TableRowParser,
+		public readonly content: (TableColumn<any> | Options | Text)[],
+	) {
+		super(id, parsedRange, parsedWith, content)
+	}
 
 	get asText(): string {
 		return this.parsedRange.asString()
@@ -35,11 +47,18 @@ export class MfMTableRow extends MfMElement<'TableRow', TableColumn<any> | Optio
 		return EMPTY_OPTIONS
 	}
 	get columns(): TableColumn<any>[] {
-		return this.content.filter(c => c.type==='TableColumn' || c.type==='HeaderColumn') as TableColumn<any>[]
+		return this.content.filter(c => c.type==='TableColumn' || c.type==='HeaderColumn' || c.type==='CustomTableColumn') as TableColumn<any>[]
 	}
 
 	get textContent(): string {
 		return this.asText
+	}
+
+	override get referenceMap() {
+		return {
+			...super.referenceMap,
+			tableRow: this.tableRow,
+		}
 	}
 }
 export class TableRowParser extends MfMParser<'TableRow', TableColumn<any> | Options | Text, TableRow> {
@@ -67,7 +86,7 @@ export class TableRowParser extends MfMParser<'TableRow', TableColumn<any> | Opt
 			nextSearchPosition.advance()
 			nextPipe = nextSearchPosition.findNext('|', contentEnd)
 		}
-		
+
 		let options: Options | null = null
 		let text: Text | null = null
 		let columnsEnd = contentEnd
@@ -87,20 +106,24 @@ export class TableRowParser extends MfMParser<'TableRow', TableColumn<any> | Opt
 
 		const colParser = this.isHeaderRow? this.parsers.HeaderColumn : this.parsers.TableColumn
 		const loop2 = finiteLoop(() => [ cur.info() ])
+		let tableColumn = 0
 		while(cur.isBefore(columnsEnd)) {
 			loop2.ensure()
 			const customCol = this.parsers.CustomTableColumn.parse(cur, columnsEnd)
 			if(customCol != null) {
+				(customCol as MfMCustomTableColumn).tableColumn = tableColumn
+				tableColumn++
 				content.push(customCol)
 				cur = customCol.parsedRange.end.accessor()
 		} else {
 				const column = colParser.parse(cur, columnsEnd)
 				if(column != null) {
+					tableColumn++
 					content.push(column)
 					cur = column.parsedRange.end.accessor()
 				} else {
 					break
-				}	
+				}
 			}
 		}
 
@@ -116,7 +139,7 @@ export class TableRowParser extends MfMParser<'TableRow', TableColumn<any> | Opt
 			this,
 			content,
 		)
-		
+
 		if(result.columns.length === 0 && lastPipe == null) {
 			return null
 		}

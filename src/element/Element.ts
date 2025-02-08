@@ -82,5 +82,5 @@ export interface Element<
 	subtreeUpdateParsed: () => void,
 	removeFromTree: () => void,
 
-	readonly referenceMap: { [key: string]: string | Element<any, any, any> | Element<any, any, any>[] | null },
+	readonly referenceMap: { [key: string]: string | number | boolean | Element<any, any, any> | Element<any, any, any>[] | null },
 }

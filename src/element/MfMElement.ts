@@ -97,7 +97,7 @@ export abstract class MfMElement<
 
 	onSubtreeUpdate(cb: ElementUpdateCallback<TYPE, CONTENT, THIS>): ElementUpdateRegistration {
 		if(elementIdGenerator == null) { elementIdGenerator = new IdGenerator() }
-		
+
 		const id = elementIdGenerator.nextTaggedId('update-callback')
 		this.subtreeUpdateCallbacks[id] = cb
 
@@ -121,7 +121,7 @@ export abstract class MfMElement<
 		this.subtreeUpdateCallbacks = {}
 	}
 
-	get referenceMap(): { [key: string]: string | Element<any, any, any> | Element<any, any, any>[] | null } {
+	get referenceMap(): { [key: string]: string | number | boolean | Element<any, any, any> | Element<any, any, any>[] | null } {
 		return {
 			'element.content': this.content,
 		}

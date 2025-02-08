@@ -28,14 +28,14 @@ describe('TableColumnParser', () => {
 		})
 		it('parses simple text as table column: inner text', () => {
 			const result = parseAll('TableColumn', ' \tsome text  \t ')
-	
+
 			expect(result?.content).toHaveLength(1)
 			expect(result?.content[0]).toHaveProperty('type', 'Text')
 			expect(result?.content[0]).toHaveProperty('textContent', ' \tsome text  \t ')
 		})
 		it('parses inline content as table column', () => {
 			const result = parseAll('TableColumn', ' \tsome **bold** _text_  \t ')
-	
+
 			expect(result?.content).toHaveLength(5)
 			expect(result?.content[0]).toHaveProperty('type', 'Text')
 			expect(result?.content[0]).toHaveProperty('textContent', ' \tsome ')
@@ -48,10 +48,10 @@ describe('TableColumnParser', () => {
 			expect(result?.content[4]).toHaveProperty('type', 'Text')
 			expect(result?.content[4]).toHaveProperty('textContent', '  \t ')
 		})
-	
+
 		it('stops parsing at an ending |', () => {
 			const result = parseAll('TableColumn', ' \tsome text  \t |more text')
-	
+
 			expect(result).toHaveProperty('asText', ' \tsome text  \t ')
 			expect(result?.content).toHaveLength(1)
 			expect(result?.content[0]).toHaveProperty('type', 'Text')
@@ -59,7 +59,7 @@ describe('TableColumnParser', () => {
 		})
 		it('stops parsing at an ending newline', () => {
 			const result = parseAll('TableColumn', ' \tsome text  \t \nmore text')
-	
+
 			expect(result).toHaveProperty('asText', ' \tsome text  \t ')
 			expect(result?.content).toHaveLength(1)
 			expect(result?.content[0]).toHaveProperty('type', 'Text')
@@ -67,7 +67,7 @@ describe('TableColumnParser', () => {
 		})
 		it('includes an opening |', () => {
 			const result = parseAll('TableColumn', '| \tsome text  \t |more text')
-	
+
 			expect(result).toHaveProperty('asText', '| \tsome text  \t ')
 			expect(result?.content).toHaveLength(1)
 			expect(result?.content[0]).toHaveProperty('type', 'Text')
