@@ -124,7 +124,6 @@ export class TableParser extends MfMParser<'Table', TableRow | TableDelimiterRow
 		result.lastRow = result.rows-1
 		result.lastColumn = result.columns-1
 
-		this.parsers.elementChanged('Table', result)
 		return result
 	}
 

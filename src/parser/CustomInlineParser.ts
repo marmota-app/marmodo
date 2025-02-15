@@ -86,7 +86,6 @@ export class CustomInlineParser extends MfMInlineParser<'CustomInline', Text | O
 				this,
 				content
 			)
-			this.parsers.elementChanged('CustomInline', result)
 			return result
 		}
 

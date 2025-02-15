@@ -50,7 +50,6 @@ export class ContainerParser extends MfMParser<'Container', AnyBlock, Container>
 		}
 		
 		const result = new MfMContainer(this.idGenerator.nextId(), start.persistentRangeUntil(end), this, content)
-		this.parsers.elementChanged('Container', result)
 		return result
 	}
 }

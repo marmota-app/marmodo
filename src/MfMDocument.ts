@@ -28,10 +28,6 @@ let updateCounter = 0
 
 export class MfMDocumentContext {
 	constructor(private readonly parsers: Parsers) {}
-
-	onElementChanged(type: string, callback: (e: Element<any, any, any>)=>unknown): ElementUpdateRegistration {
-		return this.parsers.onElementChanged(type, callback)
-	}
 }
 export interface MfMDocumentOptions {
 	parsers: Parsers,
@@ -128,9 +124,7 @@ ${reconstructedText}`
 
 		//-------- DEVELOPMENT --------
 		if(this.#development && updated != null) {
-			const newlyParsed = this.#parsers.withSuppressedChangedEvents(
-				() => this.#parsers.Container.parse(this.#textContent.start(), this.#textContent.end())
-			)
+			const newlyParsed = this.#parsers.Container.parse(this.#textContent.start(), this.#textContent.end())
 
 			const textFromUpdated = updated.asText
 			const textFromNew = newlyParsed!.asText
