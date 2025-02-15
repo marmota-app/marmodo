@@ -28,31 +28,6 @@ export const EMPTY_OPTIONS: ElementOptions = {
 	get(k: string) { return undefined },
 }
 
-class MfMElementContext {
-	private readonly values: { [key: string]: any } = {}
-	constructor(private readonly element: MfMElement<any, any, any, any>) {
-		jsonTransientPrivate(this, 'element')
-	}
-
-	get(key: string): any {
-		if(this.element.parent == null && this.element.type !== 'Container') {
-			throw new Error('Accessing context of an element that is not correctly part of a tree: '+JSON.stringify(this.element))
-		}
-
-		if(this.values[key] != null) { return this.values[key] }
-		if(this.element.parent != null) { return this.element.parent.context.get(key) }
-		return null
-	}
-	set(key: string, value: any) {
-		//Setting value must be possible while the element is not YET part
-		//of a tree, so no check here. It should not be possible anymore
-		//when it is not part of a tree anymore after removal, but that
-		//check is hard to implement and setting a value after removal has
-		//not really any bad consequences.
-		this.values[key] = value
-	}
-}
-
 export abstract class MfMElement<
 	TYPE extends string,
 	CONTENT extends Element<any, any, any>,
@@ -62,7 +37,6 @@ export abstract class MfMElement<
 	abstract readonly type: TYPE
 	abstract readonly asText: string
 
-	readonly context = new MfMElementContext(this)
 	public parent: Element<any, any, any> | null = null
 	private updateCallbacks: { [key: string]: ElementUpdateCallback<TYPE, CONTENT, THIS>} = {}
 	private subtreeUpdateCallbacks: { [key: string]: ElementUpdateCallback<TYPE, CONTENT, THIS>} = {}
