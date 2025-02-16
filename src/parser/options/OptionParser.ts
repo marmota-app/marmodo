@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { UpdateInfo } from "src/mbuffer"
-import { AnyInline, Option, UpdateCheckResult } from "../../element"
+import { AnyInline, Option, ParsingContext, UpdateCheckResult } from "../../element"
 import { MfMElement } from "../../element/MfMElement"
 import { TextLocation } from "../../mbuffer/TextLocation"
 import { PersistentRange } from "../../mbuffer/TextRange"
@@ -34,8 +34,9 @@ export class MfMOption extends MfMElement<'Option', AnyInline, Option, OptionPar
 		parsedRange: PersistentRange,
 		parsedWith: OptionParser,
 		public readonly valid: boolean,
+		parsingContext: ParsingContext,
 	) {
-		super(id, parsedRange, parsedWith, [])
+		super(id, parsedRange, parsedWith, [], parsingContext)
 	}
 
 	get key() {
@@ -66,7 +67,7 @@ export class OptionParser extends MfMParser<'Option', AnyInline, Option> {
 		super(idGenerator, parsers)
 	}
 
-	parse(start: TextLocation, end: TextLocation): Option | null {
+	parse(start: TextLocation, end: TextLocation, context: ParsingContext): Option | null {
 		const cur = start.accessor()
 
 		const foundRange = cur.findNext([';', '}', '\r', '\n'], end)
@@ -84,6 +85,7 @@ export class OptionParser extends MfMParser<'Option', AnyInline, Option> {
 			start.persistentRangeUntil(rangeEnd),
 			this,
 			isValidOption,
+			context,
 		)
 
 		if(equalsPosition) {
@@ -95,18 +97,18 @@ export class OptionParser extends MfMParser<'Option', AnyInline, Option> {
 				return null
 			}
 
-			const firstText = this.parsers.Text.parse(start, equalsPosition)
+			const firstText = this.parsers.Text.parse(start, equalsPosition, context)
 			if(firstText != null) {
 				option.content.push(firstText)
 			}
-			const secondText = this.parsers.Text.parse(secondTextStart, optionEnd)
+			const secondText = this.parsers.Text.parse(secondTextStart, optionEnd, context)
 			if(secondText) {
 				option.content.push(secondText)
 			}
 		} else {
 			if(optionEnd.isEqualTo(start)) { return null }
 
-			const firstText = this.parsers.Text.parse(start, optionEnd)
+			const firstText = this.parsers.Text.parse(start, optionEnd, context)
 			if(firstText != null) {
 				option.content.push(firstText)
 			}

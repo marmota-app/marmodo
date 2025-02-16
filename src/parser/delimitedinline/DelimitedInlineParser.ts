@@ -16,7 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { AnyInline, ContainerInline, Element, ElementOptions } from "../../element"
+import { AnyInline, ContainerInline, Element, ElementOptions, ParsingContext } from "../../element"
 import { EMPTY_OPTIONS, MfMElement } from "../../element/MfMElement"
 import { TextLocation } from "../../mbuffer/TextLocation"
 import { PersistentRange } from "../../mbuffer/TextRange"
@@ -34,8 +34,9 @@ export abstract class DelimitedMfMElement<
 		parsedWith: PARSER,
 		public readonly delimiter: string,
 		content: AnyInline[],
+		parsingContext: ParsingContext,
 	) {
-		super(id, parsedRange, parsedWith, content)
+		super(id, parsedRange, parsedWith, content, parsingContext)
 	}
 
 	get asText(): string {
@@ -68,12 +69,13 @@ export abstract class DelimitedInlineParser<
 		parsedWith: PARSER,
 		delimiter: string,
 		content: AnyInline[],
+		parsingContext: ParsingContext,
 	) => ELEMENT
 	abstract readonly self: PARSER
 	abstract readonly delimiters: string[]
 	abstract readonly delimiterLength: number
 
-	parse(start: TextLocation, end: TextLocation): ELEMENT | null {
+	parse(start: TextLocation, end: TextLocation, context: ParsingContext): ELEMENT | null {
 		const startDelimiter = findNextDelimiterRun(this.delimiters, start, end, {
 			minLength: this.delimiterLength,
 			maxStartIndex: 0,
@@ -107,13 +109,13 @@ export abstract class DelimitedInlineParser<
 				const content: AnyInline[] = []
 				let innerContentStart = contentStart
 				if(contentStart.get() === '{') {
-					const options = this.parsers.Options.parse(contentStart, contentEnd)
+					const options = this.parsers.Options.parse(contentStart, contentEnd, context)
 					if(options != null) {
 						content.push(options)
 						innerContentStart = options.parsedRange.end.accessor()
 					}
 				}
-				const innerContent = this.parsers.parseInlines(innerContentStart, contentEnd, maxDelimiterEnd)
+				const innerContent = this.parsers.parseInlines(innerContentStart, contentEnd, maxDelimiterEnd, context)
 				content.push(...innerContent)
 
 				const parsedContentEnd = content[content.length-1].parsedRange.end
@@ -125,7 +127,8 @@ export abstract class DelimitedInlineParser<
 					start.persistentRangeUntil(parsedDelimiterEnd),
 					this.self,
 					startDelimiter[0].stringUntil(contentStart),
-					content
+					content,
+					context,
 				)
 			}
 		}

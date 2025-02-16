@@ -16,7 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { AnyInline, BlankLine, ElementOptions, Heading, HeadingContent, Options, UpdateCheckResult } from "../element"
+import { AnyInline, BlankLine, ElementOptions, Heading, HeadingContent, Options, ParsingContext, UpdateCheckResult } from "../element"
 import { EMPTY_OPTIONS, MfMElement } from "../element/MfMElement"
 import { UpdateInfo } from "../mbuffer"
 import { TextLocation } from "../mbuffer/TextLocation"
@@ -34,8 +34,9 @@ export class MfMHeading extends MfMElement<'Heading', HeadingContent | BlankLine
 		content: (HeadingContent | BlankLine | Options)[],
 		private headingIdentifier: string,
 		private headingSpacing: string,
+		parsingContext: ParsingContext,
 	) {
-		super(id, parsedRange, parsedWith, content)
+		super(id, parsedRange, parsedWith, content, parsingContext)
 	}
 
 	get level(): number {
@@ -65,7 +66,7 @@ export class MfMHeading extends MfMElement<'Heading', HeadingContent | BlankLine
 export class HeadingParser extends MfMParser<'Heading', HeadingContent | BlankLine | Options, Heading> {
 	readonly type = 'Heading'
 
-	parse(start: TextLocation, textEnd: TextLocation): Heading | null {
+	parse(start: TextLocation, textEnd: TextLocation, context: ParsingContext): Heading | null {
 		let end = textEnd
 		const nextNewline = start.findNextNewline(end)
 
@@ -82,7 +83,7 @@ export class HeadingParser extends MfMParser<'Heading', HeadingContent | BlankLi
 		const headingContent: (HeadingContent | BlankLine | Options)[] = []
 		let hasCurlyBracket = cur.isBefore(end) && cur.get() === '{'
 		if(hasCurlyBracket) {
-			const options = this.parsers.Options.parse(cur, end)
+			const options = this.parsers.Options.parse(cur, end, context)
 			if(options != null) {
 				headingContent.push(options)
 				cur = options.parsedRange.end.accessor()
@@ -116,7 +117,7 @@ export class HeadingParser extends MfMParser<'Heading', HeadingContent | BlankLi
 		}
 
 		if(cur.isBefore(end)) {
-			const content = this.parsers['HeadingContent'].parse(cur, end)
+			const content = this.parsers['HeadingContent'].parse(cur, end, context)
 			if(content) {
 				headingContent.push(content)
 				end = content.parsedRange.end
@@ -132,6 +133,7 @@ export class HeadingParser extends MfMParser<'Heading', HeadingContent | BlankLi
 			headingContent,
 			headingIdentifier,
 			headingSpacing,
+			context,
 		)
 	}
 
@@ -144,7 +146,7 @@ export class HeadingParser extends MfMParser<'Heading', HeadingContent | BlankLi
 
 	override startsBlockAtStartOfRange(start: TextLocation, end: TextLocation): boolean {
 		if(start.startsWith('#', end)) {
-			return this.parse(start, end) != null
+			return this.parse(start, end, {}) != null
 		}
 		return false
 	}
@@ -166,12 +168,12 @@ export class MfMHeadingContent extends MfMElement<'HeadingContent', AnyInline, H
 export class HeadingContentParser extends MfMParser<'HeadingContent', AnyInline, HeadingContent> {
 	readonly type = 'HeadingContent'
 	
-	parse(start: TextLocation, end: TextLocation): HeadingContent | null {
+	parse(start: TextLocation, end: TextLocation, context: ParsingContext): HeadingContent | null {
 		const nextNewline = start.findNextNewline(end)
 
 		const parseEnd = nextNewline?.end ?? end
 		const content: AnyInline[] = []
-		const text = this.parsers['Text'].parse(start, parseEnd)
+		const text = this.parsers['Text'].parse(start, parseEnd, context)
 		if(text) {
 			content.push(text)
 		}
@@ -180,7 +182,8 @@ export class HeadingContentParser extends MfMParser<'HeadingContent', AnyInline,
 			this.idGenerator.nextId(),
 			start.persistentRangeUntil(parseEnd),
 			this,
-			content
+			content,
+			context,
 		)
 	}
 

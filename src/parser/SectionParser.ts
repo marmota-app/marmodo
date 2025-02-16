@@ -16,7 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { ElementOptions } from "../element/Element";
+import { ElementOptions, ParsingContext } from "../element/Element";
 import { EMPTY_OPTIONS, MfMElement } from "../element/MfMElement";
 import { AnyBlock, Heading, Section } from "../element/MfMElements";
 import { TextLocation } from "../mbuffer/TextLocation";
@@ -31,10 +31,11 @@ export class MfMSection extends MfMElement<'Section', AnyBlock, Section, Section
 		id: string,
 		parsedRange: PersistentRange,
 		parsedWith: SectionParser,
-		public readonly level: number,
 		content: AnyBlock[],
+		parsingContext: ParsingContext,
+		public readonly level: number,
 	) {
-		super(id, parsedRange, parsedWith, content)
+		super(id, parsedRange, parsedWith, content, parsingContext)
 	}
 
 	get asText(): string {
@@ -56,13 +57,20 @@ export class MfMSection extends MfMElement<'Section', AnyBlock, Section, Section
 export class SectionParser extends MfMParser<'Section', AnyBlock, Section> {
 	readonly type = 'Section'
 	
-	parse(start: TextLocation, end: TextLocation): Section | null {
-		const [sectionLevel, content, parsedEnd] = this.#parseSectionContent(start, end)
+	parse(start: TextLocation, end: TextLocation, context: ParsingContext): Section | null {
+		const [sectionLevel, content, parsedEnd] = this.#parseSectionContent(start, end, context)
 		
-		return new MfMSection(this.idGenerator.nextId(), start.persistentRangeUntil(parsedEnd), this, sectionLevel, content)
+		return new MfMSection(
+			this.idGenerator.nextId(),
+			start.persistentRangeUntil(parsedEnd),
+			this,
+			content,
+			context,
+			sectionLevel,
+		)
 	}
 
-	#parseSectionContent(start: TextLocation, end: TextLocation): [number, AnyBlock[], TextLocation] {
+	#parseSectionContent(start: TextLocation, end: TextLocation, context: ParsingContext): [number, AnyBlock[], TextLocation] {
 		const content: AnyBlock[] = []
 		let sectionLevel = 1
 		
@@ -76,7 +84,7 @@ export class SectionParser extends MfMParser<'Section', AnyBlock, Section> {
 			let elementParsed = false
 
 			for(let parser of this.parsers.allBlocks) {
-				const parsedElement = parser.parse(nextParseLocation, end)
+				const parsedElement = parser.parse(nextParseLocation, end, context)
 				if(parsedElement) {
 					if(parsedElement.type === 'Heading') {
 						const heading = parsedElement as Heading
@@ -90,7 +98,7 @@ export class SectionParser extends MfMParser<'Section', AnyBlock, Section> {
 						} else if(heading.level <= sectionLevel) {
 							return [sectionLevel, content, nextParseLocation]
 						} else {
-							const innerSection = this.parsers.Section.parse(nextParseLocation, end)
+							const innerSection = this.parsers.Section.parse(nextParseLocation, end, context)
 							if(innerSection) {
 								content.push(innerSection)
 								nextParseLocation = innerSection.parsedRange.end

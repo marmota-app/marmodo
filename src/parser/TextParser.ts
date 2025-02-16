@@ -16,7 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { UpdateCheckResult } from "../element/Element";
+import { ParsingContext, UpdateCheckResult } from "../element/Element";
 import { MfMElement } from "../element/MfMElement";
 import { allBlockStarts, Text } from "../element/MfMElements";
 import { UpdateInfo } from "../mbuffer/TextContent";
@@ -50,8 +50,8 @@ export class MfMText extends MfMElement<'Text', never, Text, TextParser> impleme
 export class TextParser extends MfMParser<'Text', never, Text> {
 	readonly type = 'Text'
 
-	parse(start: TextLocation, end: TextLocation): Text | null {
-		return new MfMText(this.idGenerator.nextId(), start.persistentRangeUntil(end), this, [])
+	parse(start: TextLocation, end: TextLocation, context: ParsingContext): Text | null {
+		return new MfMText(this.idGenerator.nextId(), start.persistentRangeUntil(end), this, [], context)
 	}
 	checkUpdate(element: Text, update: UpdateInfo): UpdateCheckResult {
 		return this.checkUpdateDoesNotChangeNewlines(element, update).and(this.#checkUpdateDoesNotAddPunctuation(element, update))

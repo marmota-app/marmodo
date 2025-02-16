@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { UpdateInfo } from "src/mbuffer"
-import { AnyInline, Option, Options, UpdateCheckResult } from "../../element"
+import { AnyInline, Option, Options, ParsingContext, UpdateCheckResult } from "../../element"
 import { MfMElement } from "../../element/MfMElement"
 import { TextLocation } from "../../mbuffer/TextLocation"
 import { PersistentRange } from "../../mbuffer/TextRange"
@@ -42,7 +42,7 @@ export class MfMOptions extends MfMElement<'Options', Option, Options, OptionsPa
 export class OptionsParser extends MfMParser<'Options', AnyInline, Options> {
 	readonly type = 'Options'
 
-	parse(start: TextLocation, end: TextLocation): Options | null {
+	parse(start: TextLocation, end: TextLocation, context: ParsingContext): Options | null {
 		let cur = start.accessor()
 		if(cur.get() !== '{') { return null }
 		cur.advance()
@@ -54,7 +54,7 @@ export class OptionsParser extends MfMParser<'Options', AnyInline, Options> {
 		do {
 			loop.ensure()
 			const nextParser: OptionParser = (previousOption!=null)? this.parsers.Option : this.parsers.FirstOption
-			previousOption = nextParser.parse(cur, end)
+			previousOption = nextParser.parse(cur, end, context)
 			if(previousOption != null) {
 				content.push(previousOption)
 				cur = previousOption.parsedRange.end.accessor()
@@ -68,6 +68,7 @@ export class OptionsParser extends MfMParser<'Options', AnyInline, Options> {
 				start.persistentRangeUntil(cur),
 				this,
 				content,
+				context,
 			)
 
 			return result

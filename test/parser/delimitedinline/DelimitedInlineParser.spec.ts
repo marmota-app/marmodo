@@ -162,7 +162,7 @@ describe('DelimitedInline (general)', () => {
 	it('lets other parser take over when the next possible parser did not successfully parse the content', () => {
 		const text = `***some text*`
 		const tc = new TextContent(text)
-		const result = new Parsers().parseInlines(tc.start(), tc.end(), tc.end())
+		const result = new Parsers().parseInlines(tc.start(), tc.end(), tc.end(), {})
 
 		expect(result.length).toEqual(1)
 		expect(result[0]).toHaveProperty('type', 'Emphasis')

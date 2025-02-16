@@ -16,8 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { allBlockStarts, BlankLine } from "../element"
-import { Element, Parser, UpdateCheckResult } from "../element/Element"
+import { Element, Parser, ParsingContext, UpdateCheckResult } from "../element/Element"
 import { UpdateInfo } from "../mbuffer/TextContent"
 import { TextLocation } from "../mbuffer/TextLocation"
 import { IdGenerator, Parsers } from './Parsers'
@@ -37,7 +36,7 @@ export abstract class MfMParser<
 	abstract type: TYPE
 	constructor(protected readonly idGenerator: IdGenerator, protected readonly parsers: Parsers) {}
 
-	abstract parse(start: TextLocation, end: TextLocation): ELEMENT | null;
+	abstract parse(start: TextLocation, end: TextLocation, parsingContext: ParsingContext): ELEMENT | null;
 
 	checkUpdate(element: ELEMENT, update: UpdateInfo, documentEnd: TextLocation): UpdateCheckResult {
 		return {
@@ -101,7 +100,7 @@ export abstract class MfMParser<
 	startsBlockAtStartOfRange(start: TextLocation, end: TextLocation) {
 		//That's the only general implementation, but it's also very slow,
 		//so concrete block parsers should override this!
-		return this.parse(start, end) != null
+		return this.parse(start, end, {}) != null
 	}
 }
 

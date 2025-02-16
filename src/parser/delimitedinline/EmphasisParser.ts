@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { AnyInline, Emphasis } from "../../element";
-import { ElementOptions } from "../../element/Element";
+import { ElementOptions, ParsingContext } from "../../element/Element";
 import { PersistentRange } from "../../mbuffer/TextRange";
 import { DelimitedInlineParser, DelimitedMfMElement } from "./DelimitedInlineParser";
 
@@ -30,8 +30,9 @@ export class MfMEmphasis extends DelimitedMfMElement<'Emphasis', MfMEmphasis, Em
 		parsedWith: EmphasisParser,
 		delimiter: string,
 		content: AnyInline[],
+		parsingContext: ParsingContext,
 	) {
-		super(id, parsedRange, parsedWith, delimiter, content)
+		super(id, parsedRange, parsedWith, delimiter, content, parsingContext)
 	}
 }
 export class EmphasisParser extends DelimitedInlineParser<'Emphasis', MfMEmphasis, EmphasisParser> {

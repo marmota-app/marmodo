@@ -16,7 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { UpdateCheckResult } from "../element/Element";
+import { ParsingContext, UpdateCheckResult } from "../element/Element";
 import { MfMElement } from "../element/MfMElement";
 import { BlankLine } from "../element/MfMElements";
 import { UpdateInfo } from "../mbuffer/TextContent";
@@ -53,11 +53,11 @@ export class BlankLineParser extends MfMParser<'BlankLine', never, BlankLine> {
 			if(current.isInRange(end) && current.is('\n')) {
 				current.advance()
 			}
-			return new MfMBlankLine(this.idGenerator.nextId(), start.persistentRangeUntil(current), this, [])
+			return new MfMBlankLine(this.idGenerator.nextId(), start.persistentRangeUntil(current), this, [], {})
 		}
 		if(current.isInRange(end) && current.is('\n')) {
 			current.advance()
-			return new MfMBlankLine(this.idGenerator.nextId(), start.persistentRangeUntil(current), this, [])
+			return new MfMBlankLine(this.idGenerator.nextId(), start.persistentRangeUntil(current), this, [], {})
 		}
 
 		return null

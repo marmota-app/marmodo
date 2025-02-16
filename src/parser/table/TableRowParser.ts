@@ -16,7 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { AnyInline, ElementOptions, Options, TableColumn, TableRow, Text } from "../../element"
+import { AnyInline, ElementOptions, Options, ParsingContext, TableColumn, TableRow, Text } from "../../element"
 import { EMPTY_OPTIONS, MfMElement } from "../../element/MfMElement"
 import { TextLocation } from "../../mbuffer/TextLocation"
 import { PersistentRange } from "../../mbuffer/TextRange"
@@ -29,15 +29,6 @@ import { MfMTableColumn } from "./TableColumnParser"
 export class MfMTableRow extends MfMElement<'TableRow', TableColumn<any> | Options | Text, TableRow, TableRowParser> implements TableRow {
 	public readonly type = 'TableRow'
 	public tableRow: number = 0
-
-	constructor(
-		public readonly id: string,
-		public readonly parsedRange: PersistentRange,
-		public readonly parsedWith: TableRowParser,
-		public readonly content: (TableColumn<any> | Options | Text)[],
-	) {
-		super(id, parsedRange, parsedWith, content)
-	}
 
 	get asText(): string {
 		return this.parsedRange.asString()
@@ -68,7 +59,7 @@ export class TableRowParser extends MfMParser<'TableRow', TableColumn<any> | Opt
 		super(idGenerator, parsers)
 	}
 
-	parse(start: TextLocation, end: TextLocation): TableRow | null {
+	parse(start: TextLocation, end: TextLocation, context: ParsingContext): TableRow | null {
 		const content: (TableColumn<any> | Options | Text)[] = []
 		let cur = start.accessor()
 
@@ -96,9 +87,9 @@ export class TableRowParser extends MfMParser<'TableRow', TableColumn<any> | Opt
 			if(current.isEqualTo(contentEnd)) {
 				columnsEnd = lastPipe
 			} else if(current.get() === '{') {
-				options = this.parsers.Options.parse(current, contentEnd)
+				options = this.parsers.Options.parse(current, contentEnd, context)
 				if(options === null) {
-					text = this.parsers.Text.parse(current, contentEnd)
+					text = this.parsers.Text.parse(current, contentEnd, context)
 				}
 				columnsEnd = lastPipe
 			}
@@ -109,14 +100,14 @@ export class TableRowParser extends MfMParser<'TableRow', TableColumn<any> | Opt
 		let tableColumn = 0
 		while(cur.isBefore(columnsEnd)) {
 			loop2.ensure()
-			const customCol = this.parsers.CustomTableColumn.parse(cur, columnsEnd)
+			const customCol = this.parsers.CustomTableColumn.parse(cur, columnsEnd, context)
 			if(customCol != null) {
 				(customCol as MfMCustomTableColumn).tableColumn = tableColumn
 				tableColumn++
 				content.push(customCol)
 				cur = customCol.parsedRange.end.accessor()
 		} else {
-				const column = colParser.parse(cur, columnsEnd)
+				const column = colParser.parse(cur, columnsEnd, context)
 				if(column != null) {
 					tableColumn++
 					content.push(column)
@@ -138,6 +129,7 @@ export class TableRowParser extends MfMParser<'TableRow', TableColumn<any> | Opt
 			start.persistentRangeUntil(lineEnd),
 			this,
 			content,
+			context,
 		)
 
 		if(result.columns.length === 0 && lastPipe == null) {

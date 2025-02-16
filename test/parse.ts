@@ -29,5 +29,5 @@ export function parseAll<
 
 	const textContent = new TextContent(content)
 
-	return parser.parse(textContent.start(), textContent.end())
+	return parser.parse(textContent.start(), textContent.end(), {})
 }

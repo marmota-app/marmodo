@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { PersistentRange } from "../mbuffer/TextRange";
 import { IdGenerator } from "../parser/Parsers";
 import { jsonTransient, jsonTransientPrivate } from "../utilities/jsonTransient";
-import { Element, ElementOptions, ElementUpdateCallback, ElementUpdateRegistration, Parser } from "./Element";
+import { Element, ElementOptions, ElementUpdateCallback, ElementUpdateRegistration, Parser, ParsingContext } from "./Element";
 
 let elementIdGenerator: IdGenerator
 
@@ -46,6 +46,7 @@ export abstract class MfMElement<
 		public readonly parsedRange: PersistentRange,
 		public readonly parsedWith: PARSER,
 		public readonly content: CONTENT[],
+		public readonly parsingContext: ParsingContext,
 	) {
 		jsonTransient(this, 'parsedWith')
 		jsonTransient(this, 'parent')

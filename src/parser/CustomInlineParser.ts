@@ -16,7 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { CustomElement, CustomInline, ElementOptions, Options, Text } from "../element"
+import { CustomElement, CustomInline, ElementOptions, Options, ParsingContext, Text } from "../element"
 import { EMPTY_OPTIONS, MfMElement } from "../element/MfMElement"
 import { TextLocation } from "../mbuffer/TextLocation"
 import { MfMInlineParser, MfMParser } from "./MfMParser"
@@ -58,7 +58,7 @@ export class MfMCustomInline extends MfMElement<'CustomInline', Text | Options, 
 export class CustomInlineParser extends MfMInlineParser<'CustomInline', Text | Options, CustomInline> {
 	readonly type = 'CustomInline'
 
-	parse(start: TextLocation, end: TextLocation): CustomInline | null {
+	parse(start: TextLocation, end: TextLocation, context: ParsingContext): CustomInline | null {
 		if(start.startsWith('{{', end)) {
 			const startingDelimiter = start.findNext('{{', end)
 			if(startingDelimiter == null) { return null }
@@ -68,12 +68,12 @@ export class CustomInlineParser extends MfMInlineParser<'CustomInline', Text | O
 			const content: (Text | Options)[] = []
 			let contentEnd: TextLocation = endingDelimiter.end
 
-			const text = this.parsers.Text.parse(startingDelimiter.end, endingDelimiter.start)
+			const text = this.parsers.Text.parse(startingDelimiter.end, endingDelimiter.start, context)
 			if(text == null) { return null }
 			content.push(text)
 
 			if(endingDelimiter.end.isBefore(end) && endingDelimiter.end.get() === '{') {
-				const options = this.parsers.Options.parse(endingDelimiter.end, end)
+				const options = this.parsers.Options.parse(endingDelimiter.end, end, context)
 				if(options !== null) {
 					content.push(options)
 					contentEnd = options.parsedRange.end
@@ -84,7 +84,8 @@ export class CustomInlineParser extends MfMInlineParser<'CustomInline', Text | O
 				this.idGenerator.nextId(),
 				start.persistentRangeUntil(contentEnd),
 				this,
-				content
+				content,
+				context,
 			)
 			return result
 		}

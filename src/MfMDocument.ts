@@ -16,7 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { Element, ElementUpdateRegistration } from "./element";
+import { Element, ElementUpdateRegistration, ParsingContext } from "./element";
 import { Container } from "./element/MfMElements";
 import { ContentUpdate } from "./mbuffer/ContentUpdate";
 import { TextContent, UpdateInfo } from "./mbuffer/TextContent";
@@ -124,7 +124,7 @@ ${reconstructedText}`
 
 		//-------- DEVELOPMENT --------
 		if(this.#development && updated != null) {
-			const newlyParsed = this.#parsers.Container.parse(this.#textContent.start(), this.#textContent.end())
+			const newlyParsed = this.#parsers.Container.parse(this.#textContent.start(), this.#textContent.end(), {})
 
 			const textFromUpdated = updated.asText
 			const textFromNew = newlyParsed!.asText
@@ -179,7 +179,8 @@ ${textFromUpdated}`
 		}
 
 		this.#textContent = new TextContent(text)
-		const parsedContent = this.#parsers.Container.parse(this.#textContent.start(), this.#textContent.end())
+		const parsingContext: ParsingContext = {}
+		const parsedContent = this.#parsers.Container.parse(this.#textContent.start(), this.#textContent.end(), parsingContext)
 		if(parsedContent == null) {
 			throw new Error(`Could not parse document - This is an implementation error, since every document should be parsable!`)
 		}

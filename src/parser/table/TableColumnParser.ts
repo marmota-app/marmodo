@@ -16,7 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { AnyInline, Element, ElementOptions, TableColumn } from "../../element"
+import { AnyInline, Element, ElementOptions, ParsingContext, TableColumn } from "../../element"
 import { EMPTY_OPTIONS, MfMElement } from "../../element/MfMElement"
 import { TextLocation } from "../../mbuffer/TextLocation"
 import { PersistentRange } from "../../mbuffer/TextRange"
@@ -32,8 +32,9 @@ export class MfMTableColumn<
 		parsedWith: TableColumnParser<COL_TYPE>,
 		public readonly type: COL_TYPE,
 		content: AnyInline[],
+		parsingContext: ParsingContext,
 	) {
-		super(id, parsedRange, parsedWith, content)
+		super(id, parsedRange, parsedWith, content, parsingContext)
 	}
 
 	get asText(): string {
@@ -58,7 +59,7 @@ export class TableColumnParser<
 		super(idGenerator, parsers)
 	}
 
-	parse(start: TextLocation, end: TextLocation): TableColumn<COL_TYPE> | null {
+	parse(start: TextLocation, end: TextLocation, context: ParsingContext): TableColumn<COL_TYPE> | null {
 		const content: AnyInline[] = []
 		const contentStart = start.accessor()
 		if(contentStart.is('|')) { contentStart.advance() }
@@ -69,7 +70,7 @@ export class TableColumnParser<
 		const pipePosition = contentStart.findNext('|', lineEnd)
 		const contentEnd = pipePosition?.start ?? lineEnd
 
-		const innerContent = this.parsers.parseInlines(contentStart, contentEnd, contentEnd)
+		const innerContent = this.parsers.parseInlines(contentStart, contentEnd, contentEnd, context)
 		content.push(...innerContent)
 
 		return new MfMTableColumn(
@@ -78,6 +79,7 @@ export class TableColumnParser<
 			this,
 			this.type,
 			content,
+			context,
 		)
 	}
 }

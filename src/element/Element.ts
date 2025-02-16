@@ -32,13 +32,16 @@ interface UpdateCheckResultNegative {
 }
 export type UpdateCheckResult = UpdateCheckResultPositive | UpdateCheckResultNegative
 
+export interface ParsingContext {
+}
+
 export interface Parser<
 	TYPE extends string,
 	CONTENT extends Element<any, any, any>,
 	ELEMENT extends Element<TYPE, CONTENT, ELEMENT>,
 > {
 	type: TYPE,
-	parse: (start: TextLocation, end: TextLocation) => ELEMENT | null,
+	parse: (start: TextLocation, end: TextLocation, parsingContext: ParsingContext) => ELEMENT | null,
 	checkUpdate: (element: ELEMENT, update: UpdateInfo, documentEnd: TextLocation) => UpdateCheckResult,
 	acceptUpdate: (original: ELEMENT, updated: ELEMENT) => boolean,
 	startsBlockAtStartOfRange: (start: TextLocation, end: TextLocation) => boolean,
@@ -68,6 +71,7 @@ export interface Element<
 	parent: Element<any, any, any> | null,
 	readonly type: TYPE,
 	readonly options: ElementOptions,
+	readonly parsingContext: ParsingContext,
 
 	readonly parsedWith: Parser<TYPE, CONTENT, THIS>,
 	readonly parsedRange: PersistentRange,

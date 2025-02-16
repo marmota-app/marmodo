@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
-import { AnyInline, ElementOptions, Options, TableDelimiterColumn, TableDelimiterRow, Text } from "../../../src/element"
+import { AnyInline, ElementOptions, Options, ParsingContext, TableDelimiterColumn, TableDelimiterRow, Text } from "../../../src/element"
 import { EMPTY_OPTIONS, MfMElement } from "../../../src/element/MfMElement"
 import { TextLocation } from "../../../src/mbuffer/TextLocation"
 import { PersistentRange } from "../../../src/mbuffer/TextRange"
@@ -34,8 +34,9 @@ export class MfMTableDelimiterColumn extends MfMElement<'TableDelimiterColumn', 
 		parsedWith: TableDelimiterColumnParser,
 		content: Options[],
 		public readonly alignment: 'left' | 'center' | 'right',
+		parsingContext: ParsingContext,
 	) {
-		super(id, parsedRange, parsedWith, content)
+		super(id, parsedRange, parsedWith, content, parsingContext)
 	}
 
 	get asText(): string {
@@ -53,7 +54,7 @@ export class MfMTableDelimiterColumn extends MfMElement<'TableDelimiterColumn', 
 export class TableDelimiterColumnParser extends MfMParser<'TableDelimiterColumn', AnyInline, TableDelimiterColumn> {
 	readonly type = 'TableDelimiterColumn'
 
-	parse(start: TextLocation, end: TextLocation): TableDelimiterColumn | null {
+	parse(start: TextLocation, end: TextLocation, context: ParsingContext): TableDelimiterColumn | null {
 		let delimiterEnd = start.accessor()
 		if(delimiterEnd.is('|')) { delimiterEnd.advance() }
 
@@ -115,6 +116,7 @@ export class TableDelimiterColumnParser extends MfMParser<'TableDelimiterColumn'
 				this,
 				[],
 				alignment ?? 'left',
+				context,
 			)
 			return result
 		}
@@ -147,7 +149,7 @@ export class MfMTableDelimiterRow extends MfMElement<'TableDelimiterRow', TableD
 export class TableDelimiterRowParser extends MfMParser<'TableDelimiterRow', TableDelimiterColumn | Options | Text, TableDelimiterRow> {
 	readonly type = 'TableDelimiterRow'
 
-	parse(start: TextLocation, end: TextLocation): TableDelimiterRow | null {
+	parse(start: TextLocation, end: TextLocation, context: ParsingContext): TableDelimiterRow | null {
 		let cur = start
 		const content: (TableDelimiterColumn | Options | Text)[] = []
 
@@ -158,7 +160,7 @@ export class TableDelimiterRowParser extends MfMParser<'TableDelimiterRow', Tabl
 		const loop = finiteLoop(() => [ cur.info(), ])
 		while(cur.isBefore(contentEnd)) {
 			loop.ensure()
-			const col = this.parsers.TableDelimiterColumn.parse(cur, contentEnd)
+			const col = this.parsers.TableDelimiterColumn.parse(cur, contentEnd, context)
 			if(col != null) {
 				content.push(col)
 				cur = col.parsedRange.end
@@ -172,12 +174,12 @@ export class TableDelimiterRowParser extends MfMParser<'TableDelimiterRow', Tabl
 			if(current.get() !== '|') { return null }
 			current.advance()
 			if(current.isBefore(end) && current.get() === '{') {
-				const options = this.parsers.Options.parse(current, contentEnd)
+				const options = this.parsers.Options.parse(current, contentEnd, context)
 				if(options) {
 					content.push(options)
 					current = options.parsedRange.end.accessor()
 				} else {
-					const text = this.parsers.Text.parse(current, contentEnd)
+					const text = this.parsers.Text.parse(current, contentEnd, context)
 					content.push(text!)
 					current = contentEnd.accessor()
 				}
@@ -193,6 +195,7 @@ export class TableDelimiterRowParser extends MfMParser<'TableDelimiterRow', Tabl
 			start.persistentRangeUntil(rowEnd),
 			this,
 			content,
+			context,
 		)
 		if(result.columns.length === 0) { return null }
 		return result

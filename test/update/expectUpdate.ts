@@ -36,7 +36,7 @@ export function expectUpdate<
 
 				const expectedTextContent = new TextContent(originalText)
 				expectedTextContent.update(update)
-				const expectedElement = parser.parse(expectedTextContent.start(), expectedTextContent.end())
+				const expectedElement = parser.parse(expectedTextContent.start(), expectedTextContent.end(), {})
 
 				expect(updated).not.toBeNull()
 				expect(updated!.parsedRange.asString()).toEqual(expectedElement?.parsedRange.asString())
@@ -79,7 +79,7 @@ export function expectUpdates<
 
 				const expectedTextContent = new TextContent(originalText)
 				updates.forEach(update => expectedTextContent.update(update))
-				const expectedElement = parser.parse(expectedTextContent.start(), expectedTextContent.end())
+				const expectedElement = parser.parse(expectedTextContent.start(), expectedTextContent.end(), {})
 
 				expect(updated).not.toBeNull()
 				expect(updated!.parsedRange.asString()).toEqual(expectedElement?.parsedRange.asString())
@@ -127,7 +127,7 @@ function parse<
 >(parser: Parser<TYPE, CONTENT, ELEMENT>, originalText: string): [TextContent, ELEMENT] {
 	const text = new TextContent(originalText)
 
-	const original = parser.parse(text.start(), text.end())
+	const original = parser.parse(text.start(), text.end(), {})
 	if(original == null) { throw new Error(`Could not parse string "${originalText}" with parser ${parser}`) }
 
 	return [text, original]

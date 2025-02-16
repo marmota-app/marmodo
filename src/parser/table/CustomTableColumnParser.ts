@@ -16,7 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { AnyInline, CustomElement, ElementOptions, TableColumn } from "../../element"
+import { AnyInline, CustomElement, ElementOptions, ParsingContext, TableColumn } from "../../element"
 import { EMPTY_OPTIONS, MfMElement } from "../../element/MfMElement"
 import { TextLocation } from "../../mbuffer/TextLocation"
 import { PersistentRange } from "../../mbuffer/TextRange"
@@ -28,15 +28,6 @@ export class MfMCustomTableColumn extends MfMElement<'CustomTableColumn', AnyInl
 	public customContent: string = ''
 	public contentType: 'value' | 'error' = 'error'
 	public tableColumn: number = 0
-
-	constructor(
-		id: string,
-		parsedRange: PersistentRange,
-		parsedWith: CustomTableColumnParser,
-		content: AnyInline[],
-	) {
-		super(id, parsedRange, parsedWith, content)
-	}
 
 	get asText(): string {
 		return this.parsedRange.asString()
@@ -70,7 +61,7 @@ export class CustomTableColumnParser extends MfMParser<'CustomTableColumn', AnyI
 		super(idGenerator, parsers)
 	}
 
-	parse(start: TextLocation, end: TextLocation): TableColumn<'CustomTableColumn'> | null {
+	parse(start: TextLocation, end: TextLocation, context: ParsingContext): TableColumn<'CustomTableColumn'> | null {
 		const contentStart = start.accessor()
 		if(!contentStart.is('|')) { return null }
 
@@ -84,14 +75,15 @@ export class CustomTableColumnParser extends MfMParser<'CustomTableColumn', AnyI
 		if(contentEnd == null) { return null }
 		if(!contentEnd.end.is('|')) { return null }
 
-		const text = this.parsers.Text.parse(contentStart, contentEnd.start)
+		const text = this.parsers.Text.parse(contentStart, contentEnd.start, context)
 		if(text == null) { return null }
 
 		return new MfMCustomTableColumn(
 			this.idGenerator.nextId(),
 			start.persistentRangeUntil(contentEnd.end),
 			this,
-			[ text ]
+			[ text ],
+			context,
 		)
 
 		/*

@@ -88,7 +88,7 @@ export class UpdateParser {
 			const parser = currentElement.parsedWith
 			const checkResult = parser.checkUpdate(currentElement, update, documentEnd)
 			const updated = checkResult.canUpdate?
-				parser.parse(checkResult.rangeStart, checkResult.rangeEnd):
+				parser.parse(checkResult.rangeStart, checkResult.rangeEnd, currentElement.parsingContext):
 				null
 
 			if(updated != null) {

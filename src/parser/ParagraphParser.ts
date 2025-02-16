@@ -16,7 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { ElementOptions, UpdateCheckResult } from "../element/Element";
+import { ElementOptions, ParsingContext, UpdateCheckResult } from "../element/Element";
 import { EMPTY_OPTIONS, MfMElement } from "../element/MfMElement";
 import { AnyInline, Paragraph } from "../element/MfMElements";
 import { UpdateInfo } from "../mbuffer";
@@ -44,10 +44,10 @@ export class MfMParagraph extends MfMElement<'Paragraph', AnyInline, Paragraph, 
 export class ParagraphParser extends MfMParser<'Paragraph', AnyInline, Paragraph> {
 	readonly type = 'Paragraph'
 
-	parse(start: TextLocation, end: TextLocation): Paragraph | null {
+	parse(start: TextLocation, end: TextLocation, context: ParsingContext): Paragraph | null {
 		const content: AnyInline[] = []
 		if(start.accessor().get() === '{') {
-			const options = this.parsers.Options.parse(start, end)
+			const options = this.parsers.Options.parse(start, end, context)
 			if(options != null) {
 				content.push(options)
 				start = options.parsedRange.end.accessor()
@@ -70,24 +70,42 @@ export class ParagraphParser extends MfMParser<'Paragraph', AnyInline, Paragraph
 			const nextParseLocation = nextNewline.end
 			
 			if(this.lineStartsNewBlock(nextParseLocation, end)) {
-				const completeContent = this.parsers.parseInlines(start, nextNewline!.end, nextNewline!.end)
+				const completeContent = this.parsers.parseInlines(start, nextNewline!.end, nextNewline!.end, context)
 				content.push(...completeContent)
-				return new MfMParagraph(this.idGenerator.nextId(), start.persistentRangeUntil(nextNewline.end), this, content)
+				return new MfMParagraph(
+					this.idGenerator.nextId(),
+					start.persistentRangeUntil(nextNewline.end),
+					this,
+					content,
+					context,
+				)
 			}
 
 			const blankLinesEnd = this.addBlankLinesTo(content, nextParseLocation, end, () => {
-				const completeContent = this.parsers.parseInlines(start, nextNewline!.end, nextNewline!.end)
+				const completeContent = this.parsers.parseInlines(start, nextNewline!.end, nextNewline!.end, context)
 				content.push(...completeContent)
 			})
 			if(!blankLinesEnd.isEqualTo(nextParseLocation)) {
-				return new MfMParagraph(this.idGenerator.nextId(), start.persistentRangeUntil(blankLinesEnd), this, content)
+				return new MfMParagraph(
+					this.idGenerator.nextId(),
+					start.persistentRangeUntil(blankLinesEnd),
+					this,
+					content,
+					context,
+				)
 			}
 
 			nextNewline = nextParseLocation.findNextNewline(end)
 		}
 
-		const completeContent = this.parsers.parseInlines(start, end, end)
+		const completeContent = this.parsers.parseInlines(start, end, end, context)
 		content.push(...completeContent)
-		return new MfMParagraph(this.idGenerator.nextId(), start.persistentRangeUntil(end), this, content)
+		return new MfMParagraph(
+			this.idGenerator.nextId(),
+			start.persistentRangeUntil(end),
+			this,
+			content,
+			context,
+		)
 	}
 }

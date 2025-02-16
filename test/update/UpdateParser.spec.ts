@@ -32,7 +32,7 @@ describe('UpdateParser', () => {
 		
 		const originalText = 'the quick fox jumps over the lazy dog'
 		const tc = new TextContent(originalText)
-		const container = parsers.Container.parse(tc.start(), tc.end())
+		const container = parsers.Container.parse(tc.start(), tc.end(), {})
 		if(container == null) {
 			throw new Error('container cannot be parsed!')
 		}
@@ -59,7 +59,7 @@ describe('UpdateParser', () => {
 		
 		const originalText = 'the quick brown fox jumps\n\nover the lazy dog'
 		const tc = new TextContent(originalText)
-		const container = parsers.Container.parse(tc.start(), tc.end())
+		const container = parsers.Container.parse(tc.start(), tc.end(), {})
 		if(container == null) {
 			throw new Error('container cannot be parsed!')
 		}
@@ -84,7 +84,7 @@ describe('UpdateParser', () => {
 		
 		const originalText = 'the quick brown fox jumps\n\nover the lazy dog'
 		const tc = new TextContent(originalText)
-		const container = parsers.Container.parse(tc.start(), tc.end())
+		const container = parsers.Container.parse(tc.start(), tc.end(), {})
 		if(container == null) {
 			throw new Error('container cannot be parsed!')
 		}
@@ -111,7 +111,7 @@ describe('UpdateParser', () => {
 		
 		const originalText = 'the quick brown fox jumps\n\nover the lazy dog'
 		const tc = new TextContent(originalText)
-		const container = parsers.Container.parse(tc.start(), tc.end())
+		const container = parsers.Container.parse(tc.start(), tc.end(), {})
 		if(container == null) {
 			throw new Error('container cannot be parsed!')
 		}
@@ -137,7 +137,7 @@ describe('UpdateParser', () => {
 		
 		const originalText = 'the quick brown fox jumps\n\nover the lazy dog'
 		const tc = new TextContent(originalText)
-		const container = parsers.Container.parse(tc.start(), tc.end())
+		const container = parsers.Container.parse(tc.start(), tc.end(), {})
 		if(container == null) {
 			throw new Error('container cannot be parsed!')
 		}

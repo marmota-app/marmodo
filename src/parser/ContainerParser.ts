@@ -16,6 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { ParsingContext } from "../element"
 import { MfMElement } from "../element/MfMElement"
 import { AnyBlock, Container } from "../element/MfMElements"
 import { TextLocation } from "../mbuffer/TextLocation"
@@ -34,14 +35,14 @@ export class MfMContainer extends MfMElement<'Container', AnyBlock, Container, C
 export class ContainerParser extends MfMParser<'Container', AnyBlock, Container> {
 	readonly type = 'Container'
 	
-	parse(start: TextLocation, end: TextLocation): Container | null {
+	parse(start: TextLocation, end: TextLocation, context: ParsingContext): Container | null {
 		const content: AnyBlock[] = []
 		let nextParseLocation = start
 
 		const loop = finiteLoop(() => [ nextParseLocation.info() ])
 		while(nextParseLocation.isBefore(end)) {
 			loop.ensure()
-			const section = this.parsers.Section.parse(nextParseLocation, end)
+			const section = this.parsers.Section.parse(nextParseLocation, end, context)
 			if(section == null) {
 				throw new Error(`Could not parse section at location ${nextParseLocation.info()}`)
 			}
@@ -49,7 +50,13 @@ export class ContainerParser extends MfMParser<'Container', AnyBlock, Container>
 			nextParseLocation = section.parsedRange.end
 		}
 		
-		const result = new MfMContainer(this.idGenerator.nextId(), start.persistentRangeUntil(end), this, content)
+		const result = new MfMContainer(
+			this.idGenerator.nextId(),
+			start.persistentRangeUntil(end),
+			this,
+			content,
+			context,
+		)
 		return result
 	}
 }

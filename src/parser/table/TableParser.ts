@@ -16,7 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { BlankLine, Element, ElementOptions, Table, TableDelimiterRow, TableRow } from "../../element"
+import { BlankLine, Element, ElementOptions, ParsingContext, Table, TableDelimiterRow, TableRow } from "../../element"
 import { MfMElement } from "../../element/MfMElement"
 import { TextLocation } from "../../mbuffer/TextLocation"
 import { finiteLoop } from "../../utilities/finiteLoop"
@@ -78,10 +78,10 @@ export class MfMTable extends MfMElement<'Table', TableRow | TableDelimiterRow |
 export class TableParser extends MfMParser<'Table', TableRow | TableDelimiterRow | BlankLine, Table> {
 	readonly type = 'Table'
 
-	parse(start: TextLocation, end: TextLocation): Table | null {
+	parse(start: TextLocation, end: TextLocation, context: ParsingContext): Table | null {
 		const content: (TableRow | TableDelimiterRow | BlankLine)[] = []
 
-		const [delimiters, headers] = this.#readDelimitersAndHeaders(start, end)
+		const [delimiters, headers] = this.#readDelimitersAndHeaders(start, end, context)
 
 		if(headers != null) {
 			content.push(headers)
@@ -101,7 +101,7 @@ export class TableParser extends MfMParser<'Table', TableRow | TableDelimiterRow
 			const nextNewline = cur.findNextNewline(end)
 			const lineEnd = nextNewline?.end ?? end
 
-			const row = this.parsers.TableRow.parse(cur, lineEnd)
+			const row = this.parsers.TableRow.parse(cur, lineEnd, context)
 			if(row != null) {
 				(row as MfMTableRow).tableRow = tableRow
 				tableRow++
@@ -119,7 +119,8 @@ export class TableParser extends MfMParser<'Table', TableRow | TableDelimiterRow
 			this.idGenerator.nextId(),
 			start.persistentRangeUntil(tableEnd),
 			this,
-			content
+			content,
+			context,
 		)
 		result.lastRow = result.rows-1
 		result.lastColumn = result.columns-1
@@ -132,20 +133,20 @@ export class TableParser extends MfMParser<'Table', TableRow | TableDelimiterRow
 		if(firstNewline) {
 			const secondLineEnd = firstNewline.end.findNextNewline(end)?.start ?? end
 			if(firstNewline.end.findNext(['|', '-'], secondLineEnd) != null) {
-				return this.parse(start, end) != null
+				return this.parse(start, end, {}) != null
 			}
 		}
 		return false
 	}
 
-	#readDelimitersAndHeaders(start: TextLocation, end: TextLocation): [TableDelimiterRow | null, TableRow | null] {
+	#readDelimitersAndHeaders(start: TextLocation, end: TextLocation, context: ParsingContext): [TableDelimiterRow | null, TableRow | null] {
 		const nextNewline = start.findNextNewline(end)
 		if(nextNewline) {
 			const possibleDelimitersNewline = nextNewline.end.findNextNewline(end)
 			const possibleDelimitersEnd = possibleDelimitersNewline?.end ?? end
-			let delimiters = this.parsers.TableDelimiterRow.parse(nextNewline.end, possibleDelimitersEnd)
+			let delimiters = this.parsers.TableDelimiterRow.parse(nextNewline.end, possibleDelimitersEnd, context)
 			if(delimiters) {
-				const headers = this.parsers.TableHeaderRow.parse(start, nextNewline.start)
+				const headers = this.parsers.TableHeaderRow.parse(start, nextNewline.start, context)
 
 				if(headers == null || headers.columns.length===0) {
 					return [
@@ -161,7 +162,7 @@ export class TableParser extends MfMParser<'Table', TableRow | TableDelimiterRow
 		}
 
 		return [
-			this.parsers.TableDelimiterRow.parse(start, end),
+			this.parsers.TableDelimiterRow.parse(start, end, context),
 			null
 		]
 	}

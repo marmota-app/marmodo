@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { AnyInline } from '../element'
-import { Element, ElementUpdateRegistration, Parser } from '../element/Element'
+import { Element, ElementUpdateRegistration, Parser, ParsingContext } from '../element/Element'
 import { TextLocation } from '../mbuffer/TextLocation'
 import { finiteLoop } from '../utilities/finiteLoop'
 import { BlankLineParser } from './BlankLineParser'
@@ -91,7 +91,7 @@ export class Parsers {
 		]
 	}
 
-	parseInlines(start: TextLocation, end: TextLocation, delimiterEnd: TextLocation): AnyInline[] {
+	parseInlines(start: TextLocation, end: TextLocation, delimiterEnd: TextLocation, context: ParsingContext): AnyInline[] {
 		let parseLocation = start.accessor()
 		let lastElementLocation = parseLocation
 		const result: AnyInline[] = []
@@ -119,20 +119,20 @@ export class Parsers {
 			)
 
 			if(nextLocation) {
-				let inline = nextLocation.parser.parse(nextLocation.start, delimiterEnd)
+				let inline = nextLocation.parser.parse(nextLocation.start, delimiterEnd, context)
 				if(inline == null) {
 					//If the preferred parser did not find anything at this
 					//location, maybe another of the inline parsers can match
 					//here (for longer delimiter runs)
 					for(let p of this.allParsableInlines) {
-						inline = p.parse(nextLocation.start, delimiterEnd)
+						inline = p.parse(nextLocation.start, delimiterEnd, context)
 						if(inline != null) { break }
 					}
 				}
 
 				if(inline != null) {
 					if(nextLocation.start.isAfter(parseLocation)) {
-						result.push(this.Text.parse(parseLocation, nextLocation.start)!)
+						result.push(this.Text.parse(parseLocation, nextLocation.start, context)!)
 					}
 					result.push(inline)
 					parseLocation = inline.parsedRange.end.accessor()
@@ -147,7 +147,7 @@ export class Parsers {
 		}
 
 		if(parseLocation.isBefore(end)) {
-			result.push(this.Text.parse(lastElementLocation, end)!)
+			result.push(this.Text.parse(lastElementLocation, end, context)!)
 		}
 
 		return result
