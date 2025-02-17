@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { UpdateInfo } from "../mbuffer/TextContent";
 import { TextLocation } from "../mbuffer/TextLocation";
 import { PersistentRange, } from "../mbuffer/TextRange";
+import { SxContext } from "../sx/SxContext";
 
 interface UpdateCheckResultPositive {
 	canUpdate: true,
@@ -33,6 +34,7 @@ interface UpdateCheckResultNegative {
 export type UpdateCheckResult = UpdateCheckResultPositive | UpdateCheckResultNegative
 
 export interface ParsingContext {
+	sxContext?: SxContext,
 }
 
 export interface Parser<

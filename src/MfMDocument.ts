@@ -21,6 +21,7 @@ import { Container } from "./element/MfMElements";
 import { ContentUpdate } from "./mbuffer/ContentUpdate";
 import { TextContent, UpdateInfo } from "./mbuffer/TextContent";
 import { IdGenerator, Parsers } from "./parser/Parsers";
+import { SxContext } from "./sx/SxContext";
 import { UpdateParser } from "./update/UpdateParser";
 
 let documentIdGenerator: IdGenerator
@@ -179,7 +180,9 @@ ${textFromUpdated}`
 		}
 
 		this.#textContent = new TextContent(text)
-		const parsingContext: ParsingContext = {}
+		const parsingContext: ParsingContext = {
+			sxContext: new SxContext()
+		}
 		const parsedContent = this.#parsers.Container.parse(this.#textContent.start(), this.#textContent.end(), parsingContext)
 		if(parsedContent == null) {
 			throw new Error(`Could not parse document - This is an implementation error, since every document should be parsable!`)
