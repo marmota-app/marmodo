@@ -16,6 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { SxEvaluation } from "src/sx/SxEvaluation"
 import { AnyInline, CustomElement, ElementOptions, ParsingContext, TableColumn } from "../../element"
 import { EMPTY_OPTIONS, MfMElement } from "../../element/MfMElement"
 import { TextLocation } from "../../mbuffer/TextLocation"
@@ -25,9 +26,18 @@ import { IdGenerator, Parsers } from "../Parsers"
 
 export class MfMCustomTableColumn extends MfMElement<'CustomTableColumn', AnyInline, TableColumn<'CustomTableColumn'>, CustomTableColumnParser> implements TableColumn<'CustomTableColumn'>, CustomElement {
 	public readonly type = 'CustomTableColumn'
-	public customContent: string = ''
-	public contentType: 'value' | 'error' = 'error'
 	public tableColumn: number = 0
+
+	constructor(
+		id: string,
+		parsedRange: PersistentRange,
+		parsedWith: CustomTableColumnParser,
+		content: AnyInline[],
+		parsingContext: ParsingContext,
+		public readonly evaluation?: SxEvaluation,
+	) {
+		super(id, parsedRange, parsedWith, content, parsingContext)
+	}
 
 	get asText(): string {
 		return this.parsedRange.asString()
@@ -48,8 +58,6 @@ export class MfMCustomTableColumn extends MfMElement<'CustomTableColumn', AnyInl
 		return {
 			...super.referenceMap,
 			'element.textContent': this.plainContent,
-			'element.customContent': this.customContent,
-			'element.contentType': this.contentType,
 			tableColumn: this.tableColumn,
 		}
 	}
@@ -78,12 +86,14 @@ export class CustomTableColumnParser extends MfMParser<'CustomTableColumn', AnyI
 		const text = this.parsers.Text.parse(contentStart, contentEnd.start, context)
 		if(text == null) { return null }
 
+		const evaluation = context.sxContext?.createEvaluation(text.asText)
 		return new MfMCustomTableColumn(
 			this.idGenerator.nextId(),
 			start.persistentRangeUntil(contentEnd.end),
 			this,
 			[ text ],
 			context,
+			evaluation,
 		)
 
 		/*

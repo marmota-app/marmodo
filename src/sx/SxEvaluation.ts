@@ -1,6 +1,6 @@
 /*
 marmodo - A typescript library to parse marmota-flavored-markdown
-Copyright (C) 2020-2025  David Tanzer - @dtanzer@social.devteams.at
+Copyright (C) 2024-2025  David Tanzer - @dtanzer@social.devteams.at
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -16,22 +16,6 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { SxContext } from "../src/sx/SxContext";
-import { Element } from "../src/element/Element";
-import { TextContent } from "../src/mbuffer/TextContent";
-import { Parsers } from "../src/parser/Parsers";
-
-export function parseAll<
-	TYPE extends string,
-	ELEMENT extends Element<TYPE, any, ELEMENT>
-> (type: TYPE, content: string): ELEMENT | null {
-	const parsers: any = new Parsers()
-	const parser = parsers[type]
-
-	const textContent = new TextContent(content)
-
-	const context = {
-		sxContext: new SxContext(),
-	}
-	return parser.parse(textContent.start(), textContent.end(), context)
+export class SxEvaluation {
+	dependsOn = [ 'foo' ]
 }

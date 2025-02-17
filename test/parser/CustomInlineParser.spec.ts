@@ -16,6 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { CustomInline } from "src/element"
 import { parseAll } from "../parse"
 
 describe('CustomInline', () => {
@@ -35,10 +36,16 @@ describe('CustomInline', () => {
 
 		expect(result).toBeNull()
 	})
-	
+
 	it('can return inner content', () => {
 		const result = parseAll('CustomInline', '{{ some } text }}more text')
 
 		expect(result).toHaveProperty('plainContent', ' some } text ')
+	})
+
+	it('contains a sx evaulation', () => {
+		const result = parseAll('CustomInline', '{{ var * 2 }}') as CustomInline
+
+		expect(result.evaluation?.dependsOn).toHaveLength(1)
 	})
 })

@@ -16,7 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { Parsers } from "../../../src/parser/Parsers"
+import { CustomElement } from "../../../src/element"
 import { parseAll } from "../../parse"
 
 describe('CustomTableColumn', () => {
@@ -43,4 +43,9 @@ describe('CustomTableColumn', () => {
 		expect(result).toBeNull()
 	})
 
+	it('contains a sx evaulation', () => {
+		const result = parseAll('CustomTableColumn', '|{{ var * 2 }}|') as unknown as CustomElement
+
+		expect(result.evaluation?.dependsOn).toHaveLength(1)
+	})
 })

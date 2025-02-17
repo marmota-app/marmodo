@@ -16,6 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { SxEvaluation } from "src/sx/SxEvaluation"
 import { Element } from "./Element"
 
 export interface InlineElement<
@@ -101,7 +102,9 @@ export interface Table extends LeafContainer<'Table', Table, TableRow | TableDel
 }
 
 export interface HeadingContent extends ContainerInline<'HeadingContent', HeadingContent> {}
-export interface CustomInline extends ContainerInline<'CustomInline', CustomInline, Text | Options> {}
+export interface CustomInline extends ContainerInline<'CustomInline', CustomInline, Text | Options> {
+	readonly evaluation?: SxEvaluation,
+}
 export interface Text extends LeafInline<'Text', Text> {}
 export interface BlankLine extends LeafInline<'BlankLine', BlankLine> {}
 
@@ -129,7 +132,6 @@ export const allBlockStarts: string[] = [ '#', '|' ]
 
 //An element that can contain custom content
 export interface CustomElement {
-	customContent: string,
-	contentType: 'value' | 'error',
+	readonly evaluation?: SxEvaluation,
 	readonly plainContent: string,
 }

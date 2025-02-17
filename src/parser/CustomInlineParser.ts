@@ -16,15 +16,26 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { SxEvaluation } from "src/sx/SxEvaluation"
 import { CustomElement, CustomInline, ElementOptions, Options, ParsingContext, Text } from "../element"
 import { EMPTY_OPTIONS, MfMElement } from "../element/MfMElement"
 import { TextLocation } from "../mbuffer/TextLocation"
 import { MfMInlineParser, MfMParser } from "./MfMParser"
+import { PersistentRange } from "src/mbuffer/TextRange"
 
 export class MfMCustomInline extends MfMElement<'CustomInline', Text | Options, CustomInline, CustomInlineParser> implements CustomInline, CustomElement {
 	readonly type = 'CustomInline'
-	public customContent: string = ''
-	public contentType: 'value' | 'error' = 'error'
+
+	constructor(
+		id: string,
+		parsedRange: PersistentRange,
+		parsedWith: CustomInlineParser,
+		content: (Text | Options)[],
+		parsingContext: ParsingContext,
+		public readonly evaluation?: SxEvaluation,
+	) {
+		super(id, parsedRange, parsedWith, content, parsingContext)
+	}
 
 	get asText(): string {
 		if(this.content.length === 0) { return '' }
@@ -43,8 +54,6 @@ export class MfMCustomInline extends MfMElement<'CustomInline', Text | Options, 
 		return {
 			...super.referenceMap,
 			'element.textContent': this.plainContent,
-			'element.customContent': this.customContent,
-			'element.contentType': this.contentType,
 		}
 	}
 
@@ -80,12 +89,14 @@ export class CustomInlineParser extends MfMInlineParser<'CustomInline', Text | O
 				}
 			}
 
+			const evaluation = context.sxContext?.createEvaluation(text.asText)
 			const result = new MfMCustomInline(
 				this.idGenerator.nextId(),
 				start.persistentRangeUntil(contentEnd),
 				this,
 				content,
 				context,
+				evaluation,
 			)
 			return result
 		}
