@@ -9,6 +9,7 @@
     "compile": "tsc",
     "test": "jest ./test",
     "test:watch": "jest --watch ./test",
+    "test:debug": "node --inspect-brk ../node_modules/jest/bin/jest.js --runInBand ./test",
     "doc": "jsdoc src --tutorials docs -r -c .jsdoc.conf.json --readme README.md",
     "build": "tsc --declaration --outDir dist --project tsconfig.build.json"
   },

@@ -40,24 +40,33 @@ describe('SxEvaluation', () => {
 		expect(result).toHaveProperty('value', 10.5)
 		expect(result).toHaveProperty('asString', '10.5')
 	})
-	//it('evaluates a simple, single-symbol function', () => {
-	//	const context = new EvaluationContext()
-	//	context.scope.register({
-	//		type: 'Function',
-	//		valueType: 'String',
-	//		evaluate: () => 'foo result',
-	//		definition: [
-	//			{ type: 'Symbol', text: 'foo' }
-	//		],
-	//	})
+	it('evaluates a simple, single-symbol function', () => {
+		const context = new SxContext()
+		context.scope.register({
+			type: 'Function',
+			valueType: 'String',
+			evaluate: () => 'foo result',
+			definition: [
+				{ type: 'Symbol', text: 'foo' }
+			],
+		})
 
-	//	const result = evaluate('foo', context)
+		const result = context.createEvaluation('foo').evaluate('id-1') as ValueResult
 
-	//	expect(result).toHaveProperty('resultType', 'value')
-	//	expect(result).toHaveProperty('valueType', 'computed')
-	//	expect(result).toHaveProperty('type')
-	//	expect((result as any).type).toHaveProperty('name', 'String')
-	//	expect(result).toHaveProperty('value', 'foo result')
-	//	expect(result).toHaveProperty('asString', 'foo result')
-	//});
+		expect(result).toHaveProperty('resultType', 'value')
+		expect(result).toHaveProperty('type')
+		expect(result.type).toHaveProperty('name', 'String')
+		expect(result).toHaveProperty('value', 'foo result')
+		expect(result).toHaveProperty('asString', 'foo result')
+	});
+	it('can register an evaluation as named and reference it in another evaluation', () => {
+		const context = new SxContext()
+		const eval1 = context.createEvaluation('10')
+
+		context.registerNamed(eval1, 'r1')
+		const result = context.createEvaluation('r1*2').evaluate('id-1') as ValueResult
+
+		expect(result).toHaveProperty('resultType', 'value')
+		expect(result).toHaveProperty('value', 20)
+	})
 })

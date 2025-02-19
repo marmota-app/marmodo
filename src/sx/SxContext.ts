@@ -62,8 +62,21 @@ export class SxContext {
 		return new SxEvaluation(expression, this)
 	}
 
-	get(reference: ReferenceNode): ValueResult | undefined {
+	get(reference: ReferenceNode): SxEvaluation | undefined {
+		const scopeNode = this.scope.node({ type: 'Symbol', text: reference.references })
+
+		if(scopeNode != null && scopeNode.value?.type === 'EvalReference') {
+			return scopeNode.value.referenced
+		}
 		return undefined
+	}
+
+	registerNamed(evaluation: SxEvaluation, name: string) {
+		this.scope.register({
+			type: 'EvalReference',
+			definition: [ { type: 'Symbol', text: name } ],
+			referenced: evaluation,
+		})
 	}
 }
 

@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import { jsonTransientPrivate } from "../../utilities/jsonTransient"
 import { EvaluationContext } from "../EvaluationContext"
+import { SxEvaluation } from "../SxEvaluation"
 import { ValueResult } from "../evaluate"
 import { ExpressionType } from "../types/ExpressionType"
 
@@ -53,7 +54,11 @@ export interface Reference {
 	type: 'Reference',
 	referencedValue: ValueResult,
 }
-export type ScopedValue = (Function | Reference) & { definition: ScopeDef[] }
+export interface NewReference { //FIXME should replace Reference
+	type: 'EvalReference',
+	referenced: SxEvaluation,
+}
+export type ScopedValue = (Function | Reference | NewReference) & { definition: ScopeDef[] }
 
 export interface ScopeTreeNode {
 	node(def: ScopeAccess, selfType?: ExpressionType): ScopeTree | undefined,

@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { EvaluationContext } from "../EvaluationContext";
 import { Token } from "../SxToken";
 import { ExpressionType } from "../types/ExpressionType";
-import { EvaluationScope, ScopedValue, ScopeTreeNode } from "./EvaluationScope";
+import { EvaluationScope, NewReference, ScopedValue, ScopeTreeNode } from "./EvaluationScope";
 
 interface Symbol {
 	type: 'Symbol',
@@ -63,10 +63,10 @@ interface ParseContext {
 	readonly scope: EvaluationScope
 }
 
-export function parse(tokens: Token[], context: ParseContext): ParseTreeNode | undefined {
+export function parse(tokens: Token[], context: ParseContext, evalId?: string): ParseTreeNode | undefined {
 	let leafNodes = initializeTreeLeafNodes(tokens, context)
 
-	const result = parseValue(leafNodes[0], leafNodes, 0, context.scope, context)
+	const result = parseValue(leafNodes[0], leafNodes, 0, context, evalId)
 	if(result[1] !== leafNodes.length) { return undefined }
 
 	return result[0]
@@ -77,6 +77,7 @@ function parseFrom(
 	start: number,
 	scope: ScopeTreeNode,
 	context: ParseContext,
+	evalId?: string,
 	self?: ParseTreeNode,
 	firstPart?: ParseTreeNode,
 ): [ ParseTreeNode | undefined, number ] {
@@ -97,7 +98,7 @@ function parseFrom(
 				parsedParts.push(currentLeaf)
 				i++
 			} else {
-				const [parsedValue, parsedLength] = parseValue(currentLeaf, leafNodes, start+i, context.scope, context)
+				const [parsedValue, parsedLength] = parseValue(currentLeaf, leafNodes, start+i, context, evalId,)
 				if(parsedValue != null) {
 					let selfType = (self?.type==='FunctionApplication' || self?.type==='Reference' || self?.type==='Value')?
 						self.valueType :
@@ -115,7 +116,7 @@ function parseFrom(
 				}
 			}
 		} else {
-			const [ parsedValue, parsedLenght ] = parseValue(currentLeaf, leafNodes, start+i, scope, context)
+			const [ parsedValue, parsedLenght ] = parseValue(currentLeaf, leafNodes, start+i, context, evalId)
 			if(parsedValue == null) { return [undefined, 0] }
 
 			lastResult = parsedValue
@@ -176,18 +177,41 @@ function parseValue(
 	currentLeaf: ((Symbol | Operator | Value) & (TreeNode)),
 	leafNodes: ((Symbol | Operator | Value) & (TreeNode))[],
 	start: number,
-	scope: ScopeTreeNode,
 	context: ParseContext,
+	evalId?: string,
 ): [ ParseTreeNode | undefined, number ] {
 	let result: [ ParseTreeNode | undefined, number ] = [ undefined, 0 ]
 	if(currentLeaf.type === 'Symbol' || currentLeaf.type === 'Operator') {
 		const newScopeNode = context.scope.node(currentLeaf)
 		if(newScopeNode != null) {
-			if(newScopeNode.value?.type === 'Reference') {
-				const value = newScopeNode.value
+			if (newScopeNode.value?.type === 'EvalReference') {
 				if(newScopeNode.fullPath.length !== 1) {
 					throw new Error('Cannot reference a value when the full path does not have length 1, has: '+newScopeNode.fullPath.length)
 				}
+				const scopedValue = newScopeNode.value as NewReference
+				const value = scopedValue.referenced.evaluate(evalId ?? '-fixme-')
+				if(value.resultType === 'value') {
+					const definition = newScopeNode.fullPath[0]
+					if(definition.type!=='Operator' && definition.type!=='Symbol') {
+						throw new Error('Cannot reference a value when the definition is not either an operator or a symbol, is: '+definition.type)
+					}
+					result = [
+						{
+							type: 'Reference',
+							nodeType: 'Node',
+							valueType: value.type,
+							references: definition.text,
+						},
+						1
+					]
+				} else {
+					//TODO handle parse error here, too.
+				}
+			} else if(newScopeNode.value?.type === 'Reference') {
+				if(newScopeNode.fullPath.length !== 1) {
+					throw new Error('Cannot reference a value when the full path does not have length 1, has: '+newScopeNode.fullPath.length)
+				}
+				const value = newScopeNode.value
 				const definition = newScopeNode.fullPath[0]
 				if(definition.type!=='Operator' && definition.type!=='Symbol') {
 					throw new Error('Cannot reference a value when the definition is not either an operator or a symbol, is: '+definition.type)
@@ -202,7 +226,7 @@ function parseValue(
 					1
 				]
 			} else {
-				const innerResult = parseFrom(leafNodes, start+1, newScopeNode, context, undefined, currentLeaf)
+				const innerResult = parseFrom(leafNodes, start+1, newScopeNode, context, evalId, undefined, currentLeaf)
 				if(innerResult[0] != null) {
 					//continue parsing on inner result...
 					result = [ innerResult[0], innerResult[1]+1 ]
@@ -225,7 +249,7 @@ function parseValue(
 			innerScope = type.scope
 		}
 		if(innerScope != null) {
-			[nextValue, nextLength] = parseFrom(leafNodes, start+startIndex, innerScope, context, nextValue)
+			[nextValue, nextLength] = parseFrom(leafNodes, start+startIndex, innerScope, context, evalId, nextValue)
 			if (nextValue != null) {
 				result = [nextValue, result[1] + nextLength]
 				startIndex += nextLength

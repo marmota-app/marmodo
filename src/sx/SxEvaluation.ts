@@ -40,17 +40,19 @@ export class SxEvaluation {
 
 	}
 	evaluate(evalId: string): EvalResult {
-		return evaluateExpression(this.expression, this.context)
+		return evaluateExpression(this.expression, this.context, evalId)
 	}
 }
 
-function evaluateExpression(expression: string, context: SxContext): EvalResult {
+function evaluateExpression(expression: string, context: SxContext, evalId: string): EvalResult {
+	debugger
+
 	try {
 		const tokens = tokenize(expression)
-		const parseRoot = parse(tokens, context)
+		const parseRoot = parse(tokens, context, evalId)
 
 		if(parseRoot != null) {
-			const result = evaluateParseTree(parseRoot, context)
+			const result = evaluateParseTree(parseRoot, context, evalId)
 			return result
 		}
 	} catch(e) {
@@ -65,7 +67,7 @@ function evaluateExpression(expression: string, context: SxContext): EvalResult 
 	}
 }
 
-function evaluateParseTree(node: ParseTreeNode, context: SxContext): EvalResult {
+function evaluateParseTree(node: ParseTreeNode, context: SxContext, evalId: string): EvalResult {
 	if(node.nodeType==='Leaf' && node.type==='Value') {
 		return {
 			resultType: 'value',
@@ -74,25 +76,31 @@ function evaluateParseTree(node: ParseTreeNode, context: SxContext): EvalResult 
 			asString: node.token.text,
 		}
 	} else if(node.type==='Reference') {
-		const value = context.get(node)
-		if(value != null) {
-			return {
-				resultType: 'value',
-				type: value.type,
-				value: value.value,
-				asString: value.asString,
+		const referenced = context.get(node)
+
+		if(referenced != null) {
+			const value = referenced.evaluate(evalId)
+			if(value.resultType === 'value') {
+				return {
+					resultType: 'value',
+					type: value.type,
+					value: value.value,
+					asString: value.asString,
+				}
+			} else {
+				//TODO handle parse error
 			}
 		}
 	} else if(node.type==='FunctionApplication') {
 		const params: ValueResult[] = []
 		if(node.self) {
-			const selfResult = evaluateParseTree(node.self, context)
+			const selfResult = evaluateParseTree(node.self, context, evalId)
 			if(selfResult.resultType==='error') { return selfResult }
 			params.push(selfResult)
 		}
 		for(let part of node.parts) {
 			if(part.type==='Value' || part.type==='FunctionApplication' || part.type==='Reference') {
-				const partResult = evaluateParseTree(part, context)
+				const partResult = evaluateParseTree(part, context, evalId)
 				if(partResult.resultType === 'error') { return partResult }
 				params.push(partResult)
 			}
