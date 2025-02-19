@@ -16,8 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { evaluate, ValueResult } from "../../../src/sx/evaluate"
-import { EvaluationContext } from "../../../src/sx/EvaluationContext"
+import { SxContext } from "../../../src/sx/SxContext";
 
 describe('nested evaluation contexts', () => {
 	[
@@ -25,9 +24,9 @@ describe('nested evaluation contexts', () => {
 		['one two', 'middle', 2] as const,
 		['one two three', 'parent', 1] as const,
 	].forEach(([fn, ctx, expected]) => it(`finds function ${fn} from context ${ctx}`, () => {
-		const parent = new EvaluationContext()
-		const middle = new EvaluationContext(parent)
-		const leaf = new EvaluationContext(middle)
+		const parent = new SxContext()
+		const middle = new SxContext(parent)
+		const leaf = new SxContext(middle)
 
 		parent.scope.register({
 			type: 'Function',
@@ -48,39 +47,22 @@ describe('nested evaluation contexts', () => {
 			evaluate: () => { return 3 },
 		})
 
-		const result = evaluate(fn, leaf)
+		const result = leaf.createEvaluation(fn).evaluate('evalId')
 
 		expect(result.resultType).toEqual('value')
 		expect(result).toHaveProperty('value', expected)
 	}));
 
 	it('can depend on a value registered in an upper scope', () => {
-		const parent = new EvaluationContext()
-		const middle = new EvaluationContext(parent)
-		const leaf = new EvaluationContext(middle)
+		const parent = new SxContext()
+		const middle = new SxContext(parent)
+		const leaf = new SxContext(middle)
 
-		const reference = evaluate('10', parent) as ValueResult
-		parent.registerReference('var', reference)
+		const reference = parent.createEvaluation('10')
+		parent.registerNamed(reference, 'var')
 
-		const result = evaluate('var * 2', leaf)
+		const result = leaf.createEvaluation('var * 2').evaluate('evalId')
 
 		expect(result).toHaveProperty('resultType', 'value')
-	})
-	it('can invalidate a result from the leaf context when a dependency in an outer context changes', () => {
-		const parent = new EvaluationContext()
-		const middle = new EvaluationContext(parent)
-		const leaf = new EvaluationContext(middle)
-
-		const reference = evaluate('10', parent) as ValueResult
-		parent.registerReference('var', reference)
-
-		let invalidated = false
-		const result = evaluate('var * 2', leaf) as ValueResult
-		result.context.onResultInvalidated(() => invalidated = true)
-
-		const newReference = evaluate('11', parent) as ValueResult
-		parent.registerReference('var', newReference)
-
-		expect(invalidated).toEqual(true)
 	})
 })

@@ -16,7 +16,6 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { EvaluationContext } from "../EvaluationContext";
 import { Token } from "../SxToken";
 import { ExpressionType } from "../types/ExpressionType";
 import { EvaluationScope, NewReference, ScopedValue, ScopeTreeNode } from "./EvaluationScope";

@@ -17,7 +17,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { parse, ParseTreeNode } from "./eval/parse";
-import { EvaluationContext } from "./EvaluationContext";
 import { SxContext } from "./SxContext";
 import { tokenize } from "./SxToken";
 import { ExpressionType } from "./types/ExpressionType";

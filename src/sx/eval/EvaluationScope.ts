@@ -17,9 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { jsonTransientPrivate } from "../../utilities/jsonTransient"
-import { EvaluationContext } from "../EvaluationContext"
-import { SxEvaluation } from "../SxEvaluation"
-import { ValueResult } from "../evaluate"
+import { SxEvaluation, ValueResult } from "../SxEvaluation"
 import { ExpressionType } from "../types/ExpressionType"
 
 interface Symbol {

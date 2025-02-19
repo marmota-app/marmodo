@@ -16,15 +16,14 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { SxContext } from "../../../src/sx/SxContext"
 import { initializeTreeLeafNodes, parse } from "../../../src/sx/eval/parse"
 import { tokenize } from "../../../src/sx/SxToken"
-import { EvaluationContext } from "../../../src/sx/EvaluationContext"
-import { evaluate } from "../../../src/sx/evaluate"
 
 describe('parse', () => {
 	describe('parse', () => {
 		it('parses a simple function call', () => {
-			const context = new EvaluationContext()
+			const context = new SxContext()
 			context.scope.register({
 				type: 'Function',
 				valueType: 'String',
@@ -48,7 +47,7 @@ describe('parse', () => {
 		})
 
 		it('parses a longer function call', () => {
-			const context = new EvaluationContext()
+			const context = new SxContext()
 			context.scope.register({
 				type: 'Function',
 				valueType: 'String',
@@ -73,7 +72,7 @@ describe('parse', () => {
 		})
 
 		it('parses a simple value', () => {
-			const context = new EvaluationContext()
+			const context = new SxContext()
 
 			const tokens = tokenize('10')
 
@@ -84,7 +83,7 @@ describe('parse', () => {
 		})
 
 		it('parses a function call on the last result', () => {
-			const context = new EvaluationContext()
+			const context = new SxContext()
 			const tokens = tokenize('10 + 5.5')
 
 			const result = parse(tokens, context)
@@ -99,7 +98,7 @@ describe('parse', () => {
 			expect((result as any).self).toHaveProperty('type', 'Value')
 		})
 		it('parses a function call with special parameter <Same>', () => {
-			const context = new EvaluationContext()
+			const context = new SxContext()
 			const tokens = tokenize('10€ + 5€')
 
 			const result = parse(tokens, context) as any
@@ -115,7 +114,7 @@ describe('parse', () => {
 			expect(result.self).toHaveProperty('type', 'FunctionApplication')
 		})
 		it('does not parse a function call where special parameter <Same> is not matched', () => {
-			const context = new EvaluationContext()
+			const context = new SxContext()
 			const tokens = tokenize('10€ + 5$')
 
 			const result = parse(tokens, context)
@@ -123,7 +122,7 @@ describe('parse', () => {
 			expect(result).toBeUndefined()
 		})
 		it('parses a function call on the last result - twice after parens', () => {
-			const context = new EvaluationContext()
+			const context = new SxContext()
 			const tokens = tokenize('(1+2)*3')
 
 			const result = parse(tokens, context)
@@ -139,7 +138,7 @@ describe('parse', () => {
 		})
 
 		it('parses a combined value in a parameter', () => {
-			const context = new EvaluationContext()
+			const context = new SxContext()
 			context.scope.register({
 				type: 'Function',
 				valueType: 'String',
@@ -168,7 +167,7 @@ describe('parse', () => {
 		})
 
 		it('parses a combined value (twice) in a parameter', () => {
-			const context = new EvaluationContext()
+			const context = new SxContext()
 			context.scope.register({
 				type: 'Function',
 				valueType: 'String',
@@ -201,7 +200,7 @@ describe('parse', () => {
 		})
 
 		it('parses a combined value in a parentheses', () => {
-			const context = new EvaluationContext()
+			const context = new SxContext()
 			context.scope.register({
 				type: 'Function',
 				valueType: 'String',
@@ -230,7 +229,7 @@ describe('parse', () => {
 		})
 
 		it('parses a combined value (twice) with different types', () => {
-			const context = new EvaluationContext()
+			const context = new SxContext()
 			context.scope.register({
 				type: 'Function',
 				valueType: 'String',
@@ -264,7 +263,7 @@ describe('parse', () => {
 			//here, we have to execute some code in the context of the return value
 			//of a function. which is not exactly easy with the current structure
 			//of the parser, so, clean up first.
-			const context = new EvaluationContext()
+			const context = new SxContext()
 			context.scope.register({
 				type: 'Function',
 				valueType: 'String',
@@ -302,9 +301,9 @@ describe('parse', () => {
 
 	describe('references', () => {
 		it('parses a simple reference value', () => {
-			const context = new EvaluationContext()
-			const ref1 = evaluate('10', context) as any
-			context.registerReference('ref1', ref1)
+			const context = new SxContext()
+			const ref1 = context.createEvaluation('10') as any
+			context.registerNamed(ref1, 'ref1')
 
 			const tokens = tokenize('ref1')
 
@@ -315,9 +314,9 @@ describe('parse', () => {
 		})
 
 		it('parses a function call on the last reference result', () => {
-			const context = new EvaluationContext()
-			const ref1 = evaluate('10', context) as any
-			context.registerReference('ref1', ref1)
+			const context = new SxContext()
+			const ref1 = context.createEvaluation('10') as any
+			context.registerNamed(ref1, 'ref1')
 
 			const tokens = tokenize('ref1 + 5.5')
 
@@ -333,9 +332,9 @@ describe('parse', () => {
 			expect((result as any).self).toHaveProperty('type', 'Reference')
 		})
 		it('parses a function call on the last result, with reference', () => {
-			const context = new EvaluationContext()
-			const ref1 = evaluate('10', context) as any
-			context.registerReference('ref1', ref1)
+			const context = new SxContext()
+			const ref1 = context.createEvaluation('10') as any
+			context.registerNamed(ref1, 'ref1')
 
 			const tokens = tokenize('2*ref1')
 
@@ -359,7 +358,7 @@ describe('parse', () => {
 			['"foo"', 'String'],
 			['true', 'Boolean'],
 		].forEach(([input, type]) => it(`assigns the type ${type} to a single value ${input}`, () => {
-			const context = new EvaluationContext()
+			const context = new SxContext()
 			const tokens = tokenize(input)
 
 			const result = initializeTreeLeafNodes(tokens, context)
@@ -372,7 +371,7 @@ describe('parse', () => {
 	})
 
 	describe('initializes a single symbol node', () => {
-		const context = new EvaluationContext()
+		const context = new SxContext()
 		const tokens = tokenize('foo')
 
 		const result = initializeTreeLeafNodes(tokens, context)
@@ -382,7 +381,7 @@ describe('parse', () => {
 		expect(result[0]).toHaveProperty('token', tokens[0])
 	})
 	describe('initializes a single operator node', () => {
-		const context = new EvaluationContext()
+		const context = new SxContext()
 		const tokens = tokenize('-')
 
 		const result = initializeTreeLeafNodes(tokens, context)
@@ -393,7 +392,7 @@ describe('parse', () => {
 	})
 
 	describe('initializes a list of different parse tree nodes', () => {
-		const context = new EvaluationContext()
+		const context = new SxContext()
 		const tokens = tokenize('- 10 foo')
 
 		const result = initializeTreeLeafNodes(tokens, context)

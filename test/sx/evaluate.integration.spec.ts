@@ -16,8 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { evaluate } from "../../src/sx/evaluate"
-import { EvaluationContext } from "../../src/sx/EvaluationContext"
+import { SxContext } from "../../src/sx/SxContext"
 
 describe('evaluate (integration tests)', () => {
 	[
@@ -32,9 +31,9 @@ describe('evaluate (integration tests)', () => {
 		['10€ + (10€ * 10%)', '11 €', 'Currency:Euro' ],
 		['10€ + 20%', '12 €', 'Currency:Euro' ],
 	].forEach(([expression, expected, expectedType]) => it(`evaluates "${expression}" to "${expected}"`, () => {
-			const context = new EvaluationContext()
+			const context = new SxContext()
 
-			const result = evaluate(expression, context) as any
+			const result = context.createEvaluation(expression).evaluate('id-1') as any
 
 			expect(result).toHaveProperty('resultType', 'value')
 			expect(result).toHaveProperty('asString', expected)
