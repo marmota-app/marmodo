@@ -46,6 +46,6 @@ describe('CustomInline', () => {
 	it('contains a sx evaulation', () => {
 		const result = parseAll('CustomInline', '{{ var * 2 }}') as CustomInline
 
-		expect(result.evaluation?.dependsOn).toHaveLength(1)
+		expect(result.evaluation).toBeDefined()
 	})
 })

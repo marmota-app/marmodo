@@ -47,7 +47,7 @@ interface FunctionParameter {
 interface Function {
 	type: 'Function',
 	valueType: string,
-	evaluate: (params: FunctionParameter[], context: EvaluationContext) => any,
+	evaluate: (params: FunctionParameter[], context: any /* FIXME!! */) => any,
 }
 export interface Reference {
 	type: 'Reference',

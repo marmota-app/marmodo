@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { EvaluationContext } from "../EvaluationContext";
 import { Token } from "../SxToken";
 import { ExpressionType } from "../types/ExpressionType";
-import { ScopedValue, ScopeTreeNode } from "./EvaluationScope";
+import { EvaluationScope, ScopedValue, ScopeTreeNode } from "./EvaluationScope";
 
 interface Symbol {
 	type: 'Symbol',
@@ -58,7 +58,12 @@ type TreeNode = LeafNode | InnerNode
 
 export type ParseTreeNode = (Symbol | Operator | Value | FunctionApplication | ReferenceNode) & (TreeNode)
 
-export function parse(tokens: Token[], context: EvaluationContext): ParseTreeNode | undefined {
+interface ParseContext {
+	readonly types: { [key: string]: ExpressionType }
+	readonly scope: EvaluationScope
+}
+
+export function parse(tokens: Token[], context: ParseContext): ParseTreeNode | undefined {
 	let leafNodes = initializeTreeLeafNodes(tokens, context)
 
 	const result = parseValue(leafNodes[0], leafNodes, 0, context.scope, context)
@@ -71,7 +76,7 @@ function parseFrom(
 	leafNodes: ((Symbol | Operator | Value) & (TreeNode))[],
 	start: number,
 	scope: ScopeTreeNode,
-	context: EvaluationContext,
+	context: ParseContext,
 	self?: ParseTreeNode,
 	firstPart?: ParseTreeNode,
 ): [ ParseTreeNode | undefined, number ] {
@@ -172,7 +177,7 @@ function parseValue(
 	leafNodes: ((Symbol | Operator | Value) & (TreeNode))[],
 	start: number,
 	scope: ScopeTreeNode,
-	context: EvaluationContext,
+	context: ParseContext,
 ): [ ParseTreeNode | undefined, number ] {
 	let result: [ ParseTreeNode | undefined, number ] = [ undefined, 0 ]
 	if(currentLeaf.type === 'Symbol' || currentLeaf.type === 'Operator') {
@@ -233,10 +238,10 @@ function parseValue(
 	return result
 }
 
-export function initializeTreeLeafNodes(tokens: Token[], context: EvaluationContext): ((Symbol | Operator | Value) & (TreeNode))[] {
+export function initializeTreeLeafNodes(tokens: Token[], context: ParseContext): ((Symbol | Operator | Value) & (TreeNode))[] {
 	return tokens.map(t => initializeLeafNode(t, context))
 }
-function initializeLeafNode(token: Token, context: EvaluationContext): (Symbol | Operator | Value) & (TreeNode) {
+function initializeLeafNode(token: Token, context: ParseContext): (Symbol | Operator | Value) & (TreeNode) {
 	if(token.type === 'Number') {
 		if(token.text.indexOf('.') >= 0) {
 			return {

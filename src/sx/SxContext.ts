@@ -16,10 +16,69 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { SxEvaluation } from "./SxEvaluation";
+import { EvaluationScope } from "./eval/EvaluationScope";
+import { ReferenceNode } from "./eval/parse";
+import { SxEvaluation, ValueResult } from "./SxEvaluation";
+import { anyType } from "./types/base/any";
+import { booleanType } from "./types/base/boolean";
+import { floatType, initializeNumberTypes, integerType, numberType } from "./types/base/numbers";
+import { initializeStringTypes, stringType } from "./types/base/string";
+import { ExpressionType } from "./types/ExpressionType";
+import { currencyType, dollarCurrencyType, euroCurrencyType, initializeCurrency } from "./types/units/currency";
+import { initializePercentage, percentageType } from "./types/units/percentage";
 
 export class SxContext {
-	createEvaluation(text: string): SxEvaluation {
-		return new SxEvaluation()
+	public readonly types: { [key: string]: ExpressionType } = {}
+	public readonly scope: EvaluationScope
+
+	constructor(private readonly parent?: SxContext) {
+		this.scope = new EvaluationScope(this.parent?.scope)
+		if (parent == null) {
+			initializeScope(this.scope)
+
+			initializeNumberTypes()
+			initializeStringTypes()
+			initializeCurrency()
+			initializePercentage()
+
+			this.types[anyType.name] = anyType
+			this.types[numberType.name] = numberType
+			this.types[integerType.name] = integerType
+			this.types[floatType.name] = floatType
+			this.types[stringType.name] = stringType
+			this.types[booleanType.name] = booleanType
+
+			this.types[percentageType.name] = percentageType
+
+			this.types[currencyType.name] = currencyType
+			this.types[euroCurrencyType.name] = euroCurrencyType
+			this.types[dollarCurrencyType.name] = dollarCurrencyType
+		} else {
+			this.types = parent.types
+		}
 	}
+
+	createEvaluation(expression: string): SxEvaluation {
+		return new SxEvaluation(expression, this)
+	}
+
+	get(reference: ReferenceNode): ValueResult | undefined {
+		return undefined
+	}
+}
+
+function initializeScope(scope: EvaluationScope) {
+	scope.register({
+		type: 'Function',
+		valueType: '<T>',
+		evaluate: (params) => {
+			if(params.length !== 1) { throw new Error('Expected exactly one parameter, got: '+params.length) }
+			return params[0].value
+		},
+		definition: [
+			{ type: 'Operator', text: '(' },
+			{ type: 'Parameter', parameterType: '<T>' },
+			{ type: 'Operator', text: ')' },
+		],
+	})
 }

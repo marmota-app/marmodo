@@ -16,6 +16,99 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { parse, ParseTreeNode } from "./eval/parse";
+import { EvaluationContext } from "./EvaluationContext";
+import { SxContext } from "./SxContext";
+import { tokenize } from "./SxToken";
+import { ExpressionType } from "./types/ExpressionType";
+
+export interface ErrorResult {
+	resultType: 'error',
+	message: string,
+	near: [string, number],
+}
+export interface ValueResult {
+	resultType: 'value',
+	type: ExpressionType,
+	value: any,
+	asString: string,
+}
+export type EvalResult = ErrorResult | ValueResult
+
 export class SxEvaluation {
-	dependsOn = [ 'foo' ]
+	constructor(private readonly expression: string, private readonly context: SxContext) {
+
+	}
+	evaluate(evalId: string): EvalResult {
+		return evaluateExpression(this.expression, this.context)
+	}
+}
+
+function evaluateExpression(expression: string, context: SxContext): EvalResult {
+	try {
+		const tokens = tokenize(expression)
+		const parseRoot = parse(tokens, context)
+
+		if(parseRoot != null) {
+			const result = evaluateParseTree(parseRoot, context)
+			return result
+		}
+	} catch(e) {
+		console.error(e)
+		//FIXME should probably return a different error than the default error below...
+	}
+
+	return {
+		resultType: 'error',
+		message: '',
+		near: ['', 0]
+	}
+}
+
+function evaluateParseTree(node: ParseTreeNode, context: SxContext): EvalResult {
+	if(node.nodeType==='Leaf' && node.type==='Value') {
+		return {
+			resultType: 'value',
+			type: node.valueType,
+			value: node.value,
+			asString: node.token.text,
+		}
+	} else if(node.type==='Reference') {
+		const value = context.get(node)
+		if(value != null) {
+			return {
+				resultType: 'value',
+				type: value.type,
+				value: value.value,
+				asString: value.asString,
+			}
+		}
+	} else if(node.type==='FunctionApplication') {
+		const params: ValueResult[] = []
+		if(node.self) {
+			const selfResult = evaluateParseTree(node.self, context)
+			if(selfResult.resultType==='error') { return selfResult }
+			params.push(selfResult)
+		}
+		for(let part of node.parts) {
+			if(part.type==='Value' || part.type==='FunctionApplication' || part.type==='Reference') {
+				const partResult = evaluateParseTree(part, context)
+				if(partResult.resultType === 'error') { return partResult }
+				params.push(partResult)
+			}
+		}
+
+		const result = node.func.evaluate(params, context)
+		return {
+			resultType: 'value',
+			type: node.valueType,
+			value: result,
+			asString: result.asString ?? (''+result),
+		}
+	}
+	return {
+		resultType: 'error',
+		message: '',
+		near: ['', 0]
+	}
 }

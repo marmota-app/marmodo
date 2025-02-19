@@ -46,6 +46,6 @@ describe('CustomTableColumn', () => {
 	it('contains a sx evaulation', () => {
 		const result = parseAll('CustomTableColumn', '|{{ var * 2 }}|') as unknown as CustomElement
 
-		expect(result.evaluation?.dependsOn).toHaveLength(1)
+		expect(result.evaluation).toBeDefined()
 	})
 })
