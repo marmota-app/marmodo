@@ -16,8 +16,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { CustomInline } from "src/element"
+import { CustomInline } from "../../src/element"
 import { parseAll } from "../parse"
+import { SxContext } from "../../src/sx/SxContext"
 
 describe('CustomInline', () => {
 	it('parses a custom inline', () => {
@@ -47,5 +48,64 @@ describe('CustomInline', () => {
 		const result = parseAll('CustomInline', '{{ var * 2 }}') as CustomInline
 
 		expect(result.evaluation).toBeDefined()
+	})
+
+	it('can get the result of an evaluation', () => {
+		const result = parseAll('CustomInline', '{{ 10 * 2 }}') as CustomInline
+		result.updateSxResults('id-1')
+
+		expect(result.referenceMap['sx.resultType']).toEqual('value')
+		expect(result.referenceMap['sx.result']).toEqual('20')
+	})
+	it('notifies the update listeners when the sx result has changed', () => {
+		var updated = false
+		const sxContext = new SxContext()
+		const var1eval = sxContext.createEvaluation('10')
+		sxContext.registerNamed(var1eval, 'var')
+
+		const result = parseAll('CustomInline', '{{ var * 2 }}', { sxContext }) as CustomInline
+		result.updateSxResults('id-1')
+		expect(result.referenceMap['sx.result']).toEqual('20')
+
+		result.onUpdate(() => updated=true)
+		const var2eval = sxContext.createEvaluation('11')
+		sxContext.registerNamed(var2eval, 'var')
+		result.updateSxResults('id-2')
+		expect(result.referenceMap['sx.result']).toEqual('22')
+		expect(updated).toEqual(true)
+	})
+	it('does not notify the update listeners when the sx result has not changed', () => {
+		var updated = false
+		const sxContext = new SxContext()
+		const var1eval = sxContext.createEvaluation('10')
+		sxContext.registerNamed(var1eval, 'var')
+
+		const result = parseAll('CustomInline', '{{ var * 2 }}', { sxContext }) as CustomInline
+		result.updateSxResults('id-1')
+		expect(result.referenceMap['sx.result']).toEqual('20')
+
+		result.onUpdate(() => updated=true)
+		const var2eval = sxContext.createEvaluation('10')
+		sxContext.registerNamed(var2eval, 'var')
+		result.updateSxResults('id-2')
+		expect(result.referenceMap['sx.result']).toEqual('20')
+		expect(updated).toEqual(false)
+	})
+	it('does not notify the update listeners when getting the cached result', () => {
+		var updated = false
+		const sxContext = new SxContext()
+		const var1eval = sxContext.createEvaluation('10')
+		sxContext.registerNamed(var1eval, 'var')
+
+		const result = parseAll('CustomInline', '{{ var * 2 }}', { sxContext }) as CustomInline
+		result.updateSxResults('id-1')
+		expect(result.referenceMap['sx.result']).toEqual('20')
+
+		result.onUpdate(() => updated=true)
+		const var2eval = sxContext.createEvaluation('error')
+		sxContext.registerNamed(var2eval, 'var')
+		result.updateSxResults('id-1')
+		expect(result.referenceMap['sx.result']).toEqual('20')
+		expect(updated).toEqual(false)
 	})
 })

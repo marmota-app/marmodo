@@ -17,21 +17,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { SxContext } from "../src/sx/SxContext";
-import { Element } from "../src/element/Element";
+import { Element, ParsingContext } from "../src/element/Element";
 import { TextContent } from "../src/mbuffer/TextContent";
 import { Parsers } from "../src/parser/Parsers";
 
 export function parseAll<
 	TYPE extends string,
-	ELEMENT extends Element<TYPE, any, ELEMENT>
-> (type: TYPE, content: string): ELEMENT | null {
+	ELEMENT extends Element<TYPE, any, ELEMENT>,
+> (type: TYPE, content: string, context: ParsingContext = { sxContext: new SxContext(), },): ELEMENT | null {
 	const parsers: any = new Parsers()
 	const parser = parsers[type]
 
 	const textContent = new TextContent(content)
 
-	const context = {
-		sxContext: new SxContext(),
-	}
 	return parser.parse(textContent.start(), textContent.end(), context)
 }

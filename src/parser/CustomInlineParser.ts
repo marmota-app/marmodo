@@ -50,10 +50,14 @@ export class MfMCustomInline extends MfMElement<'CustomInline', Text | Options, 
 		return ''
 	}
 
-	override get referenceMap(): { [key: string]: string; } {
+	override get referenceMap(): { [key: string]: string | null; } {
+		const evalResult = this.evaluation?.result
+
 		return {
 			...super.referenceMap,
 			'element.textContent': this.plainContent,
+			'sx.result': evalResult?.resultType === 'value'? evalResult.asString : null,
+			'sx.resultType': evalResult?.resultType ?? null,
 		}
 	}
 
@@ -62,6 +66,20 @@ export class MfMCustomInline extends MfMElement<'CustomInline', Text | Options, 
 			return this.content[1] as ElementOptions
 		}
 		return EMPTY_OPTIONS
+	}
+
+	updateSxResults(evaluationId: string) {
+		const lastResult = this.evaluation?.result
+		const newResult = this.evaluation?.evaluate(evaluationId)
+
+		if(lastResult != null) {
+			if(lastResult.resultType !== newResult?.resultType) {
+				this.updateParsed()
+			}
+			if(lastResult.resultType === 'value' && newResult?.resultType === 'value' && lastResult.asString !== newResult.asString) {
+				this.updateParsed()
+			}
+		}
 	}
 }
 export class CustomInlineParser extends MfMInlineParser<'CustomInline', Text | Options, CustomInline> {

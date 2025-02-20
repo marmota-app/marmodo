@@ -101,4 +101,8 @@ export abstract class MfMElement<
 			'element.content': this.content,
 		}
 	}
+
+	updateSxResults(evaluationId: string) {
+		this.content.forEach(c => c.updateSxResults(evaluationId))
+	}
 }

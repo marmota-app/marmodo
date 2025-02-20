@@ -35,11 +35,32 @@ export interface ValueResult {
 export type EvalResult = ErrorResult | ValueResult
 
 export class SxEvaluation {
-	constructor(private readonly expression: string, private readonly context: SxContext) {
+	private lastResult: EvalResult | null = null
+	private lastEvalId: string | null = null
 
+	constructor(private readonly expression: string, private readonly context: SxContext) {}
+
+	get result(): EvalResult | null {
+		return this.lastResult
 	}
+
 	evaluate(evalId: string): EvalResult {
-		return evaluateExpression(this.expression, this.context, evalId)
+		if(this.lastEvalId === evalId) {
+			if(this.lastResult != null) {
+				return this.lastResult
+			}
+			return {
+				resultType: 'error',
+				message: 'Circular dependency detected',
+				near: ['', 0]
+			}
+		}
+
+		this.lastResult = null
+		this.lastEvalId = evalId
+
+		this.lastResult = evaluateExpression(this.expression, this.context, evalId)
+		return this.lastResult
 	}
 }
 
@@ -87,7 +108,7 @@ function evaluateParseTree(node: ParseTreeNode, context: SxContext, evalId: stri
 					asString: value.asString,
 				}
 			} else {
-				//TODO handle parse error
+				//TODO handle error
 			}
 		}
 	} else if(node.type==='FunctionApplication') {

@@ -88,4 +88,6 @@ export interface Element<
 	removeFromTree: () => void,
 
 	readonly referenceMap: { [key: string]: string | number | boolean | Element<any, any, any> | Element<any, any, any>[] | null },
+
+	updateSxResults: (evaluationId: string)=> void,
 }

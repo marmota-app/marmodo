@@ -62,6 +62,11 @@ interface ParseContext {
 	readonly scope: EvaluationScope
 }
 
+//TODO parse does not handle errors very well. It should report errors to the
+//     caller, since several things can go wrong here. Especially when processing
+//     references: Those are evaluated during "parse", otherwise we could not
+//     really determine their return type. The caller only gets an "undefined"
+//     if something goes wrong here, and cannot report the error in its result.
 export function parse(tokens: Token[], context: ParseContext, evalId?: string): ParseTreeNode | undefined {
 	let leafNodes = initializeTreeLeafNodes(tokens, context)
 

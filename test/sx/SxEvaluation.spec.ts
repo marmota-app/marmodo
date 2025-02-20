@@ -69,4 +69,24 @@ describe('SxEvaluation', () => {
 		expect(result).toHaveProperty('resultType', 'value')
 		expect(result).toHaveProperty('value', 20)
 	})
+	it('cannot depend on an evaluation that returned an error', () => {
+		const context = new SxContext()
+		const eval1 = context.createEvaluation('foo')
+
+		context.registerNamed(eval1, 'r1')
+		const result = context.createEvaluation('r1*2').evaluate('id-1') as ValueResult
+
+		expect(result).toHaveProperty('resultType', 'error')
+	})
+	it('cannot have a circular dependency', () => {
+		const context = new SxContext()
+
+		const eval1 = context.createEvaluation('r2*2')
+		context.registerNamed(eval1, 'r1')
+		const eval2 = context.createEvaluation('r1*2')
+		context.registerNamed(eval2, 'r2')
+		const result = eval2.evaluate('id-1') as ValueResult
+
+		expect(result).toHaveProperty('resultType', 'error')
+	})
 })
