@@ -105,7 +105,9 @@ export interface HeadingContent extends ContainerInline<'HeadingContent', Headin
 export interface CustomInline extends ContainerInline<'CustomInline', CustomInline, Text | Options> {
 	readonly evaluation?: SxEvaluation,
 }
-export interface Text extends LeafInline<'Text', Text> {}
+export interface Text extends LeafInline<'Text', Text> {
+	allowUpdate: boolean
+}
 export interface BlankLine extends LeafInline<'BlankLine', BlankLine> {}
 
 export interface TableDelimiterColumn extends ContainerInline<'TableDelimiterColumn', TableDelimiterColumn, Options> {

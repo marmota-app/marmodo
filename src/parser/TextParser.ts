@@ -25,6 +25,7 @@ import { andFalse, andOther, MfMParser } from "./MfMParser";
 
 export class MfMText extends MfMElement<'Text', never, Text, TextParser> implements Text {
 	readonly type = 'Text'
+	allowUpdate: boolean = true
 
 	get textContent() {
 		//This function does not cache the string yet - an optimization
@@ -54,6 +55,12 @@ export class TextParser extends MfMParser<'Text', never, Text> {
 		return new MfMText(this.idGenerator.nextId(), start.persistentRangeUntil(end), this, [], context)
 	}
 	checkUpdate(element: Text, update: UpdateInfo): UpdateCheckResult {
+		if(!element.allowUpdate) {
+			return {
+				canUpdate: false,
+				and: andFalse,
+			}
+		}
 		return this.checkUpdateDoesNotChangeNewlines(element, update).and(this.#checkUpdateDoesNotAddPunctuation(element, update))
 	}
 

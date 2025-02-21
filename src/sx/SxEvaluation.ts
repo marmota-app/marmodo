@@ -65,8 +65,6 @@ export class SxEvaluation {
 }
 
 function evaluateExpression(expression: string, context: SxContext, evalId: string): EvalResult {
-	debugger
-
 	try {
 		const tokens = tokenize(expression)
 		const parseRoot = parse(tokens, context, evalId)

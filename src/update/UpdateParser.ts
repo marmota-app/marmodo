@@ -16,9 +16,12 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { IdGenerator } from "../parser/Parsers";
 import { Element } from "../element/Element";
 import { UpdateInfo } from "../mbuffer/TextContent";
 import { TextLocation } from "../mbuffer/TextLocation";
+
+let idGenerator: IdGenerator | undefined = undefined
 
 interface UpdateResult<
 	T extends string,
@@ -34,7 +37,12 @@ export class UpdateParser {
 		C extends Element<any, any, any>,
 		E extends Element<T, C, E>
 	>(update: UpdateInfo, rootElement: E, documentEnd: TextLocation): E | null {
-		return this.#updateElement(update, rootElement, documentEnd).updated
+		if (idGenerator == null) {
+			idGenerator = new IdGenerator()
+		}
+		const updated = this.#updateElement(update, rootElement, documentEnd).updated
+		updated?.updateSxResults(idGenerator.nextTaggedId('update'))
+		return updated
 	}
 
 	#updateElement<

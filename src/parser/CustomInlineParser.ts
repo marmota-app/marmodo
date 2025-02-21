@@ -17,11 +17,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { SxEvaluation } from "src/sx/SxEvaluation"
-import { CustomElement, CustomInline, ElementOptions, Options, ParsingContext, Text } from "../element"
+import { CustomElement, CustomInline, ElementOptions, Options, ParsingContext, Text, UpdateCheckResult } from "../element"
 import { EMPTY_OPTIONS, MfMElement } from "../element/MfMElement"
 import { TextLocation } from "../mbuffer/TextLocation"
 import { MfMInlineParser, MfMParser } from "./MfMParser"
 import { PersistentRange } from "src/mbuffer/TextRange"
+import { UpdateInfo } from "src/mbuffer"
 
 export class MfMCustomInline extends MfMElement<'CustomInline', Text | Options, CustomInline, CustomInlineParser> implements CustomInline, CustomElement {
 	readonly type = 'CustomInline'
@@ -69,6 +70,8 @@ export class MfMCustomInline extends MfMElement<'CustomInline', Text | Options, 
 	}
 
 	updateSxResults(evaluationId: string) {
+		debugger
+
 		const lastResult = this.evaluation?.result
 		const newResult = this.evaluation?.evaluate(evaluationId)
 
@@ -97,17 +100,23 @@ export class CustomInlineParser extends MfMInlineParser<'CustomInline', Text | O
 
 			const text = this.parsers.Text.parse(startingDelimiter.end, endingDelimiter.start, context)
 			if(text == null) { return null }
+			text.allowUpdate = false
 			content.push(text)
 
+			const evaluation = context.sxContext?.createEvaluation(text.asText)
 			if(endingDelimiter.end.isBefore(end) && endingDelimiter.end.get() === '{') {
 				const options = this.parsers.Options.parse(endingDelimiter.end, end, context)
 				if(options !== null) {
 					content.push(options)
 					contentEnd = options.parsedRange.end
+
+					const evaluationName = options.get('default')
+					if(evaluationName && evaluation != null) {
+						context.sxContext?.registerNamed(evaluation, evaluationName)
+					}
 				}
 			}
 
-			const evaluation = context.sxContext?.createEvaluation(text.asText)
 			const result = new MfMCustomInline(
 				this.idGenerator.nextId(),
 				start.persistentRangeUntil(contentEnd),
