@@ -17,15 +17,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { SxEvaluation } from "src/sx/SxEvaluation"
-import { CustomElement, CustomInline, ElementOptions, Options, ParsingContext, Text, UpdateCheckResult } from "../element"
+import { CustomElement, CustomInline, Element, ElementOptions, Options, ParsingContext, Text, UpdateCheckResult } from "../element"
 import { EMPTY_OPTIONS, MfMElement } from "../element/MfMElement"
 import { TextLocation } from "../mbuffer/TextLocation"
 import { MfMInlineParser, MfMParser } from "./MfMParser"
 import { PersistentRange } from "src/mbuffer/TextRange"
 import { UpdateInfo } from "src/mbuffer"
+import { MfMOptions } from "./options/OptionsParser"
+import { SxContext } from "src/sx/SxContext"
 
 export class MfMCustomInline extends MfMElement<'CustomInline', Text | Options, CustomInline, CustomInlineParser> implements CustomInline, CustomElement {
 	readonly type = 'CustomInline'
+	private lastRegisteredName: string | null | undefined = null
 
 	constructor(
 		id: string,
@@ -36,6 +39,29 @@ export class MfMCustomInline extends MfMElement<'CustomInline', Text | Options, 
 		public readonly evaluation?: SxEvaluation,
 	) {
 		super(id, parsedRange, parsedWith, content, parsingContext)
+
+		this.#registerInContext()
+		this.onSubtreeUpdate(() => {
+			this.#registerInContext()
+		})
+	}
+
+	#registerInContext() {
+		if(this.content.length === 2) {
+			const options = this.content[1] as MfMOptions
+
+			const evaluationName = options.get('default')
+			if(this.lastRegisteredName != null) {
+				this.parsingContext.sxContext?.unregisterNamed(this.lastRegisteredName)
+			}
+			if(evaluationName && this.evaluation != null) {
+				this.parsingContext.sxContext?.registerNamed(this.evaluation, evaluationName)
+			}
+
+			this.lastRegisteredName = options.get('default')
+		} else {
+			this.lastRegisteredName = null
+		}
 	}
 
 	get asText(): string {
@@ -70,8 +96,6 @@ export class MfMCustomInline extends MfMElement<'CustomInline', Text | Options, 
 	}
 
 	updateSxResults(evaluationId: string) {
-		debugger
-
 		const lastResult = this.evaluation?.result
 		const newResult = this.evaluation?.evaluate(evaluationId)
 
@@ -81,6 +105,15 @@ export class MfMCustomInline extends MfMElement<'CustomInline', Text | Options, 
 			}
 			if(lastResult.resultType === 'value' && newResult?.resultType === 'value' && lastResult.asString !== newResult.asString) {
 				this.updateParsed()
+			}
+		}
+	}
+
+	override removeFromTree(exchangedFor?: any): void {
+		super.removeFromTree()
+		if(this.lastRegisteredName != null) {
+			if(exchangedFor?.lastRegisteredName !== this.lastRegisteredName) {
+				this.parsingContext.sxContext?.unregisterNamed(this.lastRegisteredName)
 			}
 		}
 	}
@@ -109,11 +142,6 @@ export class CustomInlineParser extends MfMInlineParser<'CustomInline', Text | O
 				if(options !== null) {
 					content.push(options)
 					contentEnd = options.parsedRange.end
-
-					const evaluationName = options.get('default')
-					if(evaluationName && evaluation != null) {
-						context.sxContext?.registerNamed(evaluation, evaluationName)
-					}
 				}
 			}
 

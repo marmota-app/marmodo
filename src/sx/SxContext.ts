@@ -78,6 +78,13 @@ export class SxContext {
 			referenced: evaluation,
 		})
 	}
+	unregisterNamed(name: string) {
+		const scopeNode = this.scope.node({ type: 'Symbol', text: name })
+
+		if(scopeNode != null && scopeNode.value?.type === 'EvalReference') {
+			scopeNode.unregisterValue()
+		}
+	}
 }
 
 function initializeScope(scope: EvaluationScope) {

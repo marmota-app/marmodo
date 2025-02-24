@@ -16,7 +16,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { Element, Parser } from "../../src/element/Element"
+import { SxContext } from "../../src/sx/SxContext"
+import { Element, Parser, ParsingContext } from "../../src/element/Element"
 import { ContentUpdate } from "../../src/mbuffer/ContentUpdate"
 import { TextContent } from "../../src/mbuffer/TextContent"
 import { UpdateParser } from "../../src/update/UpdateParser"
@@ -32,7 +33,7 @@ export function expectUpdate<
 	return {
 		canBeParsed(reason = '', assertions: (updated: ELEMENT) => unknown = ()=>{}) {
 			it(`can parse update ["${update.text}", ${update.rangeOffset}+${update.rangeLength}] to content "${replaceWhitespace(originalText)}"${reason.length>0? ' - '+reason : ''}`, () => {
-				const updated = parseAndUpdate(parser, originalText, update)
+				const { updated } = parseAndUpdate(parser, originalText, update)
 
 				const expectedTextContent = new TextContent(originalText)
 				expectedTextContent.update(update)
@@ -46,7 +47,7 @@ export function expectUpdate<
 		},
 		cannotBeParsed(reason = '') {
 			it(`CANNOT parse update ["${update.text}", ${update.rangeOffset}+${update.rangeLength}] to content "${replaceWhitespace(originalText)}"${reason.length>0? ' - '+reason : ''}`, () => {
-				const updated = parseAndUpdate(parser, originalText, update)
+				const { updated } = parseAndUpdate(parser, originalText, update)
 				expect(updated).toBeNull()
 			})
 		},
@@ -111,23 +112,33 @@ export function expectUpdates<
 	}
 }
 
-function parseAndUpdate<
+export function parseAndUpdate<
 	TYPE extends string,
 	CONTENT extends Element<any, any, any>,
 	ELEMENT extends Element<TYPE, CONTENT, ELEMENT>,
->(parser: Parser<TYPE, CONTENT, ELEMENT>, originalText: string, update: ContentUpdate): ELEMENT | null {
-	const [text, original] = parse(parser, originalText)
-	return updateElement(text, original, update)
+>(
+	parser: Parser<TYPE, CONTENT, ELEMENT>,
+	originalText: string,
+	update: ContentUpdate,
+	context: ParsingContext = { sxContext: new SxContext(), },
+): { original: ELEMENT | null, updated: ELEMENT | null } {
+	const [text, original] = parse(parser, originalText, context)
+	const updated = updateElement(text, original, update)
+	return { original, updated }
 }
 
 function parse<
 	TYPE extends string,
 	CONTENT extends Element<any, any, any>,
 	ELEMENT extends Element<TYPE, CONTENT, ELEMENT>,
->(parser: Parser<TYPE, CONTENT, ELEMENT>, originalText: string): [TextContent, ELEMENT] {
+>(
+	parser: Parser<TYPE, CONTENT, ELEMENT>,
+	originalText: string,
+	context: ParsingContext = { sxContext: new SxContext(), },
+): [TextContent, ELEMENT] {
 	const text = new TextContent(originalText)
 
-	const original = parser.parse(text.start(), text.end(), {})
+	const original = parser.parse(text.start(), text.end(), context)
 	if(original == null) { throw new Error(`Could not parse string "${originalText}" with parser ${parser}`) }
 
 	return [text, original]
