@@ -19,9 +19,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { BlankLine, Element, ElementOptions, ParsingContext, Table, TableDelimiterRow, TableRow } from "../../element"
 import { MfMElement } from "../../element/MfMElement"
 import { TextLocation } from "../../mbuffer/TextLocation"
+import { SxContext } from "../../sx/SxContext"
 import { finiteLoop } from "../../utilities/finiteLoop"
 import { MfMParser } from "../MfMParser"
 import { MfMTableRow } from "./TableRowParser"
+import { TableSxContext } from "./TableSxContext"
 
 export class MfMTable extends MfMElement<'Table', TableRow | TableDelimiterRow | BlankLine, Table, TableParser> implements Table {
 	public readonly type = 'Table'
@@ -78,10 +80,12 @@ export class MfMTable extends MfMElement<'Table', TableRow | TableDelimiterRow |
 export class TableParser extends MfMParser<'Table', TableRow | TableDelimiterRow | BlankLine, Table> {
 	readonly type = 'Table'
 
-	parse(start: TextLocation, end: TextLocation, context: ParsingContext): Table | null {
+	parse(start: TextLocation, end: TextLocation, _context: ParsingContext): Table | null {
 		const content: (TableRow | TableDelimiterRow | BlankLine)[] = []
+		const tableSxContext = _context.sxContext? new TableSxContext(_context.sxContext) : undefined
+		const tableContext: ParsingContext = { ..._context, sxContext: tableSxContext}
 
-		const [delimiters, headers] = this.#readDelimitersAndHeaders(start, end, context)
+		const [delimiters, headers] = this.#readDelimitersAndHeaders(start, end, tableContext)
 
 		if(headers != null) {
 			content.push(headers)
@@ -101,7 +105,7 @@ export class TableParser extends MfMParser<'Table', TableRow | TableDelimiterRow
 			const nextNewline = cur.findNextNewline(end)
 			const lineEnd = nextNewline?.end ?? end
 
-			const row = this.parsers.TableRow.parse(cur, lineEnd, context)
+			const row = this.parsers.TableRow.parse(cur, lineEnd, tableContext)
 			if(row != null) {
 				(row as MfMTableRow).tableRow = tableRow
 				tableRow++
@@ -120,11 +124,13 @@ export class TableParser extends MfMParser<'Table', TableRow | TableDelimiterRow
 			start.persistentRangeUntil(tableEnd),
 			this,
 			content,
-			context,
+			tableContext,
 		)
 		result.lastRow = result.rows-1
 		result.lastColumn = result.columns-1
 
+		if(tableSxContext != null) { tableSxContext.table = result }
+		
 		return result
 	}
 

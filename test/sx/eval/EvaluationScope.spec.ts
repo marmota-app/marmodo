@@ -80,7 +80,6 @@ describe('EvaluationScope', () => {
 			}
 			root.register(scopedValue)
 
-			debugger
 			expect(leaf.node({ type: 'Symbol', text: 'foo' })).not.toBeUndefined()
 		})
 		it('finds value from root scope when current scope has node but no value', () => {

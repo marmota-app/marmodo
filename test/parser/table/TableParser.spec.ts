@@ -18,6 +18,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import { Table } from "../../../src/element"
 import { Parsers } from "../../../src/parser/Parsers"
+import { MfMTable } from "../../../src/parser/table/TableParser"
+import { SxContext } from "../../../src/sx/SxContext"
 import { parseAll } from "../../parse"
 import { expectUpdate, expectUpdates } from "../../update/expectUpdate"
 
@@ -87,6 +89,14 @@ describe('TableParser', () => {
 			expect(result?.tableRows[0]?.columns[1]?.referenceMap).toHaveProperty('tableColumn', 1)
 			expect(result?.tableRows[2]?.referenceMap).toHaveProperty('tableRow', 2)
 			expect(result?.tableRows[2]?.columns[3]?.referenceMap).toHaveProperty('tableColumn', 3)
+		})
+
+		it('creates a new SX parsing context if a parent context was given', () => {
+			const sxContext = new SxContext()
+
+			const result = parseAll('Table', '---|:--:|--:|---', { sxContext }) as unknown as MfMTable
+
+			expect(result.parsingContext.sxContext).toHaveProperty('parent', sxContext)
 		})
 	})
 

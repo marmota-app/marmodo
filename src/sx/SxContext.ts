@@ -31,7 +31,7 @@ export class SxContext {
 	public readonly types: { [key: string]: ExpressionType } = {}
 	public readonly scope: EvaluationScope
 
-	constructor(private readonly parent?: SxContext) {
+	constructor(public readonly parent?: SxContext) {
 		this.scope = new EvaluationScope(this.parent?.scope)
 		if (parent == null) {
 			initializeScope(this.scope)

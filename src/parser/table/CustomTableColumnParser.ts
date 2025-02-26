@@ -16,13 +16,15 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { SxEvaluation } from "src/sx/SxEvaluation"
+import { SxEvaluation } from "../../sx/SxEvaluation"
 import { AnyInline, CustomElement, ElementOptions, ParsingContext, TableColumn } from "../../element"
 import { EMPTY_OPTIONS, MfMElement } from "../../element/MfMElement"
 import { TextLocation } from "../../mbuffer/TextLocation"
 import { PersistentRange } from "../../mbuffer/TextRange"
 import { MfMParser } from "../MfMParser"
 import { IdGenerator, Parsers } from "../Parsers"
+import { ColumnSxContext } from "./ColumnSxContext"
+import { TableSxContext } from "./TableSxContext"
 
 export class MfMCustomTableColumn extends MfMElement<'CustomTableColumn', AnyInline, TableColumn<'CustomTableColumn'>, CustomTableColumnParser> implements TableColumn<'CustomTableColumn'>, CustomElement {
 	public readonly type = 'CustomTableColumn'
@@ -87,7 +89,7 @@ export class CustomTableColumnParser extends MfMParser<'CustomTableColumn', AnyI
 		super(idGenerator, parsers)
 	}
 
-	parse(start: TextLocation, end: TextLocation, context: ParsingContext): TableColumn<'CustomTableColumn'> | null {
+	parse(start: TextLocation, end: TextLocation, _context: ParsingContext): TableColumn<'CustomTableColumn'> | null {
 		const contentStart = start.accessor()
 		if(!contentStart.is('|')) { return null }
 
@@ -101,18 +103,24 @@ export class CustomTableColumnParser extends MfMParser<'CustomTableColumn', AnyI
 		if(contentEnd == null) { return null }
 		if(!contentEnd.end.is('|')) { return null }
 
-		const text = this.parsers.Text.parse(contentStart, contentEnd.start, context)
+		const columnSxContext = _context.sxContext? new ColumnSxContext(_context.sxContext) : undefined
+		const columnContext: ParsingContext = { ..._context, sxContext: columnSxContext}
+
+		const text = this.parsers.Text.parse(contentStart, contentEnd.start, columnContext)
 		if(text == null) { return null }
 
-		const evaluation = context.sxContext?.createEvaluation(text.asText)
-		return new MfMCustomTableColumn(
+		const evaluation = columnContext.sxContext?.createEvaluation(text.asText)
+
+		const result = new MfMCustomTableColumn(
 			this.idGenerator.nextId(),
 			start.persistentRangeUntil(contentEnd.end),
 			this,
 			[ text ],
-			context,
+			columnContext,
 			evaluation,
 		)
+		if(columnSxContext != null) { columnSxContext.column = result }
+		return result
 
 		/*
 		const content: AnyInline[] = []
