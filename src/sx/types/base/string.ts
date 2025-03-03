@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { EvaluationScope } from "../../eval/EvaluationScope";
 import { ExpressionType } from "../ExpressionType";
 import { anyType } from "./any";
+import { numberAdd, numberDivide, numberMultiply, numberSubstract } from "./numbers";
 
 const stringScope = new EvaluationScope()
 
@@ -29,6 +30,43 @@ export const stringType: ExpressionType = {
 }
 
 export function initializeStringTypes() {
+	stringScope.register({
+		type: 'Function',
+		valueType: 'Number',
+		evaluate: numberAdd,
+		definition: [
+			{ type: 'Operator', text: '+' },
+			{ type: 'Parameter', parameterType: 'Number | String' },
+		],
+	})
+	stringScope.register({
+		type: 'Function',
+		valueType: 'Number',
+		evaluate: numberSubstract,
+		definition: [
+			{ type: 'Operator', text: '-' },
+			{ type: 'Parameter', parameterType: 'Number | String' },
+		],
+	})
+	stringScope.register({
+		type: 'Function',
+		valueType: 'Number',
+		evaluate: numberMultiply,
+		definition: [
+			{ type: 'Operator', text: '*' },
+			{ type: 'Parameter', parameterType: 'Number | String' },
+		],
+	})
+	stringScope.register({
+		type: 'Function',
+		valueType: 'Number',
+		evaluate: numberDivide,
+		definition: [
+			{ type: 'Operator', text: '/' },
+			{ type: 'Parameter', parameterType: 'Number | String' },
+		],
+	})
+
 	stringScope.register({
 		type: 'Function',
 		valueType: 'Integer',

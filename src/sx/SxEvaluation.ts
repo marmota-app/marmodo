@@ -124,7 +124,10 @@ function evaluateParseTree(node: ParseTreeNode, context: SxContext, evalId: stri
 			}
 		}
 
-		const result = node.func.evaluate(params, context)
+		let result = node.func.evaluate(params, context)
+		if(typeof result === 'number') {
+			result = Number(result.toFixed(13))
+		}
 		return {
 			resultType: 'value',
 			type: node.valueType,

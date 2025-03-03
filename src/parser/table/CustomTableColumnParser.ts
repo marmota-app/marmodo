@@ -108,6 +108,7 @@ export class CustomTableColumnParser extends MfMParser<'CustomTableColumn', AnyI
 
 		const text = this.parsers.Text.parse(contentStart, contentEnd.start, columnContext)
 		if(text == null) { return null }
+		text.allowUpdate = false
 
 		const evaluation = columnContext.sxContext?.createEvaluation(text.asText)
 
@@ -121,28 +122,5 @@ export class CustomTableColumnParser extends MfMParser<'CustomTableColumn', AnyI
 		)
 		if(columnSxContext != null) { columnSxContext.column = result }
 		return result
-
-		/*
-		const content: AnyInline[] = []
-		const contentStart = start.accessor()
-		if(contentStart.is('|')) { contentStart.advance() }
-
-		const nextNewline = contentStart.findNextNewline(end)
-		const lineEnd = nextNewline?.start ?? end
-
-		const pipePosition = contentStart.findNext('|', lineEnd)
-		const contentEnd = pipePosition?.start ?? lineEnd
-
-		const innerContent = this.parsers.parseInlines(contentStart, contentEnd, contentEnd)
-		content.push(...innerContent)
-
-		return new MfMTableColumn(
-			this.idGenerator.nextId(),
-			start.persistentRangeUntil(contentEnd),
-			this,
-			this.type,
-			content,
-		)
-		*/
 	}
 }

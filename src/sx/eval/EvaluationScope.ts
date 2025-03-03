@@ -39,7 +39,7 @@ interface Value {
 export type ScopeDef = Symbol | Operator | Parameter
 export type ScopeAccess = Symbol | Operator | Value
 
-interface FunctionParameter {
+export interface FunctionParameter {
 	type: ExpressionType,
 	value: any,
 }
@@ -137,7 +137,7 @@ export class ScopeTree implements ScopeTreeNode {
 
 		let type: ExpressionType | null = def.valueType
 		while (type != null) {
-			let child = this._children[`<${type.name}>`]
+			let child = this.#findChild(type.name)
 			if(child != null) {
 				return child
 			}
@@ -147,6 +147,23 @@ export class ScopeTree implements ScopeTreeNode {
 			return this._children['<<Same>>']
 		}
 		return this._children['<<T>>']
+	}
+	#findChild(typeName: string) {
+		let result = this._children[`<${typeName}>`]
+		if(result == null) {
+			const unionTypes = Object.keys(this._children)
+				.filter(k => k.indexOf('|')>=0)
+
+			for (let i = 0; i < unionTypes.length; i++) {
+				const ut = unionTypes[i].substring(1, unionTypes[i].length-1)
+				const typeParts = ut.split('|').map(t => t.trim())
+				if(typeParts.find(p => p===typeName)) {
+					result = this._children[unionTypes[i]]
+					break;
+				}
+			}
+		}
+		return result
 	}
 }
 export class EvaluationScope implements ScopeTreeNode {

@@ -16,7 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { EvaluationScope } from "../../eval/EvaluationScope";
+import { EvaluationScope, FunctionParameter } from "../../eval/EvaluationScope";
 import { Currency } from "../units/currency";
 import { ExpressionType } from "../ExpressionType";
 import { anyType } from "./any";
@@ -44,37 +44,37 @@ export function initializeNumberTypes() {
 	numberScope.register({
 		type: 'Function',
 		valueType: 'Number',
-		evaluate: (params) => {
-			if(params.length !== 2) { throw new Error('Expected exactly two parameters, got: '+params.length) }
-			return params[0].value + params[1].value
-		},
+		evaluate: numberAdd,
 		definition: [
 			{ type: 'Operator', text: '+' },
-			{ type: 'Parameter', parameterType: 'Number' },
+			{ type: 'Parameter', parameterType: 'Number | String' },
 		],
 	})
 	numberScope.register({
 		type: 'Function',
 		valueType: 'Number',
-		evaluate: (params) => {
-			if(params.length !== 2) { throw new Error('Expected exactly two parameters, got: '+params.length) }
-			return params[0].value - params[1].value
-		},
+		evaluate: numberSubstract,
 		definition: [
 			{ type: 'Operator', text: '-' },
-			{ type: 'Parameter', parameterType: 'Number' },
+			{ type: 'Parameter', parameterType: 'Number | String' },
 		],
 	})
 	numberScope.register({
 		type: 'Function',
 		valueType: 'Number',
-		evaluate: (params) => {
-			if(params.length !== 2) { throw new Error('Expected exactly two parameters, got: '+params.length) }
-			return params[0].value * params[1].value
-		},
+		evaluate: numberMultiply,
 		definition: [
 			{ type: 'Operator', text: '*' },
-			{ type: 'Parameter', parameterType: 'Number' },
+			{ type: 'Parameter', parameterType: 'Number | String' },
+		],
+	})
+	numberScope.register({
+		type: 'Function',
+		valueType: 'Number',
+		evaluate: numberDivide,
+		definition: [
+			{ type: 'Operator', text: '/' },
+			{ type: 'Parameter', parameterType: 'Number | String' },
 		],
 	})
 
@@ -122,4 +122,29 @@ export function initializeNumberTypes() {
 			{ type: 'Operator', text: '%' },
 		],
 	})
+}
+
+export function numberAdd(params: FunctionParameter[]) {
+	if(params.length !== 2) { throw new Error('Expected exactly two parameters, got: '+params.length) }
+	const val1 = typeof params[0].value==='string'? Number.parseFloat(params[0].value) : params[0].value
+	const val2 = typeof params[1].value==='string'? Number.parseFloat(params[1].value) : params[1].value
+	return val1 + val2
+}
+export function numberSubstract(params: FunctionParameter[]) {
+	if(params.length !== 2) { throw new Error('Expected exactly two parameters, got: '+params.length) }
+	const val1 = typeof params[0].value==='string'? Number.parseFloat(params[0].value) : params[0].value
+	const val2 = typeof params[1].value==='string'? Number.parseFloat(params[1].value) : params[1].value
+	return val1 - val2
+}
+export function numberMultiply(params: FunctionParameter[]) {
+	if(params.length !== 2) { throw new Error('Expected exactly two parameters, got: '+params.length) }
+	const val1 = typeof params[0].value==='string'? Number.parseFloat(params[0].value) : params[0].value
+	const val2 = typeof params[1].value==='string'? Number.parseFloat(params[1].value) : params[1].value
+	return val1 * val2
+}
+export function numberDivide(params: FunctionParameter[]) {
+	if(params.length !== 2) { throw new Error('Expected exactly two parameters, got: '+params.length) }
+	const val1 = typeof params[0].value==='string'? Number.parseFloat(params[0].value) : params[0].value
+	const val2 = typeof params[1].value==='string'? Number.parseFloat(params[1].value) : params[1].value
+	return val1 / val2
 }
