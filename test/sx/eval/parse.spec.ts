@@ -303,7 +303,7 @@ describe('parse', () => {
 		it('parses a simple reference value', () => {
 			const context = new SxContext()
 			const ref1 = context.createEvaluation('10') as any
-			context.registerNamed(ref1, 'ref1')
+			context.registerNamed(ref1, 'ref1', 'r1')
 
 			const tokens = tokenize('ref1')
 
@@ -316,7 +316,7 @@ describe('parse', () => {
 		it('parses a function call on the last reference result', () => {
 			const context = new SxContext()
 			const ref1 = context.createEvaluation('10') as any
-			context.registerNamed(ref1, 'ref1')
+			context.registerNamed(ref1, 'ref1', 'r1')
 
 			const tokens = tokenize('ref1 + 5.5')
 
@@ -334,7 +334,7 @@ describe('parse', () => {
 		it('parses a function call on the last result, with reference', () => {
 			const context = new SxContext()
 			const ref1 = context.createEvaluation('10') as any
-			context.registerNamed(ref1, 'ref1')
+			context.registerNamed(ref1, 'ref1', 'r1')
 
 			const tokens = tokenize('2*ref1')
 

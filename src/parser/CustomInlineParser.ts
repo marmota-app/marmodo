@@ -50,10 +50,10 @@ export class MfMCustomInline extends MfMElement<'CustomInline', Text | Options, 
 
 			const evaluationName = options.get('default')
 			if(this.lastRegisteredName != null) {
-				this.parsingContext.sxContext?.unregisterNamed(this.lastRegisteredName)
+				this.parsingContext.sxContext?.unregisterNamed(this.lastRegisteredName, this.id)
 			}
 			if(evaluationName && this.evaluation != null) {
-				this.parsingContext.sxContext?.registerNamed(this.evaluation, evaluationName)
+				this.parsingContext.sxContext?.registerNamed(this.evaluation, evaluationName, this.id)
 			}
 
 			this.lastRegisteredName = options.get('default')
@@ -107,12 +107,12 @@ export class MfMCustomInline extends MfMElement<'CustomInline', Text | Options, 
 		}
 	}
 
-	override removeFromTree(exchangedFor?: any): void {
+	override removeFromTree(): void {
 		super.removeFromTree()
 		if(this.lastRegisteredName != null) {
-			if(exchangedFor?.lastRegisteredName !== this.lastRegisteredName) {
-				this.parsingContext.sxContext?.unregisterNamed(this.lastRegisteredName)
-			}
+			//if(exchangedFor?.lastRegisteredName !== this.lastRegisteredName) {
+				this.parsingContext.sxContext?.unregisterNamed(this.lastRegisteredName, this.id)
+			//}
 		}
 	}
 }

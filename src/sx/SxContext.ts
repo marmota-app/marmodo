@@ -71,17 +71,18 @@ export class SxContext {
 		return undefined
 	}
 
-	registerNamed(evaluation: SxEvaluation, name: string) {
+	registerNamed(evaluation: SxEvaluation, name: string, id: string) {
 		this.scope.register({
 			type: 'EvalReference',
 			definition: [ { type: 'Symbol', text: name } ],
 			referenced: evaluation,
+			id,
 		})
 	}
-	unregisterNamed(name: string) {
+	unregisterNamed(name: string, id: string) {
 		const scopeNode = this.scope.node({ type: 'Symbol', text: name })
 
-		if(scopeNode != null && scopeNode.value?.type === 'EvalReference') {
+		if(scopeNode != null && scopeNode.value?.type === 'EvalReference' && scopeNode.value.id===id) {
 			scopeNode.unregisterValue()
 		}
 	}

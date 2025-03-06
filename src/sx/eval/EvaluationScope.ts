@@ -55,6 +55,7 @@ export interface Reference {
 export interface NewReference { //FIXME should replace Reference
 	type: 'EvalReference',
 	referenced: SxEvaluation,
+	id: string,
 }
 export type ScopedValue = (Function | Reference | NewReference) & { definition: ScopeDef[] }
 

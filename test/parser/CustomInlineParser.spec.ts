@@ -64,7 +64,7 @@ describe('CustomInline', () => {
 			var updated = false
 			const sxContext = new SxContext()
 			const var1eval = sxContext.createEvaluation('10')
-			sxContext.registerNamed(var1eval, 'var')
+			sxContext.registerNamed(var1eval, 'var', 'v1')
 
 			const result = parseAll('CustomInline', '{{ var * 2 }}', { sxContext }) as CustomInline
 			result.updateSxResults('id-1')
@@ -72,7 +72,7 @@ describe('CustomInline', () => {
 
 			result.onUpdate(() => updated=true)
 			const var2eval = sxContext.createEvaluation('11')
-			sxContext.registerNamed(var2eval, 'var')
+			sxContext.registerNamed(var2eval, 'var', 'v2')
 			result.updateSxResults('id-2')
 			expect(result.referenceMap['sx.result']).toEqual('22')
 			expect(updated).toEqual(true)
@@ -81,7 +81,7 @@ describe('CustomInline', () => {
 			var updated = false
 			const sxContext = new SxContext()
 			const var1eval = sxContext.createEvaluation('10')
-			sxContext.registerNamed(var1eval, 'var')
+			sxContext.registerNamed(var1eval, 'var', 'v1')
 
 			const result = parseAll('CustomInline', '{{ var * 2 }}', { sxContext }) as CustomInline
 			result.updateSxResults('id-1')
@@ -89,7 +89,7 @@ describe('CustomInline', () => {
 
 			result.onUpdate(() => updated=true)
 			const var2eval = sxContext.createEvaluation('10')
-			sxContext.registerNamed(var2eval, 'var')
+			sxContext.registerNamed(var2eval, 'var', 'v2')
 			result.updateSxResults('id-2')
 			expect(result.referenceMap['sx.result']).toEqual('20')
 			expect(updated).toEqual(false)
@@ -98,7 +98,7 @@ describe('CustomInline', () => {
 			var updated = false
 			const sxContext = new SxContext()
 			const var1eval = sxContext.createEvaluation('10')
-			sxContext.registerNamed(var1eval, 'var')
+			sxContext.registerNamed(var1eval, 'var', 'v1')
 
 			const result = parseAll('CustomInline', '{{ var * 2 }}', { sxContext }) as CustomInline
 			result.updateSxResults('id-1')
@@ -106,7 +106,7 @@ describe('CustomInline', () => {
 
 			result.onUpdate(() => updated=true)
 			const var2eval = sxContext.createEvaluation('error')
-			sxContext.registerNamed(var2eval, 'var')
+			sxContext.registerNamed(var2eval, 'var', 'v2')
 			result.updateSxResults('id-1')
 			expect(result.referenceMap['sx.result']).toEqual('20')
 			expect(updated).toEqual(false)

@@ -63,7 +63,7 @@ describe('SxEvaluation', () => {
 		const context = new SxContext()
 		const eval1 = context.createEvaluation('10')
 
-		context.registerNamed(eval1, 'r1')
+		context.registerNamed(eval1, 'r1', 'r1')
 		const result = context.createEvaluation('r1*2').evaluate('id-1') as ValueResult
 
 		expect(result).toHaveProperty('resultType', 'value')
@@ -73,7 +73,7 @@ describe('SxEvaluation', () => {
 		const context = new SxContext()
 		const eval1 = context.createEvaluation('foo')
 
-		context.registerNamed(eval1, 'r1')
+		context.registerNamed(eval1, 'r1', 'r1')
 		const result = context.createEvaluation('r1*2').evaluate('id-1') as ValueResult
 
 		expect(result).toHaveProperty('resultType', 'error')
@@ -82,9 +82,9 @@ describe('SxEvaluation', () => {
 		const context = new SxContext()
 
 		const eval1 = context.createEvaluation('r2*2')
-		context.registerNamed(eval1, 'r1')
+		context.registerNamed(eval1, 'r1', 'r1')
 		const eval2 = context.createEvaluation('r1*2')
-		context.registerNamed(eval2, 'r2')
+		context.registerNamed(eval2, 'r2', 'r2')
 		const result = eval2.evaluate('id-1') as ValueResult
 
 		expect(result).toHaveProperty('resultType', 'error')

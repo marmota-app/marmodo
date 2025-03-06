@@ -59,7 +59,7 @@ describe('nested evaluation contexts', () => {
 		const leaf = new SxContext(middle)
 
 		const reference = parent.createEvaluation('10')
-		parent.registerNamed(reference, 'var')
+		parent.registerNamed(reference, 'var', 'v1')
 
 		const result = leaf.createEvaluation('var * 2').evaluate('evalId')
 

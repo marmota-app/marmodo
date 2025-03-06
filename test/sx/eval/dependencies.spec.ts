@@ -29,7 +29,7 @@ describe('evaluation dependencies', () => {
 		const context = new SxContext()
 
 		const result1 = context.createEvaluation(exp1)
-		context.registerNamed(result1, 'result1')
+		context.registerNamed(result1, 'result1', 'r1')
 
 		const result2 = context.createEvaluation(exp2).evaluate('evalId')
 
@@ -41,9 +41,9 @@ describe('evaluation dependencies', () => {
 		const context = new SxContext()
 
 		const result1 = context.createEvaluation('5+2')
-		context.registerNamed(result1, 'result1')
+		context.registerNamed(result1, 'result1', 'r1')
 		const result2 = context.createEvaluation('2*3')
-		context.registerNamed(result2, 'result2')
+		context.registerNamed(result2, 'result2', 'r2')
 
 		const result = context.createEvaluation('(result1 * 2)+result2').evaluate('evalId')
 
@@ -54,9 +54,9 @@ describe('evaluation dependencies', () => {
 		const context = new SxContext()
 
 		const result1 = context.createEvaluation('5+2')
-		context.registerNamed(result1, 'result1')
+		context.registerNamed(result1, 'result1', 'r1')
 		const result2 = context.createEvaluation('2*3')
-		context.registerNamed(result2, 'result2')
+		context.registerNamed(result2, 'result2', 'r2')
 
 		const result = context.createEvaluation('(result1 * 2)+result2+result1').evaluate('evalId')
 
