@@ -44,7 +44,7 @@ interface ParseLocation {
 }
 export class Parsers {
 	private knownParsers: { [key: string]: Parser<any, any, any> } = {}
-	private idGenerator = new IdGenerator()
+	public readonly idGenerator = new IdGenerator()
 
 	get Container(): ContainerParser { return this.getParser('Container', () => new ContainerParser(this.idGenerator, this)) }
 	get Section(): SectionParser { return this.getParser('Section', () => new SectionParser(this.idGenerator, this)) }
@@ -86,7 +86,7 @@ export class Parsers {
 		return [
 			this.StrongEmphasis,
 			this.Emphasis,
-			
+
 			this.CustomInline,
 		]
 	}
@@ -111,7 +111,7 @@ export class Parsers {
 							parser: cur,
 							start: next,
 						}
-	
+
 					}
 					return prev
 				},
@@ -139,7 +139,7 @@ export class Parsers {
 					lastElementLocation = parseLocation
 				} else {
 					parseLocation = nextLocation.start.accessor()
-					parseLocation.advance()	
+					parseLocation.advance()
 				}
 			} else {
 				break
@@ -181,7 +181,7 @@ export class IdGenerator {
 	nextTaggedId(tag: string): string {
 		return `${tag}-${this.nextPureId()}`
 	}
-	
+
 	private nextPureId(): string {
 		const id = String(this.current)
 			.padStart(16, '0')
@@ -196,4 +196,3 @@ export class IdGenerator {
 
 export type LineId    = `line-${string}`
 export type ElementId = `elem-${string}`
-

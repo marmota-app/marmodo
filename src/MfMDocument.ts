@@ -57,9 +57,12 @@ export class MfMDocument {
 	private updateCallbacks: { [key: string]: ()=>void} = {}
 
 	constructor(initialText: string, options: Partial<MfMDocumentOptions> = {}) {
+		const parsers = new Parsers()
+		const updateParser = new UpdateParser(parsers.idGenerator)
+
 		const defaultOptions: MfMDocumentOptions = {
-			parsers: new Parsers(),
-			updateParser: new UpdateParser(),
+			parsers,
+			updateParser,
 			development: true,
 			onContextCreated: () => {},
 		}
@@ -150,7 +153,7 @@ ${textFromUpdated}`
 			if(this.#development) {
 				console.warn(`Update returned null, parsing complete text. Original text="${this.#originalText}", updates = `, this.#updates)
 			}
-	
+
 			this.#content.removeFromTree()
 			this.#content = this.#parseCompleteText(getCompleteText())
 
@@ -187,6 +190,7 @@ ${textFromUpdated}`
 		if(parsedContent == null) {
 			throw new Error(`Could not parse document - This is an implementation error, since every document should be parsable!`)
 		}
+		parsedContent.updateSxResults(this.#parsers.idGenerator.nextTaggedId('update'))
 		return parsedContent
 	}
 }

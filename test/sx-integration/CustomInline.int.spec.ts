@@ -104,6 +104,53 @@ describe('Custom Inlines (Integration)', () => {
 
 		expect(text).toEqual('lorem ipsum 10 $ dolor 2 $ sit amet 12 $')
 	})
+
+	it('can update from error to value', () => {
+		const parsers = new Parsers()
+		let pUpdated: Element<any, any, any> | undefined
+
+		const textContent = new TextContent('lorem ipsum {{10€}}{basePrice} dolor {{basePrice * 20%}}{vat} sit amet {{basePrice + va}}')
+		const context: ParsingContext = { sxContext: new SxContext(), }
+		const parsed = parsers.Container.parse(textContent.start(), textContent.end(), context)!
+		parsed.updateSxResults('id-1')
+
+		const paragraph = parsed.content[0].content[0]
+		paragraph.onUpdate((p) => pUpdated=p)
+
+		const updateParser = new UpdateParser()
+		const result = updateParser.parseUpdate(
+			textContent.update({ text: 't', rangeOffset: 'lorem ipsum {{10€}}{basePrice} dolor {{basePrice * 20%}}{vat} sit amet {{basePrice + va'.length, rangeLength: 0}),
+			parsed,
+			textContent.end(),
+		)!
+
+		const text = toText(result)
+		expect(text).toEqual('lorem ipsum 10 € dolor 2 € sit amet 12 €')
+		expect(pUpdated).toEqual(paragraph)
+		const paragraphText = toText(pUpdated!)
+		expect(paragraphText).toEqual('lorem ipsum 10 € dolor 2 € sit amet 12 €')
+	})
+
+	it('can add a new custom inline', () => {
+		const parsers = new Parsers()
+
+		const textContent = new TextContent('lorem ipsum {{10€}}{basePrice} dolor {{basePrice * 20%}}{vat} sit amet ')
+		const context: ParsingContext = { sxContext: new SxContext(), }
+		const parsed = parsers.Container.parse(textContent.start(), textContent.end(), context)!
+		parsed.updateSxResults('id-1')
+		const origText = toText(parsed)
+		expect(origText).toEqual('lorem ipsum 10 € dolor 2 € sit amet ')
+
+		const updateParser = new UpdateParser()
+		const result = updateParser.parseUpdate(
+			textContent.update({ text: '{{basePrice + vat}}', rangeOffset: 'lorem ipsum {{10€}}{basePrice} dolor {{basePrice * 20%}}{vat} sit amet '.length, rangeLength: ''.length}),
+			parsed,
+			textContent.end(),
+		)!
+
+		const text = toText(result)
+		expect(text).toEqual('lorem ipsum 10 € dolor 2 € sit amet 12 €')
+	})
 })
 
 function toText(element: Element<any, any, any>): string {

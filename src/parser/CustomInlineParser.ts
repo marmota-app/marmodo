@@ -17,14 +17,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { SxEvaluation } from "src/sx/SxEvaluation"
-import { CustomElement, CustomInline, Element, ElementOptions, Options, ParsingContext, Text, UpdateCheckResult } from "../element"
+import { CustomElement, CustomInline, ElementOptions, Options, ParsingContext, Text } from "../element"
 import { EMPTY_OPTIONS, MfMElement } from "../element/MfMElement"
 import { TextLocation } from "../mbuffer/TextLocation"
-import { MfMInlineParser, MfMParser } from "./MfMParser"
+import { MfMInlineParser } from "./MfMParser"
 import { PersistentRange } from "src/mbuffer/TextRange"
-import { UpdateInfo } from "src/mbuffer"
 import { MfMOptions } from "./options/OptionsParser"
-import { SxContext } from "src/sx/SxContext"
 
 export class MfMCustomInline extends MfMElement<'CustomInline', Text | Options, CustomInline, CustomInlineParser> implements CustomInline, CustomElement {
 	readonly type = 'CustomInline'

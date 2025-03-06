@@ -16,6 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { jsonTransientPrivate } from "../utilities/jsonTransient";
 import { parse, ParseTreeNode } from "./eval/parse";
 import { SxContext } from "./SxContext";
 import { tokenize } from "./SxToken";
@@ -38,7 +39,9 @@ export class SxEvaluation {
 	private lastResult: EvalResult | null = null
 	private lastEvalId: string | null = null
 
-	constructor(private readonly expression: string, private readonly context: SxContext) {}
+	constructor(private readonly expression: string, private readonly context: SxContext) {
+		jsonTransientPrivate(this, 'context')
+	}
 
 	get result(): EvalResult | null {
 		return this.lastResult

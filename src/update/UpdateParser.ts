@@ -21,8 +21,6 @@ import { Element } from "../element/Element";
 import { UpdateInfo } from "../mbuffer/TextContent";
 import { TextLocation } from "../mbuffer/TextLocation";
 
-let idGenerator: IdGenerator | undefined = undefined
-
 interface UpdateResult<
 	T extends string,
 	C extends Element<any, any, any>,
@@ -32,16 +30,15 @@ interface UpdateResult<
 	isFirstUpdate: boolean,
 }
 export class UpdateParser {
+	constructor(private readonly idGenerator = new IdGenerator()) {}
+
 	parseUpdate<
 		T extends string,
 		C extends Element<any, any, any>,
 		E extends Element<T, C, E>
 	>(update: UpdateInfo, rootElement: E, documentEnd: TextLocation): E | null {
-		if (idGenerator == null) {
-			idGenerator = new IdGenerator()
-		}
 		const updated = this.#updateElement(update, rootElement, documentEnd).updated
-		updated?.updateSxResults(idGenerator.nextTaggedId('update'))
+		updated?.updateSxResults(this.idGenerator.nextTaggedId('update'))
 		return updated
 	}
 
