@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { EvaluationScope } from "./eval/EvaluationScope";
 import { ReferenceNode } from "./eval/parse";
 import { SxEvaluation, ValueResult } from "./SxEvaluation";
-import { anyType } from "./types/base/any";
+import { anyType, initializeAnyType } from "./types/base/any";
 import { booleanType } from "./types/base/boolean";
 import { floatType, initializeNumberTypes, integerType, numberType } from "./types/base/numbers";
 import { initializeStringTypes, stringType } from "./types/base/string";
@@ -36,6 +36,7 @@ export class SxContext {
 		if (parent == null) {
 			initializeScope(this.scope)
 
+			initializeAnyType()
 			initializeNumberTypes()
 			initializeStringTypes()
 			initializeCurrency()
@@ -94,7 +95,7 @@ function initializeScope(scope: EvaluationScope) {
 		valueType: '<T>',
 		evaluate: (params) => {
 			if(params.length !== 1) { throw new Error('Expected exactly one parameter, got: '+params.length) }
-			return params[0].value
+			return params[0]
 		},
 		definition: [
 			{ type: 'Operator', text: '(' },

@@ -31,6 +31,9 @@ describe('evaluate (integration tests)', () => {
 		[ '10€ + (10€ * 10%)', '11 €', 'Currency:Euro' ],
 		[ '10€ + 20%', '12 €', 'Currency:Euro' ],
 
+		[ '3*(2+3)', '15', 'Number'],
+		[ '3+(2+3*4)', '17', 'Number'],
+
 		[ '"1"+2', '3', 'Number' ],
 		[ '"1"+"2"', '3', 'Number' ],
 		[ '1+"2"', '3', 'Number' ],
@@ -43,7 +46,7 @@ describe('evaluate (integration tests)', () => {
 		[ '"1"/2', '0.5', 'Number' ],
 		[ '"1"/"2"', '0.5', 'Number' ],
 		[ '1/"2"', '0.5', 'Number' ],
-	].forEach(([expression, expected, expectedType]) => it(`evaluates "${expression}" to "${expected}"`, () => {
+	].forEach(([expression, expected, expectedType], i) => it(`evaluate_int_${i} evaluates "${expression}" to "${expected}"`, () => {
 			const context = new SxContext()
 
 			const result = context.createEvaluation(expression).evaluate('id-1') as any

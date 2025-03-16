@@ -19,10 +19,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { EvaluationScope, FunctionParameter } from "../../eval/EvaluationScope";
 import { Currency } from "../units/currency";
 import { ExpressionType } from "../ExpressionType";
-import { anyType } from "./any";
+import { anyScope, anyType } from "./any";
 import { Percentage } from "../units/percentage";
 
-const numberScope = new EvaluationScope()
+export const numberScope = new EvaluationScope(anyScope)
 
 export const numberType: ExpressionType = {
 	name: 'Number',
@@ -120,6 +120,19 @@ export function initializeNumberTypes() {
 		},
 		definition: [
 			{ type: 'Operator', text: '%' },
+		],
+	})
+
+	numberScope.register({
+		type: 'Function',
+		valueType: 'Currency',
+		evaluate: (params) => {
+			if(params.length !== 2) { throw new Error('Expected exactly two parameters, got: '+params.length) }
+			return new Currency(params[0].value * params[1].value.amount, params[1].value.currency)
+		},
+		definition: [
+			{ type: 'Operator', text: '*' },
+			{ type: 'Parameter', parameterType: 'Currency' },
 		],
 	})
 }

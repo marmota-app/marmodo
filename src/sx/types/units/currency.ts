@@ -76,6 +76,18 @@ export function initializeCurrency() {
 		valueType: '<Self>',
 		evaluate: (params) => {
 			if(params.length !== 2) { throw new Error('Expected exactly two parameters, got: '+params.length) }
+			return new Currency(params[0].value.amount * params[1].value, params[0].value.currency)
+		},
+		definition: [
+			{ type: 'Operator', text: '*' },
+			{ type: 'Parameter', parameterType: 'Number' },
+		],
+	})
+	currencyScope.register({
+		type: 'Function',
+		valueType: '<Self>',
+		evaluate: (params) => {
+			if(params.length !== 2) { throw new Error('Expected exactly two parameters, got: '+params.length) }
 			return new Currency(params[0].value.amount + params[0].value.amount * params[1].value.amount / 100.0, params[0].value.currency)
 		},
 		definition: [

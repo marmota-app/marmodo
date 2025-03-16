@@ -16,17 +16,19 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { EvalResult, ValueResult } from "../../sx/SxEvaluation";
 import { EvaluationScope } from "../../sx/eval/EvaluationScope";
 import { SxContext } from "../../sx/SxContext";
 import { anyType } from "../../sx/types/base/any";
 import { ExpressionType } from "../../sx/types/ExpressionType";
+import { MfMCustomTableColumn } from "./CustomTableColumnParser";
 import { MfMTable } from "./TableParser";
 
-const stringListScope = new EvaluationScope()
-export const stringListType: ExpressionType = {
-	name: 'List<String>',
+const anyListScope = new EvaluationScope()
+export const anyListType: ExpressionType = {
+	name: 'List<Any>',
 	extends: anyType,
-	scope: stringListScope,
+	scope: anyListScope,
 }
 
 export class TableSxContext extends SxContext {
@@ -35,7 +37,7 @@ export class TableSxContext extends SxContext {
 	constructor(public readonly parent?: SxContext) {
 		super(parent)
 
-		this.types[stringListType.name] = stringListType
+		this.types[anyListType.name] = anyListType
 
 		initializeScope(this.scope)
 	}
@@ -44,7 +46,7 @@ export class TableSxContext extends SxContext {
 function initializeScope(scope: EvaluationScope) {
 	scope.register({
 		type: 'Function',
-		valueType: 'String',
+		valueType: 'Any',
 		evaluate: (params, context) => {
 			if(params.length !== 2) { throw new Error('Expected exactly two parameter, got: '+params.length) }
 			if(context.table == null) { throw new Error('Expected to be called with a table SX context, got: '+context) }
@@ -62,7 +64,7 @@ function initializeScope(scope: EvaluationScope) {
 
 	scope.register({
 		type: 'Function',
-		valueType: 'List<String>',
+		valueType: 'List<Any>',
 		evaluate: (params, context) => {
 			if(params.length !== 4) { throw new Error('Expected exactly two parameter, got: '+params.length) }
 			if(context.table == null) { throw new Error('Expected to be called with a table SX context, got: '+context) }
@@ -72,13 +74,13 @@ function initializeScope(scope: EvaluationScope) {
 			const toCol   = params[2].value
 			const toRow   = params[3].value
 
-			const result: string[] = []
+			const result: EvalResult[] = []
 			for(var c=fromCol; c<=toCol; c++) {
 				for(var r=fromRow; r<=toRow; r++) {
 					result.push(getColumnValue(context, c, r))
 				}
 			}
-			return { list: result, asString: `[${result}]` }
+			return { list: result, asString: `[${result.map(r => r.resultType==='error'? 'ERROR' : r.asString)}]` }
 		},
 		definition: [
 			{ type: 'Operator', text: '[' },
@@ -97,30 +99,67 @@ function initializeScope(scope: EvaluationScope) {
 
 	scope.register({
 		type: 'Function',
-		valueType: 'Number',
+		valueType: 'Any',
 		evaluate: (params, context) => {
 			if(params.length !== 1) { throw new Error('Expected exactly two parameter, got: '+params.length) }
 			if(context.table == null) { throw new Error('Expected to be called with a table SX context, got: '+context) }
 
-			const list = params[0].value.list as string[]
+			const list = params[0].value.list as EvalResult[]
+			const initial: EvalResult = {
+				resultType: 'value',
+				asString: '0',
+				type: context.types['Number'],
+				value: 0,
+			}
 			return list.reduce((prev, cur) => {
-				return prev + Number.parseFloat(cur)
-			}, 0)
+				if(cur.resultType !== 'value') { throw new Error('Can only sum value results, got an error for current') }
+				if(prev.resultType !== 'value') { throw new Error('Can only sum value results, got an error for previous') }
+
+				let type = context.types[prev.type.name]
+				while(type != null && type.scope == null && type.extends != null) {
+					type = type.extends
+				}
+				const scope = type.scope! //FIXME: What if there is no type or scope??
+
+				const operator = scope.node({ type: 'Operator', text: '+' })?.node({ type: 'Value', valueType: cur.type })
+				if(operator?.value?.type==='Function') {
+					const operatorResult = operator.value.evaluate([prev, cur], context)
+					const result: EvalResult = {
+						resultType: 'value',
+						type: context.types[operator.value.valueType],
+						value: operatorResult,
+						asString: `${operatorResult}`,
+					}
+					return result
+				}
+
+				throw new Error(`Cannot find plus-operator "${prev.type.name}+${cur.type.name}"`)
+			}, initial)
 		},
 		definition: [
 			{ type: 'Symbol', text: 'sum' },
-			{ type: 'Parameter', parameterType: 'List<String>' },
+			{ type: 'Parameter', parameterType: 'List<Any>' },
 		],
 	})
 
 }
 
-function getColumnValue(context: any, col: number, row: number): string {
+function getColumnValue(context: any, col: number, row: number): EvalResult {
 	const table = context.table as MfMTable
 	const column = table.tableRows[row-1].columns[col-1]
 	if(column.type === 'CustomTableColumn') {
-		return `${column.referenceMap['sx.result']}`
+		return (column as MfMCustomTableColumn).evaluation?.result ?? {
+			resultType: 'error',
+			message: '', //FIXME what could be the message here?
+			near: ['', 0],
+		}
 	}
 
-	return column.plainContent.trim()
+	const result: ValueResult = {
+		resultType: 'value',
+		type: context.types['String'],
+		value: column.plainContent.trim(),
+		asString: column.plainContent.trim()
+	}
+	return result
 }

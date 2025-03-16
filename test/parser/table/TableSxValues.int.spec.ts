@@ -106,7 +106,7 @@ describe('Table: SX Values', () => {
 			const col = result.tableRows[3].columns[0]
 			expect(col.referenceMap['sx.result']).toEqual('[1,2,3]')
 		})
-		it('can sum a range of values using row and col variables', () => {
+		it('can sum a range of values using row and col variables, plain values', () => {
 			const result = parseAll('Table',
 				'|---------------------------|-----\n'+
 				'|1.1                        | foo \n'+
@@ -144,6 +144,53 @@ describe('Table: SX Values', () => {
 
 			const col = result.tableRows[3].columns[0]
 			expect(col.referenceMap['sx.result']).toEqual('21.4')
+		})
+	})
+
+	describe('calculating all kinds of referenced values', () => {
+		it('can reference a currency value', () => {
+			const result = parseAll('Table',
+				'|-----------|----\n'+
+				'|{{2€     }}| foo\n'+
+				'|{{[1,1]*3}}| 3.3'
+			) as unknown as MfMTable
+			result.updateSxResults('id-1')
+
+			const col = result.tableRows[1].columns[0]
+			expect(col.referenceMap['sx.result']).toEqual('6 €')
+		})
+		it('can reference a currency value after operator', () => {
+			const result = parseAll('Table',
+				'|-----------|----\n'+
+				'|{{2€     }}| foo\n'+
+				'|{{2*[1,1]}}| 3.3'
+			) as unknown as MfMTable
+			result.updateSxResults('id-1')
+
+			const col = result.tableRows[1].columns[0]
+			expect(col.referenceMap['sx.result']).toEqual('4 €')
+		})
+		it('can reference a plain value in first part of multiplication', () => {
+			const result = parseAll('Table',
+				'|-----------------|----\n'+
+				'|{{2€           }}| foo\n'+
+				'|{{[col+1,row]*2}}| 3.3'
+			) as unknown as MfMTable
+			result.updateSxResults('id-1')
+
+			const col = result.tableRows[1].columns[0]
+			expect(col.referenceMap['sx.result']).toEqual('6.6')
+		})
+		it('can reference a plain value in second part of multiplication', () => {
+			const result = parseAll('Table',
+				'|-----------------|----\n'+
+				'|{{2€           }}| foo\n'+
+				'|{{3*[col+1,row]}}| 3.3'
+			) as unknown as MfMTable
+			result.updateSxResults('id-1')
+
+			const col = result.tableRows[1].columns[0]
+			expect(col.referenceMap['sx.result']).toEqual('9.9')
 		})
 	})
 
