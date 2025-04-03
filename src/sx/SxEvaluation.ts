@@ -33,7 +33,12 @@ export interface ValueResult {
 	value: any,
 	asString: string,
 }
-export type EvalResult = ErrorResult | ValueResult
+export interface ReferenceResult {
+	resultType: 'reference',
+	referenced: SxEvaluation,
+}
+export type ValidEvalResult = ValueResult | ReferenceResult
+export type EvalResult = ErrorResult | ValueResult | ReferenceResult
 
 export class SxEvaluation {
 	private lastResult: EvalResult | null = null
@@ -116,23 +121,35 @@ function evaluateParseTree(node: ParseTreeNode, context: SxContext, evalId: stri
 		const params: ValueResult[] = []
 		if(node.self) {
 			const selfResult = evaluateParseTree(node.self, context, evalId)
-			if(selfResult.resultType==='error') { return selfResult }
-			params.push(selfResult)
+			let currentResult = selfResult
+			while(currentResult.resultType==='reference') {
+				currentResult = currentResult.referenced.evaluate(evalId)
+			}
+			if(currentResult.resultType==='error') { return currentResult }
+			params.push(currentResult)
 		}
 		for(let part of node.parts) {
 			if(part.type==='Value' || part.type==='FunctionApplication' || part.type==='Reference') {
 				const partResult = evaluateParseTree(part, context, evalId)
-				if(partResult.resultType === 'error') { return partResult }
-				params.push(partResult)
+				let currentResult = partResult
+				while(currentResult.resultType==='reference') {
+					currentResult = currentResult.referenced.evaluate(evalId)
+				}
+				if(currentResult.resultType==='error') { return currentResult }
+				params.push(currentResult)
 			}
 		}
 
 		let result = node.func.evaluate(params, context)
-		const resultType = result.type ?? node.valueType
+		let resultType = result.type ?? node.valueType
 		if(typeof result === 'number') {
 			result = Number(result.toFixed(13))
 		}
+		while(result.resultType === 'reference') {
+			result = result.referenced.evaluate(evalId)
+		}
 		if(result.resultType === 'value') {
+			resultType = result.type
 			if(typeof result.value === 'number') {
 				result = Number(result.value.toFixed(13))
 			} else {

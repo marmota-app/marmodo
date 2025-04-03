@@ -16,7 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { EvalResult, ValueResult } from "../../sx/SxEvaluation";
+import { EvalResult, ReferenceResult, ValueResult } from "../../sx/SxEvaluation";
 import { EvaluationScope } from "../../sx/eval/EvaluationScope";
 import { SxContext } from "../../sx/SxContext";
 import { anyType } from "../../sx/types/base/any";
@@ -80,7 +80,18 @@ function initializeScope(scope: EvaluationScope) {
 					result.push(getColumnValue(context, c, r))
 				}
 			}
-			return { list: result, asString: `[${result.map(r => r.resultType==='error'? 'ERROR' : r.asString)}]` }
+			return {
+				list: result,
+				get asString(): string {
+					return '[' + result.map(li => {
+						while(li.resultType === 'reference') {
+							li = li.referenced.result ?? { resultType: 'error', message: 'Referenced result does not have any content', near: [ '', 0 ] }
+						}
+						if(li.resultType === 'error') { return 'ERROR'}
+						return li.asString
+					}).join(',') + ']'
+				},
+			}
 		},
 		definition: [
 			{ type: 'Operator', text: '[' },
@@ -112,6 +123,9 @@ function initializeScope(scope: EvaluationScope) {
 				value: 0,
 			}
 			return list.reduce((prev, cur) => {
+				while(cur.resultType === 'reference') {
+					cur = cur.referenced.result ?? { resultType: 'error', message: 'Referenced result does not conatain a value', near: ['', 0]}
+				}
 				if(cur.resultType !== 'value') { throw new Error('Can only sum value results, got an error for current') }
 				if(prev.resultType !== 'value') { throw new Error('Can only sum value results, got an error for previous') }
 
@@ -145,10 +159,19 @@ function initializeScope(scope: EvaluationScope) {
 }
 
 function getColumnValue(context: any, col: number, row: number): EvalResult {
+	debugger
 	const table = context.table as MfMTable
 	const column = table.tableRows[row-1].columns[col-1]
 	if(column.type === 'CustomTableColumn') {
-		return (column as MfMCustomTableColumn).evaluation?.result ?? {
+		const evaluation = (column as MfMCustomTableColumn).evaluation
+		if(evaluation) {
+			const result: ReferenceResult = {
+				resultType: 'reference',
+				referenced: evaluation,
+			}
+			return result
+		}
+		return {
 			resultType: 'error',
 			message: '', //FIXME what could be the message here?
 			near: ['', 0],

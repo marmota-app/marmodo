@@ -194,6 +194,20 @@ describe('Table: SX Values', () => {
 		})
 	})
 
+	describe('referencing calculated values', () => {
+		it('can reference a calculated value later in the table', () => {
+			const result = parseAll('Table',
+				'|-----------------|----\n'+
+				'|{{2*[col,row+1]}}| foo\n'+
+				'|{{3*[col+1,row]}}| 3'
+			) as unknown as MfMTable
+			result.updateSxResults('id-1')
+
+			const col = result.tableRows[0].columns[0]
+			expect(col.referenceMap['sx.result']).toEqual('18')
+		})
+	})
+
 	describe('parsing updates', () => {
 		const parser = new Parsers().Table
 
