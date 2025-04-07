@@ -44,7 +44,7 @@ export class TableSxContext extends SxContext {
 }
 
 function initializeScope(scope: EvaluationScope) {
-	scope.register({
+	scope.register<TableSxContext>({
 		type: 'Function',
 		valueType: 'Any',
 		evaluate: (params, context) => {
@@ -62,7 +62,7 @@ function initializeScope(scope: EvaluationScope) {
 		],
 	})
 
-	scope.register({
+	scope.register<TableSxContext>({
 		type: 'Function',
 		valueType: 'List<Any>',
 		evaluate: (params, context) => {
@@ -74,16 +74,19 @@ function initializeScope(scope: EvaluationScope) {
 			const toCol   = params[2].value
 			const toRow   = params[3].value
 
-			const result: EvalResult[] = []
+			const resultList: EvalResult[] = []
 			for(var c=fromCol; c<=toCol; c++) {
 				for(var r=fromRow; r<=toRow; r++) {
-					result.push(getColumnValue(context, c, r))
+					resultList.push(getColumnValue(context, c, r))
 				}
 			}
-			return {
-				list: result,
+			const result: ValueResult = {
+				resultType: 'value',
+				value: resultList,
+				type: context.types['List<Any>'],
 				get asString(): string {
-					return '[' + result.map(li => {
+					debugger
+					return '[' + resultList.map(li => {
 						while(li.resultType === 'reference') {
 							li = li.referenced.result ?? { resultType: 'error', message: 'Referenced result does not have any content', near: [ '', 0 ] }
 						}
@@ -92,6 +95,7 @@ function initializeScope(scope: EvaluationScope) {
 					}).join(',') + ']'
 				},
 			}
+			return result
 		},
 		definition: [
 			{ type: 'Operator', text: '[' },
@@ -108,14 +112,14 @@ function initializeScope(scope: EvaluationScope) {
 		],
 	})
 
-	scope.register({
+	scope.register<TableSxContext>({
 		type: 'Function',
 		valueType: 'Any',
 		evaluate: (params, context) => {
 			if(params.length !== 1) { throw new Error('Expected exactly two parameter, got: '+params.length) }
 			if(context.table == null) { throw new Error('Expected to be called with a table SX context, got: '+context) }
 
-			const list = params[0].value.list as EvalResult[]
+			const list = params[0].value as EvalResult[]
 			const initial: EvalResult = {
 				resultType: 'value',
 				asString: '0',
@@ -123,6 +127,7 @@ function initializeScope(scope: EvaluationScope) {
 				value: 0,
 			}
 			return list.reduce((prev, cur) => {
+				debugger
 				while(cur.resultType === 'reference') {
 					cur = cur.referenced.result ?? { resultType: 'error', message: 'Referenced result does not conatain a value', near: ['', 0]}
 				}
@@ -137,13 +142,7 @@ function initializeScope(scope: EvaluationScope) {
 
 				const operator = scope.node({ type: 'Operator', text: '+' })?.node({ type: 'Value', valueType: cur.type })
 				if(operator?.value?.type==='Function') {
-					const operatorResult = operator.value.evaluate([prev, cur], context)
-					const result: EvalResult = {
-						resultType: 'value',
-						type: context.types[operator.value.valueType],
-						value: operatorResult,
-						asString: `${operatorResult}`,
-					}
+					const result = operator.value.evaluate([prev, cur], context)
 					return result
 				}
 
@@ -159,7 +158,6 @@ function initializeScope(scope: EvaluationScope) {
 }
 
 function getColumnValue(context: any, col: number, row: number): EvalResult {
-	debugger
 	const table = context.table as MfMTable
 	const column = table.tableRows[row-1].columns[col-1]
 	if(column.type === 'CustomTableColumn') {

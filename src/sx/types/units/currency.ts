@@ -16,6 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { ValueResult } from "src/sx/SxEvaluation";
 import { EvaluationScope } from "../../eval/EvaluationScope";
 import { ExpressionType } from "../ExpressionType";
 import { anyType } from "../base/any";
@@ -51,7 +52,14 @@ export function initializeCurrency() {
 		valueType: '<Same>',
 		evaluate: (params) => {
 			if(params.length !== 2) { throw new Error('Expected exactly two parameters, got: '+params.length) }
-			return new Currency(params[0].value.amount + params[1].value.amount, params[0].value.currency)
+			const resultValue = new Currency(params[0].value.amount + params[1].value.amount, params[0].value.currency)
+			const result: ValueResult = {
+				resultType: 'value',
+				type: params[0].type,
+				value: resultValue,
+				asString: resultValue.asString
+			}
+			return result
 		},
 		definition: [
 			{ type: 'Operator', text: '+' },
@@ -64,7 +72,14 @@ export function initializeCurrency() {
 		valueType: '<Self>',
 		evaluate: (params) => {
 			if(params.length !== 2) { throw new Error('Expected exactly two parameters, got: '+params.length) }
-			return new Currency(params[0].value.amount * params[1].value.amount / 100.0, params[0].value.currency)
+			const resultValue = new Currency(params[0].value.amount * params[1].value.amount / 100.0, params[0].value.currency)
+			const result: ValueResult = {
+				resultType: 'value',
+				type: params[0].type,
+				value: resultValue,
+				asString: resultValue.asString
+			}
+			return result
 		},
 		definition: [
 			{ type: 'Operator', text: '*' },
@@ -76,7 +91,14 @@ export function initializeCurrency() {
 		valueType: '<Self>',
 		evaluate: (params) => {
 			if(params.length !== 2) { throw new Error('Expected exactly two parameters, got: '+params.length) }
-			return new Currency(params[0].value.amount * params[1].value, params[0].value.currency)
+			const resultValue = new Currency(params[0].value.amount * params[1].value, params[0].value.currency)
+			const result: ValueResult = {
+				resultType: 'value',
+				type: params[0].type,
+				value: resultValue,
+				asString: resultValue.asString
+			}
+			return result
 		},
 		definition: [
 			{ type: 'Operator', text: '*' },
@@ -88,7 +110,14 @@ export function initializeCurrency() {
 		valueType: '<Self>',
 		evaluate: (params) => {
 			if(params.length !== 2) { throw new Error('Expected exactly two parameters, got: '+params.length) }
-			return new Currency(params[0].value.amount + params[0].value.amount * params[1].value.amount / 100.0, params[0].value.currency)
+			const resultValue = new Currency(params[0].value.amount + params[0].value.amount * params[1].value.amount / 100.0, params[0].value.currency)
+			const result: ValueResult = {
+				resultType: 'value',
+				type: params[0].type,
+				value: resultValue,
+				asString: resultValue.asString
+			}
+			return result
 		},
 		definition: [
 			{ type: 'Operator', text: '+' },

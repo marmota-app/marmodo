@@ -39,7 +39,7 @@ function dynamicDispatchOperator(operatorName: string): ScopedValue {
 	const dynamicOperator: ScopedValue = {
 		type: 'Function',
 		valueType: 'Any',
-		evaluate: (params: FunctionParameter[], context: SxContext) => {
+		evaluate: (params: FunctionParameter[], context: SxContext): EvalResult => {
 			if(params[0].value.resultType === 'error' || params[1].value.resultType === 'error') {
 				//FIXME correct response?
 				throw new Error('cannot evaluate result when one of the parameters was an error')
@@ -57,16 +57,14 @@ function dynamicDispatchOperator(operatorName: string): ScopedValue {
 			const operator = scope.node({ type: 'Operator', text: operatorName })?.node({ type: 'Value', valueType: p1.type })
 			if(operator?.value != dynamicOperator && operator?.value?.type==='Function') {
 				const resultValue = operator.value.evaluate([p0, p1], context)
-				const result: EvalResult = {
-					resultType: 'value',
-					type: context.types[operator.value.valueType],
-					value: resultValue,
-					asString: resultValue.asString ?? `${resultValue}`,
-				}
-				return result
+				return resultValue
 			}
 
-			return undefined //FIXME what do we do here?
+			return {
+				resultType: 'error',
+				message: 'No result available',
+				near: [ '', 0 ]
+			}
 		},
 		definition: [
 			{ type: 'Operator', text: operatorName },

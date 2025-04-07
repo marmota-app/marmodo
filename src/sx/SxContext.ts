@@ -95,7 +95,14 @@ function initializeScope(scope: EvaluationScope) {
 		valueType: '<T>',
 		evaluate: (params) => {
 			if(params.length !== 1) { throw new Error('Expected exactly one parameter, got: '+params.length) }
-			return params[0]
+
+			const result: ValueResult = {
+				resultType: 'value',
+				value: params[0].value,
+				type: params[0].type,
+				asString: params[0].value.asString ?? 'No as-string found!',
+			}
+			return result
 		},
 		definition: [
 			{ type: 'Operator', text: '(' },

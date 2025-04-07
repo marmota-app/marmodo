@@ -45,7 +45,7 @@ describe('SxEvaluation', () => {
 		context.scope.register({
 			type: 'Function',
 			valueType: 'String',
-			evaluate: () => 'foo result',
+			evaluate: () => ({ resultType: 'value', value: 'foo result', type: context.types['String'], asString: 'foo result' }),
 			definition: [
 				{ type: 'Symbol', text: 'foo' }
 			],

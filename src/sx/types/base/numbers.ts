@@ -21,6 +21,8 @@ import { Currency } from "../units/currency";
 import { ExpressionType } from "../ExpressionType";
 import { anyScope, anyType } from "./any";
 import { Percentage } from "../units/percentage";
+import { ValueResult } from "src/sx/SxEvaluation";
+import { SxContext } from "src/sx/SxContext";
 
 export const numberScope = new EvaluationScope(anyScope)
 
@@ -81,9 +83,15 @@ export function initializeNumberTypes() {
 	numberScope.register({
 		type: 'Function',
 		valueType: 'String',
-		evaluate: (params) => {
+		evaluate: (params, context) => {
 			if(params.length !== 1) { throw new Error('Expected exactly one parameter, got: '+params.length) }
-			return ''+params[0].value
+			const result: ValueResult = {
+				resultType: 'value',
+				type: context.types['String'],
+				value: ''+params[0].value,
+				asString: ''+params[0].value,
+			}
+			return result
 		},
 		definition: [
 			{ type: 'Symbol', text: 'toString' },
@@ -92,9 +100,16 @@ export function initializeNumberTypes() {
 	numberScope.register({
 		type: 'Function',
 		valueType: 'Currency:Euro',
-		evaluate: (params) => {
+		evaluate: (params, context) => {
 			if(params.length !== 1) { throw new Error('Expected exactly one parameter, got: '+params.length) }
-			return new Currency(params[0].value, '€')
+			const currencyValue = new Currency(params[0].value, '€')
+			const result: ValueResult = {
+				resultType: 'value',
+				type: context.types['Currency:Euro'],
+				value: currencyValue,
+				asString: currencyValue.asString
+			}
+			return result
 		},
 		definition: [
 			{ type: 'Symbol', text: '€' },
@@ -103,9 +118,16 @@ export function initializeNumberTypes() {
 	numberScope.register({
 		type: 'Function',
 		valueType: 'Currency:Dollar',
-		evaluate: (params) => {
+		evaluate: (params, context) => {
 			if(params.length !== 1) { throw new Error('Expected exactly one parameter, got: '+params.length) }
-			return new Currency(params[0].value, '$')
+			const currencyValue = new Currency(params[0].value, '$')
+			const result: ValueResult = {
+				resultType: 'value',
+				type: context.types['Currency:Dollar'],
+				value: currencyValue,
+				asString: currencyValue.asString
+			}
+			return result
 		},
 		definition: [
 			{ type: 'Symbol', text: '$' },
@@ -114,9 +136,16 @@ export function initializeNumberTypes() {
 	numberScope.register({
 		type: 'Function',
 		valueType: 'Percentage',
-		evaluate: (params) => {
+		evaluate: (params, context) => {
 			if(params.length !== 1) { throw new Error('Expected exactly one parameter, got: '+params.length) }
-			return new Percentage(params[0].value)
+			const percentageValue = new Percentage(params[0].value)
+			const result: ValueResult = {
+				resultType: 'value',
+				type: context.types['Percentage'],
+				value: percentageValue,
+				asString: percentageValue.asString
+			}
+			return result
 		},
 		definition: [
 			{ type: 'Operator', text: '%' },
@@ -126,9 +155,16 @@ export function initializeNumberTypes() {
 	numberScope.register({
 		type: 'Function',
 		valueType: 'Currency',
-		evaluate: (params) => {
+		evaluate: (params, context) => {
 			if(params.length !== 2) { throw new Error('Expected exactly two parameters, got: '+params.length) }
-			return new Currency(params[0].value * params[1].value.amount, params[1].value.currency)
+			const currencyValue = new Currency(params[0].value * params[1].value.amount, params[1].value.currency)
+			const result: ValueResult = {
+				resultType: 'value',
+				type: context.types['Currency'],
+				value: currencyValue,
+				asString: currencyValue.asString
+			}
+			return result
 		},
 		definition: [
 			{ type: 'Operator', text: '*' },
@@ -137,27 +173,60 @@ export function initializeNumberTypes() {
 	})
 }
 
-export function numberAdd(params: FunctionParameter[]) {
+export function numberAdd(params: FunctionParameter[], context: SxContext) {
 	if(params.length !== 2) { throw new Error('Expected exactly two parameters, got: '+params.length) }
-	const val1 = typeof params[0].value==='string'? Number.parseFloat(params[0].value) : params[0].value
-	const val2 = typeof params[1].value==='string'? Number.parseFloat(params[1].value) : params[1].value
-	return val1 + val2
+	const val1: number = typeof params[0].value==='string'? Number.parseFloat(params[0].value) : params[0].value
+	const val2: number = typeof params[1].value==='string'? Number.parseFloat(params[1].value) : params[1].value
+
+	const resultValue = val1 + val2
+	const result: ValueResult = {
+		resultType: 'value',
+		type: context.types['Number'],
+		value: resultValue,
+		asString: `${resultValue}`
+	}
+	return result
 }
-export function numberSubstract(params: FunctionParameter[]) {
+export function numberSubstract(params: FunctionParameter[], context: SxContext) {
 	if(params.length !== 2) { throw new Error('Expected exactly two parameters, got: '+params.length) }
 	const val1 = typeof params[0].value==='string'? Number.parseFloat(params[0].value) : params[0].value
 	const val2 = typeof params[1].value==='string'? Number.parseFloat(params[1].value) : params[1].value
-	return val1 - val2
+	
+	const resultValue = val1 - val2
+	const result: ValueResult = {
+		resultType: 'value',
+		type: context.types['Number'],
+		value: resultValue,
+		asString: `${resultValue}`
+	}
+	return result
 }
-export function numberMultiply(params: FunctionParameter[]) {
+export function numberMultiply(params: FunctionParameter[], context: SxContext) {
 	if(params.length !== 2) { throw new Error('Expected exactly two parameters, got: '+params.length) }
 	const val1 = typeof params[0].value==='string'? Number.parseFloat(params[0].value) : params[0].value
 	const val2 = typeof params[1].value==='string'? Number.parseFloat(params[1].value) : params[1].value
-	return val1 * val2
+
+	const resultValue = val1 * val2
+	const result: ValueResult = {
+		resultType: 'value',
+		type: context.types['Number'],
+		value: resultValue,
+		asString: `${resultValue}`
+	}
+	debugger
+	return result
 }
-export function numberDivide(params: FunctionParameter[]) {
+export function numberDivide(params: FunctionParameter[], context: SxContext) {
 	if(params.length !== 2) { throw new Error('Expected exactly two parameters, got: '+params.length) }
 	const val1 = typeof params[0].value==='string'? Number.parseFloat(params[0].value) : params[0].value
 	const val2 = typeof params[1].value==='string'? Number.parseFloat(params[1].value) : params[1].value
-	return val1 / val2
+
+	const resultValue = val1 / val2
+	const result: ValueResult = {
+		resultType: 'value',
+		type: context.types['Number'],
+		value: resultValue,
+		asString: `${resultValue}`
+	}
+	return result
 }

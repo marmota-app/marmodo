@@ -27,7 +27,7 @@ describe('parse', () => {
 			context.scope.register({
 				type: 'Function',
 				valueType: 'String',
-				evaluate: () => '-ignore-',
+				evaluate: () => ({ resultType: 'value', value: '-ignore-', type: undefined as any, asString: '-ignore-' }),
 				definition: [
 					{ type: 'Symbol', text: 'foo' }
 				],
@@ -51,7 +51,7 @@ describe('parse', () => {
 			context.scope.register({
 				type: 'Function',
 				valueType: 'String',
-				evaluate: () => '-ignore-',
+				evaluate: () => ({ resultType: 'value', value: '-ignore-', type: undefined as any, asString: '-ignore-' }),
 				definition: [
 					{ type: 'Symbol', text: 'foo' },
 					{ type: 'Parameter', parameterType: 'Integer' },
@@ -142,7 +142,7 @@ describe('parse', () => {
 			context.scope.register({
 				type: 'Function',
 				valueType: 'String',
-				evaluate: () => '-ignore-',
+				evaluate: () => ({ resultType: 'value', value: '-ignore-', type: undefined as any, asString: '-ignore-' }),
 				definition: [
 					{ type: 'Symbol', text: 'foo' },
 					{ type: 'Parameter', parameterType: 'Number' },
@@ -171,7 +171,7 @@ describe('parse', () => {
 			context.scope.register({
 				type: 'Function',
 				valueType: 'String',
-				evaluate: () => '-ignore-',
+				evaluate: () => ({ resultType: 'value', value: '-ignore-', type: undefined as any, asString: '-ignore-' }),
 				definition: [
 					{ type: 'Symbol', text: 'foo' },
 					{ type: 'Parameter', parameterType: 'Number' },
@@ -204,7 +204,7 @@ describe('parse', () => {
 			context.scope.register({
 				type: 'Function',
 				valueType: 'String',
-				evaluate: () => '-ignore-',
+				evaluate: () => ({ resultType: 'value', value: '-ignore-', type: undefined as any, asString: '-ignore-' }),
 				definition: [
 					{ type: 'Symbol', text: 'foo' },
 					{ type: 'Parameter', parameterType: 'Number' },
@@ -233,7 +233,7 @@ describe('parse', () => {
 			context.scope.register({
 				type: 'Function',
 				valueType: 'String',
-				evaluate: () => '-ignore-',
+				evaluate: () => ({ resultType: 'value', value: '-ignore-', type: undefined as any, asString: '-ignore-' }),
 				definition: [
 					{ type: 'Symbol', text: 'foo' },
 					{ type: 'Parameter', parameterType: 'Number' },
@@ -267,7 +267,7 @@ describe('parse', () => {
 			context.scope.register({
 				type: 'Function',
 				valueType: 'String',
-				evaluate: () => '-ignore-',
+				evaluate: () => ({ resultType: 'value', value: '-ignore-', type: undefined as any, asString: '-ignore-' }),
 				definition: [
 					{ type: 'Symbol', text: 'foo' },
 					{ type: 'Parameter', parameterType: 'Number' },

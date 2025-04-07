@@ -16,6 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { ValueResult } from "src/sx/SxEvaluation";
 import { EvaluationScope } from "../../eval/EvaluationScope";
 import { ExpressionType } from "../ExpressionType";
 import { anyType } from "./any";
@@ -70,9 +71,16 @@ export function initializeStringTypes() {
 	stringScope.register({
 		type: 'Function',
 		valueType: 'Integer',
-		evaluate: (params) => {
+		evaluate: (params, context) => {
 			if(params.length !== 1) { throw new Error('Expected exactly one parameter, got: '+params.length) }
-			return params[0].value.length
+			const resultValue = params[0].value.length
+			const result: ValueResult = {
+				resultType: 'value',
+				type: context.types['Number'],
+				value: resultValue,
+				asString: `${resultValue}`
+			}
+			return result
 		},
 		definition: [
 			{ type: 'Symbol', text: 'length' },

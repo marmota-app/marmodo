@@ -32,19 +32,19 @@ describe('nested evaluation contexts', () => {
 			type: 'Function',
 			definition: [{ type: 'Symbol', text: 'one' }, { type: 'Symbol', text: 'two' }, { type: 'Symbol', text: 'three' },],
 			valueType: 'Integer',
-			evaluate: () => { return 1 },
+			evaluate: () => ({ resultType: 'value', value: 1, type: parent.types['Number'], asString: '1' }),
 		})
 		middle.scope.register({
 			type: 'Function',
 			definition: [{ type: 'Symbol', text: 'one' }, { type: 'Symbol', text: 'two' },],
 			valueType: 'Integer',
-			evaluate: () => { return 2 },
+			evaluate: () => ({ resultType: 'value', value: 2, type: parent.types['Number'], asString: '2' }),
 		})
 		leaf.scope.register({
 			type: 'Function',
 			definition: [{ type: 'Symbol', text: 'one' },],
 			valueType: 'Integer',
-			evaluate: () => { return 3 },
+			evaluate: () => ({ resultType: 'value', value: 3, type: parent.types['Number'], asString: '3' }),
 		})
 
 		const result = leaf.createEvaluation(fn).evaluate('evalId')

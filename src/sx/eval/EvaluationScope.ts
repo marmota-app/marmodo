@@ -17,7 +17,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { jsonTransientPrivate } from "../../utilities/jsonTransient"
-import { SxEvaluation, ValueResult } from "../SxEvaluation"
+import { SxContext } from "../SxContext"
+import { EvalResult, SxEvaluation, ValueResult } from "../SxEvaluation"
 import { ExpressionType } from "../types/ExpressionType"
 
 interface Symbol {
@@ -43,10 +44,10 @@ export interface FunctionParameter {
 	type: ExpressionType,
 	value: any,
 }
-interface Function {
+interface Function<CONTEXT extends SxContext> {
 	type: 'Function',
 	valueType: string,
-	evaluate: (params: FunctionParameter[], context: any /* FIXME!! */) => any,
+	evaluate: (params: FunctionParameter[], context: CONTEXT) => EvalResult,
 }
 export interface Reference {
 	type: 'Reference',
@@ -57,7 +58,7 @@ export interface NewReference { //FIXME should replace Reference
 	referenced: SxEvaluation,
 	id: string,
 }
-export type ScopedValue = (Function | Reference | NewReference) & { definition: ScopeDef[] }
+export type ScopedValue<CONTEXT extends SxContext = SxContext> = (Function<CONTEXT> | Reference | NewReference) & { definition: ScopeDef[] }
 
 export interface ScopeTreeNode {
 	node(def: ScopeAccess, selfType?: ExpressionType): ScopeTree | undefined,
@@ -74,7 +75,7 @@ export class ScopeTree implements ScopeTreeNode {
 		jsonTransientPrivate(this, 'parent')
 	}
 
-	register(definition: ScopeDef[], value: ScopedValue, start: number) {
+	register(definition: ScopeDef[], value: ScopedValue<any>, start: number) {
 		if(start === definition.length) {
 			if(this._value != null) {
 				//Error: Cannot register a value twice!
@@ -177,7 +178,7 @@ export class EvaluationScope implements ScopeTreeNode {
 		jsonTransientPrivate(this, 'outer')
 	}
 
-	register(value: ScopedValue) {
+	register<CONTEXT extends SxContext = SxContext>(value: ScopedValue<CONTEXT>) {
 		//TODO definition.length === 0 must not be allowed.
 		this._tree.register(value.definition, value, 0)
 	}

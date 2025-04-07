@@ -58,6 +58,7 @@ export class MfMCustomTableColumn extends MfMElement<'CustomTableColumn', AnyInl
 
 	override get referenceMap() {
 		const evalResult = this.evaluation?.result
+		debugger
 
 		return {
 			...super.referenceMap,

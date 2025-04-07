@@ -26,7 +26,7 @@ describe('EvaluationScope', () => {
 				type: 'Function',
 				definition: [ { type: 'Symbol', text: 'foo' } ],
 				valueType: 'String',
-				evaluate: () => 'foo',
+				evaluate: () => ({ resultType: 'value', value: 'foo', type: undefined as any, asString: 'foo' }),
 			}
 			tree.register([ { type: 'Symbol', text: 'foo' } ], value, 0)
 
@@ -41,7 +41,7 @@ describe('EvaluationScope', () => {
 				type: 'Function',
 				definition: [ { type: 'Symbol', text: 'foo' } ],
 				valueType: 'String',
-				evaluate: () => 'foo',
+				evaluate: () => ({ resultType: 'value', value: 'foo', type: undefined as any, asString: 'foo' }),
 			}
 			tree.register([ { type: 'Parameter', parameterType: 'Float' } ], value, 0)
 
@@ -56,7 +56,7 @@ describe('EvaluationScope', () => {
 				type: 'Function',
 				definition: [ { type: 'Symbol', text: 'foo' } ],
 				valueType: 'String',
-				evaluate: () => 'foo',
+				evaluate: () => ({ resultType: 'value', value: 'foo', type: undefined as any, asString: 'foo' }),
 			}
 			tree.register([ { type: 'Parameter', parameterType: 'Number' } ], value, 0)
 
@@ -76,7 +76,7 @@ describe('EvaluationScope', () => {
 				type: 'Function',
 				definition: [ { type: 'Symbol', text: 'foo' } ],
 				valueType: 'Ignore',
-				evaluate: () => {},
+				evaluate: () => ({ resultType: 'value', value: 'foo', type: undefined as any, asString: 'foo' }),
 			}
 			root.register(scopedValue)
 
@@ -90,14 +90,14 @@ describe('EvaluationScope', () => {
 				type: 'Function',
 				definition: [ { type: 'Symbol', text: 'foo' } ],
 				valueType: 'Ignore',
-				evaluate: () => {},
+				evaluate: () => ({ resultType: 'value', value: 'foo', type: undefined as any, asString: 'foo' }),
 			}
 			root.register(scopedValue)
 			leaf.register({
 				type: 'Function',
 				definition: [ { type: 'Symbol', text: 'foo' }, { type: 'Symbol', text: 'bar' } ],
 				valueType: 'Something Else',
-				evaluate: () => {},
+				evaluate: () => ({ resultType: 'value', value: 'foo', type: undefined as any, asString: 'foo' }),
 			})
 
 			expect(leaf.node({ type: 'Symbol', text: 'foo' })).toHaveProperty('value', scopedValue)
@@ -110,14 +110,14 @@ describe('EvaluationScope', () => {
 				type: 'Function',
 				definition: [ { type: 'Symbol', text: 'foo' }, { type: 'Symbol', text: 'bar' } ],
 				valueType: 'Ignore',
-				evaluate: () => {},
+				evaluate: () => ({ resultType: 'value', value: 'foo', type: undefined as any, asString: 'foo' }),
 			}
 			root.register(scopedValue)
 			leaf.register({
 				type: 'Function',
 				definition: [ { type: 'Symbol', text: 'foo' } ],
 				valueType: 'Something Else',
-				evaluate: () => {},
+				evaluate: () => ({ resultType: 'value', value: 'foo', type: undefined as any, asString: 'foo' }),
 			})
 
 			const intermediateNode = leaf.node({ type: 'Symbol', text: 'foo' })
@@ -133,20 +133,20 @@ describe('EvaluationScope', () => {
 				type: 'Function',
 				definition: [ { type: 'Symbol', text: 'foo' }, { type: 'Symbol', text: 'bar' } ],
 				valueType: 'Ignore',
-				evaluate: () => {},
+				evaluate: () => ({ resultType: 'value', value: 'foo', type: undefined as any, asString: 'foo' }),
 			}
 			root.register(scopedValue)
 			leaf.register({
 				type: 'Function',
 				definition: [ { type: 'Symbol', text: 'foo' } ],
 				valueType: 'Something Else',
-				evaluate: () => {},
+				evaluate: () => ({ resultType: 'value', value: 'foo', type: undefined as any, asString: 'foo' }),
 			})
 			middle.register({
 				type: 'Function',
 				definition: [ { type: 'Symbol', text: 'foo' }, { type: 'Symbol', text: 'bar' }, { type: 'Symbol', text: 'baz' } ],
 				valueType: 'Something Else',
-				evaluate: () => {},
+				evaluate: () => ({ resultType: 'value', value: 'foo', type: undefined as any, asString: 'foo' }),
 			})
 
 			const intermediateNode = leaf.node({ type: 'Symbol', text: 'foo' })
