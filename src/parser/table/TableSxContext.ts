@@ -85,10 +85,9 @@ function initializeScope(scope: EvaluationScope) {
 				value: resultList,
 				type: context.types['List<Any>'],
 				get asString(): string {
-					debugger
 					return '[' + resultList.map(li => {
 						while(li.resultType === 'reference') {
-							li = li.referenced.result ?? { resultType: 'error', message: 'Referenced result does not have any content', near: [ '', 0 ] }
+							li = li.referenced.result ?? { resultType: 'error', message: 'Referenced result does not have any content' }
 						}
 						if(li.resultType === 'error') { return 'ERROR'}
 						return li.asString
@@ -127,9 +126,8 @@ function initializeScope(scope: EvaluationScope) {
 				value: 0,
 			}
 			return list.reduce((prev, cur) => {
-				debugger
 				while(cur.resultType === 'reference') {
-					cur = cur.referenced.result ?? { resultType: 'error', message: 'Referenced result does not conatain a value', near: ['', 0]}
+					cur = cur.referenced.result ?? { resultType: 'error', message: 'Referenced result does not conatain a value' }
 				}
 				if(cur.resultType !== 'value') { throw new Error('Can only sum value results, got an error for current') }
 				if(prev.resultType !== 'value') { throw new Error('Can only sum value results, got an error for previous') }
@@ -172,7 +170,6 @@ function getColumnValue(context: any, col: number, row: number): EvalResult {
 		return {
 			resultType: 'error',
 			message: '', //FIXME what could be the message here?
-			near: ['', 0],
 		}
 	}
 

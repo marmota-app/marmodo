@@ -58,14 +58,14 @@ export class MfMCustomTableColumn extends MfMElement<'CustomTableColumn', AnyInl
 
 	override get referenceMap() {
 		const evalResult = this.evaluation?.result
-		debugger
 
 		return {
 			...super.referenceMap,
 			'element.textContent': this.plainContent,
 			tableColumn: this.tableColumn,
-			'sx.result': evalResult?.resultType === 'value'? evalResult.asString : null,
+			'sx.result': evalResult?.resultType === 'value'? evalResult.asString : '-no result-',
 			'sx.resultType': evalResult?.resultType ?? null,
+			'sx.errorMessage': evalResult?.resultType === 'error'? evalResult.message : null,
 		}
 	}
 

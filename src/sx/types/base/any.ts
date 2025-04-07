@@ -52,9 +52,9 @@ function dynamicDispatchOperator(operatorName: string): ScopedValue {
 			while(type != null && type.scope == null && type.extends != null) {
 				type = type.extends
 			}
-			const scope = type.scope! //FIXME: What if there is no type or scope??
+			const scope = type.scope
 
-			const operator = scope.node({ type: 'Operator', text: operatorName })?.node({ type: 'Value', valueType: p1.type })
+			const operator = scope?.node({ type: 'Operator', text: operatorName })?.node({ type: 'Value', valueType: p1.type })
 			if(operator?.value != dynamicOperator && operator?.value?.type==='Function') {
 				const resultValue = operator.value.evaluate([p0, p1], context)
 				return resultValue
@@ -62,8 +62,7 @@ function dynamicDispatchOperator(operatorName: string): ScopedValue {
 
 			return {
 				resultType: 'error',
-				message: 'No result available',
-				near: [ '', 0 ]
+				message: `Cannot find operator "${operatorName}" for values [${p0.value.asString ?? p0.value}] (${p0.type.name}) and [${p1.value.asString ?? p1.value}] (${p1.type.name})`
 			}
 		},
 		definition: [

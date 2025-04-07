@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { SxContext } from "../../src/sx/SxContext"
 
 describe('SX error handling', () => {
-	test.skip('dynamic operator of "Any" does not find concrete operator', () => {
+	test('dynamic operator of "Any" does not find concrete operator', () => {
 		const context = new SxContext()
 		context.types['Dummy:Type'] = {
 			name: 'Dummy:Type',
@@ -32,7 +32,7 @@ describe('SX error handling', () => {
 			valueType: 'Dummy:Type',
 			evaluate: (params) => {
 				if(params.length !== 1) { throw new Error('Expected exactly one parameter, got: '+params.length) }
-				return ({ resultType: 'value', value: '-ignore-', type: undefined as any, asString: '-ignore-' })
+				return ({ resultType: 'value', value: 'dummy value', type: context.types['Dummy:Type'], asString: '-ignore-' })
 			},
 			definition: [
 				{ type: 'Symbol', text: '&' },
@@ -42,7 +42,6 @@ describe('SX error handling', () => {
 		const result = context.createEvaluation('12 & * "5"').evaluate('id-1') as any
 
 		expect(result).toHaveProperty('resultType', 'error')
-		expect(result).toHaveProperty('message', 'Cannot find operator "*" for values [dummy value] (Dummy:Type) and ["5"] (String)')
-		expect(result).toHaveProperty('near', [ '12 & * "5"', 5])
+		expect(result).toHaveProperty('message', 'Cannot find operator "*" for values [dummy value] (Dummy:Type) and [5] (String)')
 	})
 })

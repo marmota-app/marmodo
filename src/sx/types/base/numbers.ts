@@ -213,7 +213,6 @@ export function numberMultiply(params: FunctionParameter[], context: SxContext) 
 		value: resultValue,
 		asString: `${resultValue}`
 	}
-	debugger
 	return result
 }
 export function numberDivide(params: FunctionParameter[], context: SxContext) {

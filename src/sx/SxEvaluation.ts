@@ -25,7 +25,6 @@ import { ExpressionType } from "./types/ExpressionType";
 export interface ErrorResult {
 	resultType: 'error',
 	message: string,
-	near: [string, number],
 }
 export interface ValueResult {
 	resultType: 'value',
@@ -60,7 +59,6 @@ export class SxEvaluation {
 			return {
 				resultType: 'error',
 				message: 'Circular dependency detected',
-				near: ['', 0]
 			}
 		}
 
@@ -89,7 +87,6 @@ function evaluateExpression(expression: string, context: SxContext, evalId: stri
 	return {
 		resultType: 'error',
 		message: '',
-		near: ['', 0]
 	}
 }
 
@@ -148,18 +145,11 @@ function evaluateParseTree(node: ParseTreeNode, context: SxContext, evalId: stri
 			if(typeof result.value === 'number') {
 				result.asString = `${Number(result.value.toFixed(12))}`
 			}
-
-			return result
 		}
-		return {
-			resultType: 'error',
-			message: 'Could not determine result: Not a value!',
-			near: [ '', 0]
-		}
+		return result
 	}
 	return {
 		resultType: 'error',
 		message: '',
-		near: ['', 0]
 	}
 }
