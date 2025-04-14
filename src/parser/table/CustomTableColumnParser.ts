@@ -24,7 +24,6 @@ import { PersistentRange } from "../../mbuffer/TextRange"
 import { MfMParser } from "../MfMParser"
 import { IdGenerator, Parsers } from "../Parsers"
 import { ColumnSxContext } from "./ColumnSxContext"
-import { TableSxContext } from "./TableSxContext"
 
 export class MfMCustomTableColumn extends MfMElement<'CustomTableColumn', AnyInline, TableColumn<'CustomTableColumn'>, CustomTableColumnParser> implements TableColumn<'CustomTableColumn'>, CustomElement {
 	public readonly type = 'CustomTableColumn'
@@ -56,6 +55,9 @@ export class MfMCustomTableColumn extends MfMElement<'CustomTableColumn', AnyInl
 		return this.content.map(c => c.plainContent).join('')
 	}
 
+	override replaces(replaced: TableColumn<"CustomTableColumn">): void {
+		this.tableColumn = (replaced as MfMCustomTableColumn).tableColumn
+	}
 	override get referenceMap() {
 		const evalResult = this.evaluation?.result
 

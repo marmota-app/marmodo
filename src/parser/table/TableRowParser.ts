@@ -16,15 +16,13 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { AnyInline, ElementOptions, Options, ParsingContext, TableColumn, TableRow, Text } from "../../element"
+import { ElementOptions, Options, ParsingContext, TableColumn, TableRow, Text } from "../../element"
 import { EMPTY_OPTIONS, MfMElement } from "../../element/MfMElement"
 import { TextLocation } from "../../mbuffer/TextLocation"
-import { PersistentRange } from "../../mbuffer/TextRange"
 import { finiteLoop } from "../../utilities/finiteLoop"
 import { MfMParser } from "../MfMParser"
 import { IdGenerator, Parsers } from "../Parsers"
 import { MfMCustomTableColumn } from "./CustomTableColumnParser"
-import { MfMTableColumn } from "./TableColumnParser"
 
 export class MfMTableRow extends MfMElement<'TableRow', TableColumn<any> | Options | Text, TableRow, TableRowParser> implements TableRow {
 	public readonly type = 'TableRow'
@@ -43,6 +41,10 @@ export class MfMTableRow extends MfMElement<'TableRow', TableColumn<any> | Optio
 
 	get textContent(): string {
 		return this.asText
+	}
+
+	override replaces(replaced: TableRow): void {
+		this.tableRow = (replaced as MfMTableRow).tableRow
 	}
 
 	override get referenceMap() {

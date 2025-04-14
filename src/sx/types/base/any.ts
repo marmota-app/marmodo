@@ -54,7 +54,7 @@ function dynamicDispatchOperator(operatorName: string): ScopedValue {
 			}
 			const scope = type.scope
 
-			const operator = scope?.node({ type: 'Operator', text: operatorName })?.node({ type: 'Value', valueType: p1.type })
+			const operator = scope?.node({ type: 'Operator', text: operatorName })?.node({ type: 'Value', valueType: p1.type }, p0.type)
 			if(operator?.value != dynamicOperator && operator?.value?.type==='Function') {
 				const resultValue = operator.value.evaluate([p0, p1], context)
 				return resultValue

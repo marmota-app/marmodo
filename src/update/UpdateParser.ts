@@ -76,7 +76,10 @@ export class UpdateParser {
 					if(result.isFirstUpdate) {
 						//the current element **was** updated here, now need to replace
 						//it and schedule a callback.
-						currentElement.content[i].removeFromTree()
+						const replaced = currentElement.content[i]
+						replaced.removeFromTree()
+
+						result.updated.replaces(replaced)
 						currentElement.content[i] = result.updated
 						result.updated.parent = currentElement
 						this.#scheduleUpdatedCallback(currentElement)

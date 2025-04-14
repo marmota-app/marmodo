@@ -86,6 +86,7 @@ export interface Element<
 	updateParsed: () => void,
 	subtreeUpdateParsed: () => void,
 	removeFromTree: () => void,
+	replaces: (replaced: THIS) => void,
 
 	readonly referenceMap: { [key: string]: string | number | boolean | Element<any, any, any> | Element<any, any, any>[] | null },
 

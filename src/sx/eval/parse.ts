@@ -149,13 +149,30 @@ function parseFrom(
 				returnType = self.valueType.name
 			}
 		} else if(returnType[0]==='<' && returnType[returnType.length-1]==='>') {
-			//find the correct type from the parameter
-			for (let i=0; i < value.definition.length; i++) {
-				const d = value.definition[i]
-				if(d.type === 'Parameter') {
-					if(d.parameterType===returnType) {
-						returnType = (parsedParts[i] as any)?.valueType?.name
-						break;
+			const typePlaceholder = returnType.substring(1, returnType.length-1)
+			if(/\d/.test(typePlaceholder)) {
+				debugger
+				const typePosition = Number.parseInt(typePlaceholder)
+				let currentParameterPosition = 0
+				for (let i=0; i < value.definition.length; i++) {
+					const d = value.definition[i]
+					if(d.type === 'Parameter') {
+						if(typePosition === currentParameterPosition) {
+							returnType = (parsedParts[i] as any)?.valueType?.name
+							break;
+						}
+						currentParameterPosition++
+					}
+				}
+			} else {
+				//find the correct type from the parameter
+				for (let i=0; i < value.definition.length; i++) {
+					const d = value.definition[i]
+					if(d.type === 'Parameter') {
+						if(d.parameterType===returnType) {
+							returnType = (parsedParts[i] as any)?.valueType?.name
+							break;
+						}
 					}
 				}
 			}

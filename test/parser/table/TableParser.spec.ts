@@ -16,6 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { MfMTableRow } from "src/parser/table/TableRowParser"
 import { Table } from "../../../src/element"
 import { Parsers } from "../../../src/parser/Parsers"
 import { MfMTable } from "../../../src/parser/table/TableParser"
@@ -139,6 +140,49 @@ describe('TableParser', () => {
 		).canBeParsed('adding new table line, starting with pipe', table => {
 			expect(table.rows).toEqual(2)
 			expect(table.tableRows).toHaveLength(2)
+		})
+
+		expectUpdates(
+			parser,
+			'a | b\n-|-\nc | d', [
+				{ text: '\n', rangeOffset: 'a | b\n-|-\nc | d'.length, rangeLength: 0 },
+				{ text: '|e', rangeOffset: 'a | b\n-|-\nc | d\n'.length, rangeLength: 0 },
+			]
+		).canBeParsed('adding new table row, the new row has the correct row number', table => {
+			expect(table.rows).toEqual(2)
+			expect(table.tableRows[1]).toHaveProperty('tableRow', 1)
+		})
+		expectUpdates(
+			parser,
+			'a | b\n-|-\nc | d', [
+				{ text: '\n', rangeOffset: 'a | b\n-|-\nc | d'.length, rangeLength: 0 },
+				{ text: '|', rangeOffset: 'a | b\n-|-\nc | d\n'.length, rangeLength: 0 },
+				{ text: 'e', rangeOffset: 'a | b\n-|-\nc | d\n|'.length, rangeLength: 0 },
+			]
+		).canBeParsed('adding new table row, the new row has the correct row number after the next update', table => {
+			expect(table.rows).toEqual(2)
+			expect(table.tableRows[1]).toHaveProperty('tableRow', 1)
+		})
+		expectUpdates(
+			parser,
+			'a | b\n-|-\nc | d', [
+				{ text: '\n', rangeOffset: 'a | b\n-|-\nc | d'.length, rangeLength: 0 },
+				{ text: '|e|{{10}}|', rangeOffset: 'a | b\n-|-\nc | d\n'.length, rangeLength: 0 },
+			]
+		).canBeParsed('adding new table column, column has the correct number', table => {
+			expect(table.rows).toEqual(2)
+			expect(table.tableRows[1].columns[1]).toHaveProperty('tableColumn', 1)
+		})
+		expectUpdates(
+			parser,
+			'a | b\n-|-\nc | d', [
+				{ text: '\n', rangeOffset: 'a | b\n-|-\nc | d'.length, rangeLength: 0 },
+				{ text: '|e|{{10}}|', rangeOffset: 'a | b\n-|-\nc | d\n'.length, rangeLength: 0 },
+				{ text: '0', rangeOffset: 'a | b\n-|-\nc | d\n|e|{{10'.length, rangeLength: 0 },
+			]
+		).canBeParsed('adding new table column, column has the correct number after the first update', table => {
+			expect(table.rows).toEqual(2)
+			expect(table.tableRows[1].columns[1]).toHaveProperty('tableColumn', 1)
 		})
 	})
 })

@@ -95,6 +95,7 @@ export abstract class MfMElement<
 		this.updateCallbacks = {}
 		this.subtreeUpdateCallbacks = {}
 	}
+	replaces(replaced: THIS) {}
 
 	get referenceMap(): { [key: string]: string | number | boolean | Element<any, any, any> | Element<any, any, any>[] | null } {
 		return {

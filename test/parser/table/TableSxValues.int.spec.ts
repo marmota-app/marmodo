@@ -119,6 +119,19 @@ describe('Table: SX Values', () => {
 			const col = result.tableRows[3].columns[0]
 			expect(col.referenceMap['sx.result']).toEqual('6.1')
 		})
+		it('can sum a range of currency values using row and col variables, plain values', () => {
+			const result = parseAll('Table',
+				'|---------------------------|-----\n'+
+				'|{{1.1€                   }}| foo \n'+
+				'|{{2€                     }}| 3.3 \n' +
+				'|{{3€                     }}| true\n' +
+				'|{{sum [1,1]:[col,row-1]  }}| 5   \n'
+			) as unknown as MfMTable
+			result.updateSxResults('id-1')
+
+			const col = result.tableRows[3].columns[0]
+			expect(col.referenceMap['sx.result']).toEqual('6.1 €')
+		})
 		it('can sum a range of values using row and col variables with sx result in sum', () => {
 			const result = parseAll('Table',
 				'|---------------------------|-----\n'+

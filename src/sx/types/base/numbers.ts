@@ -154,13 +154,13 @@ export function initializeNumberTypes() {
 
 	numberScope.register({
 		type: 'Function',
-		valueType: 'Currency',
+		valueType: '<0>',
 		evaluate: (params, context) => {
 			if(params.length !== 2) { throw new Error('Expected exactly two parameters, got: '+params.length) }
 			const currencyValue = new Currency(params[0].value * params[1].value.amount, params[1].value.currency)
 			const result: ValueResult = {
 				resultType: 'value',
-				type: context.types['Currency'],
+				type: params[1].type,
 				value: currencyValue,
 				asString: currencyValue.asString
 			}
@@ -168,6 +168,25 @@ export function initializeNumberTypes() {
 		},
 		definition: [
 			{ type: 'Operator', text: '*' },
+			{ type: 'Parameter', parameterType: 'Currency' },
+		],
+	})
+	numberScope.register({
+		type: 'Function',
+		valueType: '<0>',
+		evaluate: (params, context) => {
+			if(params.length !== 2) { throw new Error('Expected exactly two parameters, got: '+params.length) }
+			const currencyValue = new Currency(params[0].value + params[1].value.amount, params[1].value.currency)
+			const result: ValueResult = {
+				resultType: 'value',
+				type: params[1].type,
+				value: currencyValue,
+				asString: currencyValue.asString
+			}
+			return result
+		},
+		definition: [
+			{ type: 'Operator', text: '+' },
 			{ type: 'Parameter', parameterType: 'Currency' },
 		],
 	})

@@ -24,12 +24,18 @@ describe('evaluate (integration tests)', () => {
 		[ '1.5*2', '3', 'Number' ],
 		[ '1+2*3', '7', 'Number' ],
 		[ '(1+2)*3', '9', 'Number' ],
+
+		// Currency
 		[ '1€ + 2€', '3 €', 'Currency:Euro' ],
 		[ '1$ + 2$', '3 $', 'Currency:Dollar' ],
 		[ '10€ * 20%', '2 €', 'Currency:Euro' ],
 		[ '10€ * 20%', '2 €', 'Currency:Euro' ],
 		[ '10€ + (10€ * 10%)', '11 €', 'Currency:Euro' ],
 		[ '10€ + 20%', '12 €', 'Currency:Euro' ],
+		[ '1.2 € * "5"', '6 €', 'Currency:Euro'],
+		[ '1 * 2€', '2 €', 'Currency:Euro'],
+		[ '0 + 2€', '2 €', 'Currency:Euro'],
+		[ '(2 * 2€) + 3€', '7 €', 'Currency:Euro'],
 
 		[ '3*(2+3)', '15', 'Number'],
 		[ '3+(2+3*4)', '17', 'Number'],
@@ -51,6 +57,7 @@ describe('evaluate (integration tests)', () => {
 
 			const result = context.createEvaluation(expression).evaluate('id-1') as any
 
+			expect(result).not.toHaveProperty('message')
 			expect(result).toHaveProperty('resultType', 'value')
 			expect(result).toHaveProperty('asString', expected)
 			expect(result.type).toHaveProperty('name', expectedType)

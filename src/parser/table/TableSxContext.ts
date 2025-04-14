@@ -138,7 +138,7 @@ function initializeScope(scope: EvaluationScope) {
 				}
 				const scope = type.scope! //FIXME: What if there is no type or scope??
 
-				const operator = scope.node({ type: 'Operator', text: '+' })?.node({ type: 'Value', valueType: cur.type })
+				const operator = scope.node({ type: 'Operator', text: '+' })?.node({ type: 'Value', valueType: cur.type }, prev.type)
 				if(operator?.value?.type==='Function') {
 					const result = operator.value.evaluate([prev, cur], context)
 					return result

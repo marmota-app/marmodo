@@ -19,7 +19,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import { BlankLine, Element, ElementOptions, ParsingContext, Table, TableDelimiterRow, TableRow } from "../../element"
 import { MfMElement } from "../../element/MfMElement"
 import { TextLocation } from "../../mbuffer/TextLocation"
-import { SxContext } from "../../sx/SxContext"
 import { finiteLoop } from "../../utilities/finiteLoop"
 import { MfMParser } from "../MfMParser"
 import { MfMTableRow } from "./TableRowParser"
@@ -130,7 +129,7 @@ export class TableParser extends MfMParser<'Table', TableRow | TableDelimiterRow
 		result.lastColumn = result.columns-1
 
 		if(tableSxContext != null) { tableSxContext.table = result }
-		
+
 		return result
 	}
 

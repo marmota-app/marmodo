@@ -102,7 +102,7 @@ export function initializeCurrency() {
 		},
 		definition: [
 			{ type: 'Operator', text: '*' },
-			{ type: 'Parameter', parameterType: 'Number' },
+			{ type: 'Parameter', parameterType: 'Number | String' },
 		],
 	})
 	currencyScope.register({
