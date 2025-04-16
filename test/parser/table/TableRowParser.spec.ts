@@ -152,6 +152,7 @@ describe('TableRowParser', () => {
 
 		expect(result?.content[3]).toHaveProperty('type', 'Options')
 		expect(result?.content[3]).toHaveProperty('keys', ['default', 'key1'])
+		expect(result?.options).toHaveProperty('keys', ['default', 'key1'])
 	})
 
 	it('parses multiple columns with colsing pipe and incomplete options', () => {
@@ -162,6 +163,7 @@ describe('TableRowParser', () => {
 
 		expect(result?.content[3]).toHaveProperty('type', 'Text')
 		expect(result?.content[3]).toHaveProperty('textContent', '{ val0; key1=val1  \t ')
+		expect(result?.options).toHaveProperty('keys', [])
 	})
 
 	it('does not return a table row with no columns and no other content', () => {

@@ -81,8 +81,9 @@ export class MfMCustomInline extends MfMElement<'CustomInline', Text | Options, 
 		return {
 			...super.referenceMap,
 			'element.textContent': this.plainContent,
-			'sx.result': evalResult?.resultType === 'value'? evalResult.asString : null,
+			'sx.result': evalResult?.resultType === 'value'? evalResult.asString : '-no result-',
 			'sx.resultType': evalResult?.resultType ?? null,
+			'sx.errorMessage': evalResult?.resultType === 'error'? evalResult.message : null,
 		}
 	}
 

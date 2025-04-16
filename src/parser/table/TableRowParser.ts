@@ -33,7 +33,7 @@ export class MfMTableRow extends MfMElement<'TableRow', TableColumn<any> | Optio
 	}
 
 	override get options(): ElementOptions {
-		return EMPTY_OPTIONS
+		return this.content.find(c => c.type==='Options') as ElementOptions ?? EMPTY_OPTIONS
 	}
 	get columns(): TableColumn<any>[] {
 		return this.content.filter(c => c.type==='TableColumn' || c.type==='HeaderColumn' || c.type==='CustomTableColumn') as TableColumn<any>[]
