@@ -49,6 +49,11 @@ describe('TextParser', () => {
 			parser,
 			'some text\nmore text',
 			{ text: `some text${p}more text`, rangeOffset: 'some text\n'.length, rangeLength: 0 }
-		).cannotBeParsed(`Would add delimiter ${p} of delimited inlines`))
+		).cannotBeParsed(`Would add delimiter ${p} of delimited inlines`));
+		[ '*', '=', '_', '!', '[', ']', '~', '`', '{', '}', ';', '|', ].forEach(p => expectUpdate(
+			parser,
+			`some text${p}more text`,
+			{ text: ``, rangeOffset: 'some text'.length, rangeLength: p.length }
+		).cannotBeParsed(`Would remove delimiter ${p} of delimited inlines`))
 	})
 })

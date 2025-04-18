@@ -151,7 +151,6 @@ function parseFrom(
 		} else if(returnType[0]==='<' && returnType[returnType.length-1]==='>') {
 			const typePlaceholder = returnType.substring(1, returnType.length-1)
 			if(/\d/.test(typePlaceholder)) {
-				debugger
 				const typePosition = Number.parseInt(typePlaceholder)
 				let currentParameterPosition = 0
 				for (let i=0; i < value.definition.length; i++) {

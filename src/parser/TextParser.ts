@@ -61,7 +61,9 @@ export class TextParser extends MfMParser<'Text', never, Text> {
 				and: andFalse,
 			}
 		}
-		return this.checkUpdateDoesNotChangeNewlines(element, update).and(this.#checkUpdateDoesNotAddPunctuation(element, update))
+		return this.checkUpdateDoesNotChangeNewlines(element, update)
+			.and(this.#checkUpdateDoesNotAddPunctuation(element, update))
+			.and(this.#checkUpdateDoesNotRemovePunctuation(element, update))
 	}
 
 	acceptUpdate(original: Text, updated: Text): boolean {
@@ -88,6 +90,23 @@ export class TextParser extends MfMParser<'Text', never, Text> {
 	#checkUpdateDoesNotAddPunctuation(element: Text, update: UpdateInfo): UpdateCheckResult {
 		for(let i=0; i<update.newText.length; i++) {
 			const ch = update.newText.charAt(i)
+			switch(ch) {
+				case '=': case '*': case '_': case '[': case ']':
+				case '!': case '~': case '`': case '{': case '}':
+				case ';': case '|':
+					return { canUpdate: false, and: andFalse, }
+			}
+		}
+		return {
+			canUpdate: true,
+			rangeStart: element.parsedRange.start,
+			rangeEnd: element.parsedRange.end,
+			and: andOther,
+		}
+	}
+	#checkUpdateDoesNotRemovePunctuation(element: Text, update: UpdateInfo): UpdateCheckResult {
+		for(let i=0; i<update.replacedText.length; i++) {
+			const ch = update.replacedText.charAt(i)
 			switch(ch) {
 				case '=': case '*': case '_': case '[': case ']':
 				case '!': case '~': case '`': case '{': case '}':

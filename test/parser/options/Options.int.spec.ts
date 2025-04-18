@@ -29,6 +29,7 @@ describe('Options Integration Tests', () => {
 		{ element: 'Heading', before: '#', after: ' some content' },
 		{ element: 'Heading', before: '###', after: ' some content' },
 		{ element: 'Paragraph', before: '', after: 'some content' },
+		{ element: 'Paragraph', before: '', after: '' },
 		{ element: 'CustomInline', before: '{{ some content }}', after: '' },
 	].forEach(testCase => {
 		describe(`Element "${testCase.element}" (${testCase.before}{options...}${testCase.after})`, () => {
@@ -38,19 +39,33 @@ describe('Options Integration Tests', () => {
 
 				expect(result).not.toBeNull()
 				expect(result).toHaveProperty('asText', text)
+				expect(result!.parsedRange.asString()).toEqual(text)
 
 				expect(result!.options).toHaveProperty('keys', [ 'default', 'key1', 'key2' ])
 				expect(result!.options.get('default')).toEqual('val0')
 				expect(result!.options.get('key1')).toEqual('val1')
 				expect(result!.options.get('key2')).toEqual('val2')
 			})
+			it('can parse empty options block on the element', () => {
+				const text = `${testCase.before}{}${testCase.after}`
+				const result = parseAll(testCase.element, text)
+
+				expect(result).not.toBeNull()
+				expect(result).toHaveProperty('asText', text)
+				expect(result!.parsedRange.asString()).toEqual(text)
+
+				expect(result!.options).toHaveProperty('keys', [])
+			})
 			it('cannot parse unclosed options', () => {
 				const text = `${testCase.before}{ val0; key1  = val1;\tkey2=val2   ${testCase.after}`
 				const result = parseAll(testCase.element, text)
 	
 				expect(result).not.toBeNull()
-				if(testCase.after.length > 0) { expect(result).toHaveProperty('asText', text) }
-	
+				if(testCase.after.length > 0) {
+					expect(result).toHaveProperty('asText', text)
+					expect(result!.parsedRange.asString()).toEqual(text)
+				}
+
 				expect(result!.options).toHaveProperty('keys', [])
 			})
 			it('cannot parse options that are not at the correct place', () => {
@@ -60,7 +75,10 @@ describe('Options Integration Tests', () => {
 				if(result != null) {
 					//Yep, I know, if in tests... But in this case, we really
 					//don't know whether this text can be parsed at all.
-					if(testCase.after.length > 0) { expect(result).toHaveProperty('asText', text) }
+					if(testCase.after.length > 0) {
+						expect(result).toHaveProperty('asText', text)
+						expect(result!.parsedRange.asString()).toEqual(text)
+					}
 					expect(result!.options).toHaveProperty('keys', [])
 				}
 			})

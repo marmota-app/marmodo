@@ -46,6 +46,8 @@ export class ParagraphParser extends MfMParser<'Paragraph', AnyInline, Paragraph
 
 	parse(start: TextLocation, end: TextLocation, context: ParsingContext): Paragraph | null {
 		const content: AnyInline[] = []
+		const paragraphStart = start
+
 		if(start.accessor().get() === '{') {
 			const options = this.parsers.Options.parse(start, end, context)
 			if(options != null) {
@@ -74,7 +76,7 @@ export class ParagraphParser extends MfMParser<'Paragraph', AnyInline, Paragraph
 				content.push(...completeContent)
 				return new MfMParagraph(
 					this.idGenerator.nextId(),
-					start.persistentRangeUntil(nextNewline.end),
+					paragraphStart.persistentRangeUntil(nextNewline.end),
 					this,
 					content,
 					context,
@@ -88,7 +90,7 @@ export class ParagraphParser extends MfMParser<'Paragraph', AnyInline, Paragraph
 			if(!blankLinesEnd.isEqualTo(nextParseLocation)) {
 				return new MfMParagraph(
 					this.idGenerator.nextId(),
-					start.persistentRangeUntil(blankLinesEnd),
+					paragraphStart.persistentRangeUntil(blankLinesEnd),
 					this,
 					content,
 					context,
@@ -102,7 +104,7 @@ export class ParagraphParser extends MfMParser<'Paragraph', AnyInline, Paragraph
 		content.push(...completeContent)
 		return new MfMParagraph(
 			this.idGenerator.nextId(),
-			start.persistentRangeUntil(end),
+			paragraphStart.persistentRangeUntil(end),
 			this,
 			content,
 			context,
