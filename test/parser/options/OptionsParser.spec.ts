@@ -63,6 +63,11 @@ describe('Options', () =>  {
 			const result = parseAll('Options', '{ key1=val1; key2=val2; val0; key3=val3 }more text') as unknown as MfMOptions
 			expect(result).toHaveProperty('keys', [ 'key1', 'key2', 'key3' ])
 		})
+		it('does not parse options beyond the end of the document', () => {
+			const result = parseAll('Options', '{')
+	
+			expect(result).toBeNull()
+		})
 	})
 
 	describe('parsing updates', () => {

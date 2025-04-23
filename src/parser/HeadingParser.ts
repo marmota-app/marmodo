@@ -61,6 +61,13 @@ export class MfMHeading extends MfMElement<'Heading', HeadingContent | BlankLine
 		}
 		return EMPTY_OPTIONS
 	}
+
+	override get referenceMap(): { [key: string]: string | number | null; } {
+		return {
+			...super.referenceMap,
+			'heading.level': this.level,
+		}
+	}
 }
 
 export class HeadingParser extends MfMParser<'Heading', HeadingContent | BlankLine | Options, Heading> {

@@ -124,42 +124,52 @@ ${reconstructedText}`
 		}
 		//-------- DEVELOPMENT --------
 
-		const updated = this.#updateParser.parseUpdate(updateInfo!, this.#content, this.#textContent.end())
+		try {
+			const updated = this.#updateParser.parseUpdate(updateInfo!, this.#content, this.#textContent.end())
 
-		//-------- DEVELOPMENT --------
-		if(this.#development && updated != null) {
-			const newlyParsed = this.#parsers.Container.parse(this.#textContent.start(), this.#textContent.end(), {})
+			//-------- DEVELOPMENT --------
+			if(this.#development && updated != null) {
+				const newlyParsed = this.#parsers.Container.parse(this.#textContent.start(), this.#textContent.end(), {})
 
-			const textFromUpdated = updated.asText
-			const textFromNew = newlyParsed!.asText
+				const textFromUpdated = updated.asText
+				const textFromNew = newlyParsed!.asText
 
-			if(textFromUpdated !== textFromNew) {
-				console.error(
+				if(textFromUpdated !== textFromNew) {
+					console.error(
 `Updated document tree as text does not match newly parsed tree as text
 --------------- Newly parsed, as text:
 ${textFromNew}
 --------------- Updated tree, as text:
 ${textFromUpdated}`
-				)
-				console.warn(`Update failed. Original text="${this.#originalText}", updates = `, this.#updates)
+					)
+					console.warn(`Update failed. Original text="${this.#originalText}", updates = `, this.#updates)
+				}
+
+				//TODO compare the trees
+				newlyParsed?.removeFromTree()
 			}
+			//-------- DEVELOPMENT --------
 
-			//TODO compare the trees
-			newlyParsed?.removeFromTree()
-		}
-		//-------- DEVELOPMENT --------
+			if(updated === null) {
+				if(this.#development) {
+					console.warn(`Update returned null, parsing complete text. Original text="${this.#originalText}", updates = `, this.#updates)
+				}
 
-		if(updated === null) {
+				this.#content.removeFromTree()
+				this.#content = this.#parseCompleteText(getCompleteText())
+
+				this.updateParsedCompletely()
+			}
+		} catch(e) {
+			//-------- DEVELOPMENT --------
 			if(this.#development) {
-				console.warn(`Update returned null, parsing complete text. Original text="${this.#originalText}", updates = `, this.#updates)
+				console.error(`Update threw exception. Original text="${this.#originalText}", updates = `, this.#updates, `,Exception = `, e)
 			}
-
-			this.#content.removeFromTree()
-			this.#content = this.#parseCompleteText(getCompleteText())
-
-			this.updateParsedCompletely()
+			//-------- DEVELOPMENT --------
+			throw e
 		}
 	}
+
 	onUpdate(cb: () => void): DocumentUpdateRegistration {
 		if(documentIdGenerator == null) { documentIdGenerator = new IdGenerator() }
 

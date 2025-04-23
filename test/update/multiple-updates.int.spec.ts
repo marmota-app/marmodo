@@ -45,4 +45,19 @@ describe('Integration/Regression: Multiple Updates', () => {
 
 		expect(doc.text).toEqual('{{10}s')
 	})
+
+	it('can remove most of a previously inserted custom inline', () => {
+		const doc = new MfMDocument('{}', { development: false, });
+
+		[
+			{ "rangeLength": 0, "text": "{}", "rangeOffset": 1, },
+			{ "rangeLength": 0, "text": "1", "rangeOffset": 2, },
+			{ "rangeLength": 1, "text": "", "rangeOffset": 4, },
+			{ "rangeLength": 1, "text": "", "rangeOffset": 3, },
+			{ "rangeLength": 1, "text": "", "rangeOffset": 2, },
+			{ "rangeLength": 1, "text": "", "rangeOffset": 1, }
+		].forEach(cu => doc.update(cu, () => { throw new Error('could not update document with '+JSON.stringify(cu))} ))
+
+		expect(doc.text).toEqual('{')
+	})
 })

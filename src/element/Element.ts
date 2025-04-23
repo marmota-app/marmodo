@@ -64,6 +64,8 @@ export interface ElementUpdateRegistration {
 	unsubscribe: () => void,
 }
 
+export type ReferencedByElement = string | number | boolean | Element<any, any, any> | Element<any, any, any>[] | null
+
 export interface Element<
 	TYPE extends string,
 	CONTENT extends Element<any, any, any>,
@@ -88,7 +90,7 @@ export interface Element<
 	removeFromTree: () => void,
 	replaces: (replaced: THIS) => void,
 
-	readonly referenceMap: { [key: string]: string | number | boolean | Element<any, any, any> | Element<any, any, any>[] | null },
+	readonly referenceMap: { [key: string]: ReferencedByElement },
 
 	updateSxResults: (evaluationId: string)=> void,
 }
