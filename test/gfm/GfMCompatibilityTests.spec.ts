@@ -16,7 +16,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
+// Environment variable WRITE_COMPAT_INFO controls whether the compatibility
+// markdown file is written.
 
 import { JSDOM } from 'jsdom'
 import fs from 'fs'
@@ -47,6 +48,7 @@ const NYI = {
 
 	elements: {
 		indented_code_blocks: 'Element still missing: Indented code block',
+		fenced_code_blocks: 'Element still missing: Fenced code block',
 		heading: {
 			closing_sequences: 'Missing feature: Closing sequences of "#" and " " after a heading',
 		},
@@ -68,6 +70,15 @@ const INCOMPATIBLE = {
 }
 
 const implementedSections: ImplementedSection[] = [
+  { chapter: '1.1', name: 'What is GitHub Flavored Markdown?', notYetImplemented: [], incompatible: [], },
+  { chapter: '1.2', name: 'What is Markdown?', notYetImplemented: [], incompatible: [], },
+  { chapter: '1.3', name: 'Why is a spec needed?', notYetImplemented: [], incompatible: [], },
+  { chapter: '1.4', name: 'About this document', notYetImplemented: [], incompatible: [], },
+
+  { chapter: '2.1', name: 'Characters and lines', notYetImplemented: [], incompatible: [], },
+
+  { chapter: '3.2', name: 'Container blocks and leaf blocks', notYetImplemented: [], incompatible: [], },
+
 	{ chapter: '4.2', name: 'ATX headings',
 		notYetImplemented: [
 			{ name: 'Example 35', reason: NYI.escaping },
@@ -104,6 +115,22 @@ const implementedSections: ImplementedSection[] = [
 		],
 		incompatible: [
 			{ name: 'Example 203', reason: INCOMPATIBLE.table_header_length },
+		],
+	},
+
+	{ chapter: '--6.1', name: 'Backslash escapes',
+		notYetImplemented: [
+			{ name: 'Example 312', reason: NYI.elements.line_breaks },
+			{ name: 'Example 313', reason: NYI.elements.inline_code_spans },
+			{ name: 'Example 314', reason: NYI.elements.indented_code_blocks },
+			{ name: 'Example 315', reason: NYI.elements.fenced_code_blocks },
+			{ name: 'Example 318', reason: NYI.elements.links },
+			{ name: 'Example 319', reason: NYI.elements.links },
+			{ name: 'Example 320', reason: NYI.elements.fenced_code_blocks },
+		],
+		incompatible: [
+			{ name: 'Example 316', reason: INCOMPATIBLE.html_elements },
+			{ name: 'Example 317', reason: INCOMPATIBLE.html_elements },
 		],
 	},
 	{ chapter: '6.4', name: 'Emphasis and strong emphasis',
@@ -180,16 +207,16 @@ const implementedSections: ImplementedSection[] = [
 const compatibility: string[] = []
 describe('Github-flavored-Markdown (GfM) compatibility', () => {
 	it('should be implemented, see below...', () => {})
-	
+
 	const gfmSpecContent = fs.readFileSync('test/gfm/GitHub Flavored Markdown Spec.html', 'utf-8')
 	const gfmSpec = new JSDOM(gfmSpecContent)
-	
+
 
 	compatibility.push('# Markdown compatibility')
 	compatibility.push('')
 
 	findTestsFrom(gfmSpec.window.document.body.children)
-	
+
 	if(process.env.WRITE_COMPAT_INFO) {
 		fs.writeFileSync('./docs/github-flavored-markdown-compatibility.md', compatibility.join('\n'))
 	}
@@ -198,16 +225,16 @@ describe('Github-flavored-Markdown (GfM) compatibility', () => {
 		return () => {
 			for(let i=startIndex; i < children.length; i++) {
 				const child = children[i]
-	
+
 				if(child.nodeName === 'H1' || child.nodeName === 'H2') { return }
-	
+
 				if(child.nodeName === 'DIV' && child.classList.contains('example')) {
 					const example = withoutEmptyLines(child.querySelector('.examplenum')?.textContent)
 					const md = child.querySelector('.language-markdown')?.textContent
 						?.replaceAll('→', '\t')
 					const html = child.querySelector('.language-html')?.textContent
 						?.replaceAll('→', '\t')
-	
+
 					if(example != null && md != null && html != null) {
 						testExample(example, md, html, sectionInfo)
 					}
@@ -215,7 +242,7 @@ describe('Github-flavored-Markdown (GfM) compatibility', () => {
 			}
 		}
 	}
-	
+
 	function testExample(name: string, md: string, expected: string, sectionInfo?: ImplementedSection) {
 		if(sectionInfo?.notYetImplemented.filter(nyi => nyi.name === name)?.length??0 > 0) {
 			const info = sectionInfo?.notYetImplemented?.filter(nyi => nyi.name === name)[0] as ImplementedExample
@@ -263,24 +290,24 @@ describe('Github-flavored-Markdown (GfM) compatibility', () => {
 	function findTestsFrom(children: HTMLCollection) {
 		for(let i=0; i<children.length; i++) {
 			const child = children[i]
-			
+
 			if(child.nodeName === 'DIV' && child.classList.contains('appendices')) { return; }
-	
+
 			if(child.nodeName === 'H2') {
 				const number = child.querySelector('span.number')?.textContent ?? ''
 				let text = ''
 				child.childNodes.forEach(cn => { if(cn.nodeName === '#text') { text = cn.textContent ?? '' } })
-	
+
 				if(implementedSections.filter(s => s.chapter===number).length > 0) {
 					const sectionInfo = implementedSections.filter(s => s.chapter===number)[0]
-	
+
 					compatibility.push('## '+sectionInfo.chapter+' '+sectionInfo.name+' - Implemented')
 					if(sectionInfo.notYetImplemented.length > 0 || sectionInfo.incompatible.length > 0) {
 						compatibility.push('')
 						compatibility.push('Except **not yet implemented** functionality and known **incompatibilities**:')
 						compatibility.push('')
 					}
-	
+
 					describe(number+': '+text, describeSection(children, i+1, sectionInfo))
 				} else {
 					compatibility.push('## '+number+' NOT yet Implemented')

@@ -16,34 +16,38 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { finiteLoop } from "../utilities/finiteLoop"
 import { jsonTransient, jsonTransientPrivate } from "../utilities/jsonTransient"
 import { isCharacter, isLineEnding, isPunctuation, isWhitespace } from "./characters"
 import { MBuffer } from "./MBuffer"
 import { PersistentRange, TemporaryRange } from "./TextRange"
 
+export interface FindOptions {
+	punctuationCharacters: 'unescaped' | 'all',
+}
 export abstract class TextLocation {
 	abstract readonly buffer: MBuffer
 	abstract readonly index: number
 	abstract readonly isValid: boolean
 	abstract readonly type: 'start' | 'end'
-	
+
 	abstract ensureValid(message: string): void
 
 	isBefore(other: TextLocation) {
 		if(this === other) { return false }
-		
+
 		const isSameBuffer = this.buffer === other.buffer
 		if(isSameBuffer) {
 			return this.index < other.index
 		} else {
 			let sameBufferAfterThis = false
 			let b: MBuffer = this.buffer
-	
+
 			while(!sameBufferAfterThis && b.nextBuffer) {
 				b = b.nextBuffer
 				sameBufferAfterThis = b===other.buffer
 			}
-	
+
 			if(sameBufferAfterThis) { return true }
 		}
 		return false
@@ -64,7 +68,7 @@ export abstract class TextLocation {
 	isInRange(end: TextLocation): boolean {
 		return this.isBefore(end)
 	}
-	
+
 	abstract accessor(): TemporaryLocation
 	abstract persist(): PersistentLocation
 	abstract persistentRangeUntil(end: TextLocation): PersistentRange
@@ -83,7 +87,7 @@ export abstract class TextLocation {
 			result += currentLocation.get()
 			currentLocation.advance()
 		}
-	
+
 		return result
 	}
 
@@ -102,7 +106,24 @@ export abstract class TextLocation {
 		}
 		return nextNewline
 	}
-	findNext(toFind: string | string[], until: TextLocation): (TemporaryRange | null) {
+
+	/**
+	* Finds the next occurence of `toFind`.
+	*
+	* @param toFind is a string or an array of strings to search - in case of an array, the first found string will be returned
+	* @param until is the end of the search area
+	* @param options allow fine-grained control over how the search is performed, e.g. wheter escaping should be considered or not
+	* @returns
+	*/
+	findNext(toFind: string | string[], until: TextLocation, options: Partial<FindOptions> = {}): (TemporaryRange | null) {
+		const defaultOptions: FindOptions = {
+			punctuationCharacters: 'unescaped'
+		}
+		const findOptions = {
+			...defaultOptions,
+			...options,
+		}
+
 		//straight-forward implementation without considering any optimization
 		//opportunities yet...
 		interface FoundStatus {
@@ -125,33 +146,67 @@ export abstract class TextLocation {
 				startIndex: 0,
 			}]
 		const accessor = this.accessor()
-	
-		while(accessor.isInRange(until)) {
-			const current = accessor.get()
-			for(const status of foundStatus) {
-				if(status.text[status.index] === current) {
-					if(status.startBuffer == null) {
-						status.startBuffer = accessor.buffer
-						status.startIndex = accessor.index
-					}
-					status.index++
-					if(status.index === status.text.length) {
-						accessor.advance()
-						const start = new TemporaryLocation(status.startBuffer, status.startIndex, 'start')
-						const end = new TemporaryLocation(accessor.buffer, accessor.index, 'end')
-						return new TemporaryRange(start, end)
-					}
-				} else {
-					status.startBuffer = null
-					status.index = 0
-				}
+
+		const foundRange = (accessor: TemporaryLocation, status: FoundStatus) => {
+			if(status.startBuffer == null) {
+				throw new Error('foundRange cannot exist when there is no start buffer')
 			}
 			accessor.advance()
+			const start = new TemporaryLocation(status.startBuffer, status.startIndex, 'start')
+			const end = new TemporaryLocation(accessor.buffer, accessor.index, 'end')
+			return new TemporaryRange(start, end)
 		}
-	
+
+		debugger
+		let escapeNext = false
+		const loop = finiteLoop(() => [accessor.info()])
+		while(accessor.isInRange(until)) {
+			loop.ensure()
+			const current = accessor.get()
+
+			const nextLocation = accessor.accessor()
+			nextLocation.advance()
+			const next = nextLocation.isInRange(until)? nextLocation.get() : undefined
+
+			const shouldIgnoreCurrent = current === '\\' && next && isPunctuation(next)
+			const shouldEscapeCurrent = isPunctuation(current) && escapeNext
+			const shouldProcessCurrent =
+				findOptions.punctuationCharacters==='all' ||
+				(!shouldEscapeCurrent && !shouldIgnoreCurrent)
+
+			if(shouldProcessCurrent) {
+				for(const status of foundStatus) {
+					if (status.text[status.index] === current) {
+						if (status.startBuffer == null) {
+							status.startBuffer = accessor.buffer
+							status.startIndex = accessor.index
+						}
+						status.index++
+						if (status.index === status.text.length) {
+							return foundRange(accessor, status)
+						}
+					} else if(status.text[0] === current) {
+						//start a new possible match
+						status.startBuffer = accessor.buffer
+						status.startIndex = accessor.index
+						status.index = 1
+						if (status.index === status.text.length) {
+							return foundRange(accessor, status)
+						}
+					} else {
+						status.startBuffer = null
+						status.index = 0
+					}
+				}
+			}
+
+			escapeNext = (!escapeNext && current === '\\')
+			accessor.advance()
+		}
+
 		return null
 	}
-	
+
 	abstract info(): string
 }
 export class PersistentLocation extends TextLocation {

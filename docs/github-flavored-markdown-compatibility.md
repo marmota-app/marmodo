@@ -1,14 +1,14 @@
 # Markdown compatibility
 
-## 1.1 NOT yet Implemented
-## 1.2 NOT yet Implemented
-## 1.3 NOT yet Implemented
-## 1.4 NOT yet Implemented
-## 2.1 NOT yet Implemented
+## 1.1 What is GitHub Flavored Markdown? - Implemented
+## 1.2 What is Markdown? - Implemented
+## 1.3 Why is a spec needed? - Implemented
+## 1.4 About this document - Implemented
+## 2.1 Characters and lines - Implemented
 ## 2.2 NOT yet Implemented
 ## 2.3 NOT yet Implemented
 ## 3.1 NOT yet Implemented
-## 3.2 NOT yet Implemented
+## 3.2 Container blocks and leaf blocks - Implemented
 ## 4.1 NOT yet Implemented
 ## 4.2 ATX headings - Implemented
 

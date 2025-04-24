@@ -129,13 +129,13 @@ describe('TextLocation', () => {
 		function createRange(buffer: MBuffer, start: number, end: number): PersistentRange {
 			return buffer.startLocation(start).persistentRangeUntil(buffer.endLocation(end))
 		}
-		
+
 		it('can find one of the given strings inside a range', () => {
 			const buffer = new MBuffer('the quick brown fox jumps over the lazy dog')
 			const range = createRange(buffer, 0, buffer.length)
-	
+
 			const found = range.start.findNext(['brown', 'quick'], range.end)
-	
+
 			expect(found).not.toBeNull()
 			expect(found?.asString()).toEqual('quick')
 			expect(found?.start.index).toEqual('the '.length)
@@ -144,17 +144,17 @@ describe('TextLocation', () => {
 		it('returns null when the given string is not found', () => {
 			const buffer = new MBuffer('the quick brown fox jumps over the lazy dog')
 			const range = createRange(buffer, 0, buffer.length)
-	
+
 			const found = range.start.findNext(['dinosaur', 'bird'], range.end)
-	
+
 			expect(found).toBeNull()
 		})
 		it('can find a single string inside a range', () => {
 			const buffer = new MBuffer('the quick brown fox jumps over the lazy dog')
 			const range = createRange(buffer, 0, buffer.length)
-	
+
 			const found = range.start.findNext('quick', range.end)
-	
+
 			expect(found).not.toBeNull()
 			expect(found?.asString()).toEqual('quick')
 			expect(found?.start.index).toEqual('the '.length)
@@ -163,29 +163,88 @@ describe('TextLocation', () => {
 		it('finds a word correctly when there is a different partial match before', () => {
 			const buffer = new MBuffer('the quick frog quacks')
 			const range = createRange(buffer, 0, buffer.length)
-	
+
 			const found = range.start.findNext('quack', range.end)
-	
+
 			expect(found).not.toBeNull()
 			expect(found?.asString()).toEqual('quack')
 			expect(found?.start.index).toEqual('the quick frog '.length)
 			expect(found?.end.index).toEqual('the quick frog quack'.length)
 		})
+		it('finds a string inside a longer sequence', () => {
+			const buffer = new MBuffer('before --+ after')
+			const range = createRange(buffer, 0, buffer.length)
+
+			const found = range.start.findNext('-+', range.end)
+
+			expect(found).not.toBeNull()
+			expect(found?.asString()).toEqual('-+')
+			expect(found?.start.index).toEqual('before -'.length)
+			expect(found?.end.index).toEqual('before --+'.length)
+		})
+
 		it('does not find text that is outside of the range', () => {
 			const buffer = new MBuffer('the quick brown fox jumps over the lazy dog')
 			const range = createRange(buffer, 0, 'the quick brown fox ju'.length)
-	
+
 			const found = range.start.findNext(['dog', 'lazy'], range.end)
-	
+
 			expect(found).toBeNull()
 		})
 		it('does not find text that is partially outside of the range', () => {
 			const buffer = new MBuffer('the quick brown fox jumps over the lazy dog')
 			const range = createRange(buffer, 0, 'the quick brown fox ju'.length)
-	
+
 			const found = range.start.findNext('jumps', range.end)
-	
+
 			expect(found).toBeNull()
-		})	
+		});
+
+		[
+			['*', 'before \\*bla\\*', 'asterisk'],
+			['*b', 'before \\*bla\\*', 'asterisk followed by letter'],
+			['\\', 'before \\\\ foo', 'backslash'],
+			['\\\n', 'before \\\\\n after', 'backslash followed by newline'],
+		].forEach(([toFind, text, name]) => it(`${name}: does not find escaped punctuation character "${toFind}" by default in "${text}"`, () => {
+			const buffer = new MBuffer(text)
+			const range = createRange(buffer, 0, buffer.length)
+
+			const found = range.start.findNext(toFind, range.end)
+
+			expect(found).toBeNull()
+		}));
+
+		const findsAfterEscapedBackslash = [
+			['*', 'before \\\\*bla\\*', 'before \\\\'.length, 'asterisk'],
+			['*b', 'before \\\\*bla\\*', 'before \\\\'.length, 'asterisk followed by letter'],
+			['\\', 'before \\\\\\ foo', 'before \\\\'.length, 'backslash'],
+			['\\\n', 'before \\\\\\\n after', 'before \\\\'.length, 'backslash followed by newline'],
+			['a', 'before \\a after', 'before \\'.length, 'backslash followed a'],
+		] as const;
+		findsAfterEscapedBackslash.forEach(([toFind, text, position, name]) => it(`${name}: when previous backslash was escaped, finds punctuation character "${toFind}" by default in "${text}"`, () => {
+			const buffer = new MBuffer(text)
+			const range = createRange(buffer, 0, buffer.length)
+
+			const found = range.start.findNext(toFind, range.end)
+
+			expect(found).not.toBeNull()
+			expect(found?.start.index).toEqual(position)
+		}))
+
+		const findsIgnoringEscaping = [
+			['*', 'before \\*bla\\*', 'before \\'.length, 'asterisk'],
+			['*b', 'before \\*bla\\*', 'before \\'.length, 'asterisk followed by letter'],
+			['\\', 'before \\\\ foo', 'before '.length, 'backslash'],
+			['\\\n', 'before \\\\\n after', 'before \\'.length, 'backslash followed by newline'],
+		] as const;
+		findsIgnoringEscaping.forEach(([toFind, text, position, name]) => it(`${name}: when previous backslash was escaped, finds punctuation character "${toFind}" by default in "${text}"`, () => {
+			const buffer = new MBuffer(text)
+			const range = createRange(buffer, 0, buffer.length)
+
+			const found = range.start.findNext(toFind, range.end, { punctuationCharacters: 'all' })
+
+			expect(found).not.toBeNull()
+			expect(found?.start.index).toEqual(position)
+		}))
 	})
 })
