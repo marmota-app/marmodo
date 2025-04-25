@@ -174,16 +174,12 @@ export class MfMHeadingContent extends MfMElement<'HeadingContent', AnyInline, H
 }
 export class HeadingContentParser extends MfMParser<'HeadingContent', AnyInline, HeadingContent> {
 	readonly type = 'HeadingContent'
-	
+
 	parse(start: TextLocation, end: TextLocation, context: ParsingContext): HeadingContent | null {
 		const nextNewline = start.findNextNewline(end)
 
-		const parseEnd = nextNewline?.end ?? end
-		const content: AnyInline[] = []
-		const text = this.parsers['Text'].parse(start, parseEnd, context)
-		if(text) {
-			content.push(text)
-		}
+		const parseEnd = nextNewline?.start ?? end
+		const content: AnyInline[] = this.parsers.parseInlines(start, parseEnd, parseEnd, context)
 
 		return new MfMHeadingContent(
 			this.idGenerator.nextId(),

@@ -25,20 +25,20 @@ describe('HeadingParser', () => {
 		[ '#', '##', '###', '####', '#####', '######'].forEach(hi => {
 			it(`parses empty heading ${hi}`, () => {
 				const heading = parseAll('Heading', hi)
-	
+
 				expect(heading).not.toBeNull()
 				expect(heading?.asText).toEqual(hi)
 			})
 
 			it(`parses heading level for ${hi}`, () => {
 				const heading = parseAll('Heading', hi)
-	
+
 				expect(heading).toHaveProperty('level', hi.length)
 			})
-	
+
 			it('parses heading with text', () => {
 				const heading = parseAll('Heading', '# heading text')
-	
+
 				expect(heading).not.toBeNull()
 				expect(heading?.content).toHaveLength(1)
 
@@ -62,18 +62,32 @@ describe('HeadingParser', () => {
 			expect(heading).toBeNull()
 		})
 
+		it('parses heading content as inlines', () => {
+			const heading = parseAll('Heading', '# **heading** _text_')
+
+			expect(heading).not.toBeNull()
+			expect(heading?.content).toHaveLength(1)
+
+			expect(heading!.content[0]).toHaveChildren([
+				{ type: 'StrongEmphasis', asText: '**heading**' },
+				{ type: 'Text', textContent: ' ' },
+				{ type: 'Emphasis', asText: '_text_' },
+			])
+			expect(heading?.asText).toEqual('# **heading** _text_')
+		})
+
 		it('does not continue empty heading text after a newline', () => {
 			const heading = parseAll('Heading', '## \t\nmore text')
-	
+
 			expect(heading).not.toBeNull()
 			expect(heading?.asText).toEqual('## \t\n')
 		})
 		it('does not continue heading text after a newline', () => {
 			const heading = parseAll('Heading', '## \tsome heading\nmore text')
-	
+
 			expect(heading).not.toBeNull()
 			expect(heading!.content[0]).toHaveChildren([
-				{ type: 'Text', textContent: 'some heading\n' }
+				{ type: 'Text', textContent: 'some heading' }
 			])
 			expect(heading?.asText).toEqual('## \tsome heading\n')
 		})
@@ -93,6 +107,7 @@ describe('HeadingParser', () => {
 			const heading = parseAll('Heading', '##\n   \n\t\n\nmore text')
 			expect(heading).toHaveChildren([
 				{},
+				{ type: 'BlankLine', textContent: '\n' },
 				{ type: 'BlankLine', textContent: '   \n' },
 				{ type: 'BlankLine',textContent: '\t\n' },
 				{ type: 'BlankLine', textContent: '\n' }
@@ -103,6 +118,7 @@ describe('HeadingParser', () => {
 			const heading = parseAll('Heading', '## \tsome heading\n   \n\t\n\nmore text')
 			expect(heading).toHaveChildren([
 				{},
+				{ type: 'BlankLine', textContent: '\n' },
 				{ type: 'BlankLine', textContent: '   \n' },
 				{ type: 'BlankLine',textContent: '\t\n' },
 				{ type: 'BlankLine', textContent: '\n' }

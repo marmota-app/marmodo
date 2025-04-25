@@ -51,7 +51,6 @@ const NYI = {
 		fenced_code_blocks: 'Element still missing: Fenced code block',
 		heading: {
 			closing_sequences: 'Missing feature: Closing sequences of "#" and " " after a heading',
-			content_inlines: 'Missing feature: Inline content in headings',
 		},
 		horizontal_rule: 'Element still missing: Horizontal rule',
 		blockquote: 'Element still missing: Block quote',
@@ -82,7 +81,6 @@ const implementedSections: ImplementedSection[] = [
 
 	{ chapter: '4.2', name: 'ATX headings',
 		notYetImplemented: [
-			{ name: 'Example 36', reason: NYI.elements.heading.content_inlines },
 			{ name: 'Example 38', reason: NYI.indentation },
 			{ name: 'Example 39', reason: NYI.elements.indented_code_blocks },
 			{ name: 'Example 40', reason: NYI.paragraph_continuation },
