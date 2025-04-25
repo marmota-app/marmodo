@@ -16,6 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { isPunctuation } from "../mbuffer/characters";
 import { ParsingContext, UpdateCheckResult } from "../element/Element";
 import { MfMElement } from "../element/MfMElement";
 import { allBlockStarts, Text } from "../element/MfMElements";
@@ -30,7 +31,23 @@ export class MfMText extends MfMElement<'Text', never, Text, TextParser> impleme
 	get textContent() {
 		//This function does not cache the string yet - an optimization
 		//that might be necessary in the future. But not now ;)
-		return this.parsedRange.asString()
+		const text = this.parsedRange.asString()
+		let escapedText = ''
+
+		let previousWasEscapingBackslash = false
+		for (let i = 0; i < text.length; i++) {
+			const current = text.charAt(i)
+			const next = i < text.length-1? text.charAt(i+1) : undefined
+
+			if(!previousWasEscapingBackslash && current === '\\' && next && isPunctuation(next)) {
+				previousWasEscapingBackslash = true
+			} else {
+				escapedText += current
+				previousWasEscapingBackslash = false
+			}
+		}
+
+		return escapedText
 	}
 
 	get asText(): string {

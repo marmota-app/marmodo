@@ -42,7 +42,7 @@ interface ImplementedSection {
 
 const NYI = {
 	line_indentation: 'Indentation of lines that does not create any element',
-	escaping: 'Escaping characters with backslashes',
+	html_entities: 'Replacing HTML entities',
 	indentation: 'Indenting elements with up-to three whitespace characters',
 	paragraph_continuation: 'Continuing a paragraph with indentation after the first line',
 
@@ -51,6 +51,7 @@ const NYI = {
 		fenced_code_blocks: 'Element still missing: Fenced code block',
 		heading: {
 			closing_sequences: 'Missing feature: Closing sequences of "#" and " " after a heading',
+			content_inlines: 'Missing feature: Inline content in headings',
 		},
 		horizontal_rule: 'Element still missing: Horizontal rule',
 		blockquote: 'Element still missing: Block quote',
@@ -81,15 +82,13 @@ const implementedSections: ImplementedSection[] = [
 
 	{ chapter: '4.2', name: 'ATX headings',
 		notYetImplemented: [
-			{ name: 'Example 35', reason: NYI.escaping },
-			{ name: 'Example 36', reason: NYI.escaping },
+			{ name: 'Example 36', reason: NYI.elements.heading.content_inlines },
 			{ name: 'Example 38', reason: NYI.indentation },
 			{ name: 'Example 39', reason: NYI.elements.indented_code_blocks },
 			{ name: 'Example 40', reason: NYI.paragraph_continuation },
 			{ name: 'Example 41', reason: NYI.elements.heading.closing_sequences },
 			{ name: 'Example 42', reason: NYI.elements.heading.closing_sequences },
 			{ name: 'Example 43', reason: NYI.elements.heading.closing_sequences },
-			{ name: 'Example 46', reason: NYI.escaping },
 			{ name: 'Example 47', reason: NYI.elements.horizontal_rule },
 			{ name: 'Example 49', reason: NYI.elements.heading.closing_sequences },
 		],
@@ -110,7 +109,7 @@ const implementedSections: ImplementedSection[] = [
 	{
 		chapter: '4.10', name: 'Tables (extension)',
 		notYetImplemented: [
-			{ name: 'Example 200', reason: NYI.escaping },
+			{ name: 'Example 200', reason: NYI.elements.inline_code_spans },
 			{ name: 'Example 201', reason: NYI.elements.blockquote },
 		],
 		incompatible: [
@@ -118,8 +117,10 @@ const implementedSections: ImplementedSection[] = [
 		],
 	},
 
-	{ chapter: '--6.1', name: 'Backslash escapes',
+	{ chapter: '6.1', name: 'Backslash escapes',
 		notYetImplemented: [
+			{ name: 'Example 308', reason: NYI.html_entities },
+			{ name: 'Example 310', reason: NYI.html_entities },
 			{ name: 'Example 312', reason: NYI.elements.line_breaks },
 			{ name: 'Example 313', reason: NYI.elements.inline_code_spans },
 			{ name: 'Example 314', reason: NYI.elements.indented_code_blocks },
@@ -135,20 +136,16 @@ const implementedSections: ImplementedSection[] = [
 	},
 	{ chapter: '6.4', name: 'Emphasis and strong emphasis',
 		notYetImplemented: [
-			{ name: 'Example 362', reason: NYI.escaping },
-			{ name: 'Example 368', reason: NYI.escaping },
-			{ name: 'Example 372', reason: NYI.escaping },
-			{ name: 'Example 389', reason: NYI.escaping },
-			{ name: 'Example 394', reason: NYI.escaping },
-			{ name: 'Example 404', reason: NYI.escaping },
+			{ name: 'Example 362', reason: NYI.html_entities },
+			{ name: 'Example 368', reason: NYI.html_entities },
+			{ name: 'Example 372', reason: NYI.html_entities },
+			{ name: 'Example 389', reason: NYI.html_entities },
+			{ name: 'Example 394', reason: NYI.html_entities },
+			{ name: 'Example 404', reason: NYI.html_entities },
 			{ name: 'Example 413', reason: NYI.elements.links },
 			{ name: 'Example 428', reason: NYI.elements.links },
 			{ name: 'Example 431', reason: NYI.elements.links },
 			{ name: 'Example 442', reason: NYI.elements.links },
-			{ name: 'Example 446', reason: NYI.escaping },
-			{ name: 'Example 449', reason: NYI.escaping },
-			{ name: 'Example 458', reason: NYI.escaping },
-			{ name: 'Example 461', reason: NYI.escaping },
 			{ name: 'Example 482', reason: NYI.elements.links },
 			{ name: 'Example 483', reason: NYI.elements.links },
 			{ name: 'Example 487', reason: NYI.elements.inline_code_spans },

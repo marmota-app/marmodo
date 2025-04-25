@@ -157,7 +157,6 @@ export abstract class TextLocation {
 			return new TemporaryRange(start, end)
 		}
 
-		debugger
 		let escapeNext = false
 		const loop = finiteLoop(() => [accessor.info()])
 		while(accessor.isInRange(until)) {

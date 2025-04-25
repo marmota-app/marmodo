@@ -92,6 +92,26 @@ describe('DelimiterRun', () => {
 		})
 	})
 
+	describe('escaped delimiters', () => {
+		it('does not find a single, escaped delimiter', () => {
+			const tc = new TextContent('some text \\*a')
+
+			const result = findNextDelimiterRun(['*'], tc.start(), tc.end())
+			expect(result).toBeNull()
+		})
+		it('finds delimiter run when the previous backslash was escaped', () => {
+			const tc = new TextContent('some text \\\\***a')
+
+			const result = findNextDelimiterRun(['*'], tc.start(), tc.end())
+			expect(result).not.toBeNull()
+
+			const [start, end] = result!
+			expect(start.index).toEqual('some text \\\\'.length)
+			expect(end.index).toEqual('some text \\\\'.length+3)
+			expect(start.stringUntil(end)).toEqual('***')
+		})
+	})
+
 	describe('finding matching delimiter runs', () => {
 		it('finds next matching delimiter run based on search criteria (first occurence)', () => {
 			const tc = new TextContent('some text***')
@@ -298,7 +318,7 @@ describe('DelimiterRun', () => {
 			})
 		})
 	})
-	
+
 	describe('neither left-flanking, nor right-flanking', () => {
 		[
 			['abc ', '***', ' def'],

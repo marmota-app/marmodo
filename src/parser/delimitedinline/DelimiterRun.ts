@@ -44,13 +44,23 @@ export function findNextDelimiterRun(delimiters: string[], start: TextLocation, 
 	let beforeStart = ''
 	let startIndex = 0
 
+	debugger
 	const outerLoop = finiteLoop(() => [ delimiterStart.info() ])
+	let previousWasEscapingBackslash = false
 	while(delimiterStart.isBefore(end)) {
 		outerLoop.ensure()
 		if(startIndex > options.maxStartIndex) { return null }
 
 		let delimiter = ''
-		delimiters.forEach(d => { if(delimiterStart.get() === d) { delimiter = d }})
+		const current = delimiterStart.get()
+		delimiters.forEach(d => {
+			if(!previousWasEscapingBackslash && current === d) { delimiter = d }
+		})
+		if(current === '\\') {
+			previousWasEscapingBackslash = !previousWasEscapingBackslash
+		} else {
+			previousWasEscapingBackslash = false
+		}
 
 		if(delimiter !== '') {
 			const delimiterEnd = delimiterStart.accessor()
@@ -64,7 +74,7 @@ export function findNextDelimiterRun(delimiters: string[], start: TextLocation, 
 				delimiterLength++
 				startIndex++
 			}
-		
+
 			if(!delimiterStart.isEqualTo(delimiterEnd)) {
 				const isLeftFlanking = isLeftFlankingRun(beforeStart, delimiterEnd, end)
 				const isRightFlanking = isRightFlankingRun(delimiterStart, start, beforeStart, delimiterEnd, end)
@@ -78,7 +88,7 @@ export function findNextDelimiterRun(delimiters: string[], start: TextLocation, 
 					return [delimiterStart, delimiterEnd, { delimiterChar: delimiter, isLeftFlanking, isRightFlanking }]
 				}
 			}
-		
+
 			delimiterStart = delimiterEnd
 		} else {
 			beforeStart = delimiterStart.get()
@@ -106,7 +116,7 @@ function isLeftFlankingRun(beforeStart: string, delimiterEnd: TemporaryLocation,
 		const isFollowedByPunctuation = delimiterEnd.isPunctuation()
 		if(isFollowedByPunctuation) {
 			//or (2b) followed by a punctuation character and preceded by
-			//Unicode whitespace or a punctuation character. 
+			//Unicode whitespace or a punctuation character.
 			return beforeStart==='' || //proxy comparison for start of the range
 				isWhitespace(beforeStart) || isLineEnding(beforeStart) ||
 				isPunctuation(beforeStart)
@@ -118,7 +128,7 @@ function isLeftFlankingRun(beforeStart: string, delimiterEnd: TemporaryLocation,
 	return false
 }
 function isRightFlankingRun(delimiterStart: TemporaryLocation, start: TextLocation, beforeStart: string, afterDelimiter: TemporaryLocation, end: TextLocation): boolean {
-	//ATTENTION: For purposes of this definition, the beginning and the end 
+	//ATTENTION: For purposes of this definition, the beginning and the end
 	//of the line count as Unicode whitespace.
 
 	//A right-flanking delimiter run is a delimiter run that is...

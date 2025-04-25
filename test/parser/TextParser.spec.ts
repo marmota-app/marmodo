@@ -25,9 +25,15 @@ describe('TextParser', () => {
 	describe('Parsing the text', () => {
 		it('parses complete text', () => {
 			const text = parseAll('Text', 'some text') as Text
-	
+
 			expect(text).not.toBeNull()
 			expect(text?.textContent).toEqual('some text')
+		})
+		it('gets back escaped text correctly', () => {
+			const text = parseAll('Text', '\\* \\\\ \\a \\\\*') as Text
+
+			expect(text).not.toBeNull()
+			expect(text?.textContent).toEqual('* \\ \\a \\*')
 		})
 	})
 
